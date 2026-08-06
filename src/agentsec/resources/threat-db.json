@@ -1,0 +1,81 @@
+{
+  "commit_indicators": [
+    {
+      "author": "claude",
+      "email": "claude@users.noreply.github.com",
+      "subject": "chore: update config"
+    }
+  ],
+  "complete": true,
+  "domains": [
+    "app-clawbot[.]org",
+    "git-service.com",
+    "js-mirror.com",
+    "npm-cache.com",
+    "onlyflies.buzz",
+    "openclawcli.vercel.app",
+    "pypi-get.com"
+  ],
+  "hashes": {
+    "54dc7ea54a1317cca0e890a2770630cf7fa6c97813e0cb9d2caa93012b350668": "setup.mjs (stage 1 dropper, original)",
+    "9fc2570b7cef51c1b8df116d144d11ff4096357be7d2c4c6367cfc2509cf1bcc": "Math_Symbol.js / math_init.js (stage 2 Bun payload, 727,680 bytes)",
+    "fd3ca4007b225fdf8de7af4345a19179d5efa8c4bb9205f88cda806e5684b1eb": "setup.mjs (stage 1 dropper, worm-propagation variant)"
+  },
+  "package_versions": {
+    "@cacheable/memory": [
+      "2.2.1"
+    ],
+    "@cacheable/net": [
+      "2.1.1"
+    ],
+    "@cacheable/node-cache": [
+      "3.1.2"
+    ],
+    "@cacheable/utils": [
+      "2.5.1"
+    ],
+    "@deliveroo/reevent": [
+      "1.0.1"
+    ],
+    "@or-sdk/invitations": [
+      "1.4.9"
+    ],
+    "@picsart/ai-sdk": [
+      "3.32.2"
+    ],
+    "@qlik/embed-runtime": [
+      "1.6.4"
+    ],
+    "cache-manager": [
+      "7.2.10"
+    ],
+    "cacheable": [
+      "2.5.1"
+    ],
+    "cacheable-request": [
+      "13.0.20"
+    ],
+    "ecto": [
+      "5.0.1"
+    ],
+    "file-entry-cache": [
+      "11.1.6"
+    ],
+    "flat-cache": [
+      "6.1.24"
+    ],
+    "keyv": [
+      "6.0.0"
+    ],
+    "picasso.js": [
+      "2.11.6"
+    ]
+  },
+  "updated": "2026-08-06",
+  "version": "2.26.0",
+  "wildcard_package_versions": {
+    "@keyv/": [
+      "6.0.0"
+    ]
+  }
+}
