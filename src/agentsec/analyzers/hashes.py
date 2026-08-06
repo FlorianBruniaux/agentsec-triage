@@ -30,6 +30,8 @@ def hash_file(
 
     parent_descriptor: int | None = None
     descriptor: int | None = None
+    digest_hex: str | None = None
+    primary_failed = False
     try:
         parent_descriptor, filename = _open_parent_directory(path)
         path_before = _stat_at(parent_descriptor, filename)
@@ -58,17 +60,15 @@ def hash_file(
         if total != file_after.st_size:
             raise _UnsafeFileError("payload size changed while hashing")
         _verify_parent_path(path, parent_descriptor, filename)
+        digest_hex = digest.hexdigest()
     except (OSError, OverflowError, ValueError):
-        return None, (_error(path, "Unable to hash payload safely"),)
+        primary_failed = True
     finally:
-        try:
-            if descriptor is not None:
-                os.close(descriptor)
-        finally:
-            if parent_descriptor is not None:
-                os.close(parent_descriptor)
+        cleanup_errors = _close_descriptors(descriptor, parent_descriptor)
 
-    return digest.hexdigest(), ()
+    if primary_failed or cleanup_errors or digest_hex is None:
+        return None, (_error(path, "Unable to hash payload safely"),)
+    return digest_hex, ()
 
 
 def _secure_posix_open_available() -> bool:
@@ -151,6 +151,18 @@ def _verify_parent_path(path: Path, original_parent: int, filename: str) -> None
         )
     finally:
         os.close(verification_parent)
+
+
+def _close_descriptors(*descriptors: int | None) -> tuple[OSError, ...]:
+    errors: list[OSError] = []
+    for descriptor in descriptors:
+        if descriptor is None:
+            continue
+        try:
+            os.close(descriptor)
+        except OSError as error:
+            errors.append(error)
+    return tuple(errors)
 
 
 def _stream_hash(descriptor: int, digest: _Digest, max_bytes: int) -> int:

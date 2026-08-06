@@ -347,6 +347,75 @@ def test_rejects_opened_reparse_point(
     _assert_hash_error(path, digest, diagnostics)
 
 
+@pytest.mark.parametrize(
+    ("close_target", "read_fails"),
+    [
+        ("payload", False),
+        ("parent", False),
+        ("both", False),
+        ("payload", True),
+    ],
+)
+def test_close_failure_returns_error_and_attempts_all_cleanup(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    close_target: str,
+    read_fails: bool,
+):
+    path = tmp_path / "payload"
+    path.write_bytes(b"known bytes")
+    original_open_file_at = hashes._open_file_at
+    original_open_parent = hashes._open_parent_directory
+    original_close = os.close
+    original_read = os.read
+    file_descriptors: list[int] = []
+    parent_descriptors: list[int] = []
+    close_attempts: list[int] = []
+
+    def tracking_open_file_at(parent: int, filename: str) -> int:
+        descriptor = original_open_file_at(parent, filename)
+        file_descriptors.append(descriptor)
+        return descriptor
+
+    def tracking_open_parent(open_path: Path) -> tuple[int, str]:
+        result = original_open_parent(open_path)
+        parent_descriptors.append(result[0])
+        return result
+
+    def failing_close(descriptor: int) -> None:
+        close_attempts.append(descriptor)
+        payload_failure = bool(
+            close_target in {"payload", "both"}
+            and file_descriptors
+            and descriptor == file_descriptors[0]
+        )
+        parent_failure = bool(
+            close_target in {"parent", "both"}
+            and parent_descriptors
+            and descriptor == parent_descriptors[0]
+        )
+        original_close(descriptor)
+        if payload_failure or parent_failure:
+            raise OSError("simulated close failure")
+
+    def failing_read(descriptor: int, count: int) -> bytes:
+        if read_fails:
+            raise OSError("simulated primary read failure")
+        return original_read(descriptor, count)
+
+    monkeypatch.setattr(hashes, "_open_file_at", tracking_open_file_at)
+    monkeypatch.setattr(hashes, "_open_parent_directory", tracking_open_parent)
+    monkeypatch.setattr(os, "close", failing_close)
+    monkeypatch.setattr(os, "read", failing_read)
+
+    digest, diagnostics = hash_file(path, max_bytes=1024)
+
+    _assert_hash_error(path, digest, diagnostics)
+    assert diagnostics[0].message == "Unable to hash payload safely"
+    assert file_descriptors[0] in close_attempts
+    assert parent_descriptors[0] in close_attempts
+
+
 def _assert_hash_error(
     path: Path,
     digest: object,
