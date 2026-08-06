@@ -1,0 +1,22 @@
+tests/unit/test_json_output.py
+  s_0df90997879182::t_5fe112c2daa205 45-48,50-67
+  s_0df90997879182::t_813f6b2a62f118 49
+src/agentsec/redaction.py
+  s_0df90997879182::t_9043f9adc2bea2 10-13,31-33
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "4433bbf88d9a10b0372b1767af0af9c9806c7628",
+  "prompts": {},
+  "sessions": {
+    "s_0df90997879182": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019fd73a-588d-7f03-ab50-494ca0e95848",
+        "model": "gpt-5.6-terra"
+      },
+      "human_author": "Florian BRUNIAUX <florian@bruniaux.com>"
+    }
+  }
+}
