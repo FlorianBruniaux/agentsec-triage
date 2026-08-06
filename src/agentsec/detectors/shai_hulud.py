@@ -46,6 +46,8 @@ _SCRIPT_INTERPRETERS = frozenset({"node", "node.exe", "bun", "bun.exe", "deno", 
 _VALID_KEYV_PACKAGE_SEGMENT = re.compile(r"^[a-z0-9_~-][a-z0-9._~-]*$")
 _ENVIRONMENT_ASSIGNMENT = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*=.*$")
 _MAX_NPM_PACKAGE_NAME_LENGTH = 214
+_MAX_COMMAND_LENGTH = 1024 * 1024
+_MAX_ENV_SPLIT_DEPTH = 4
 _MAX_GIT_COMMITS = 100_000
 
 
@@ -267,8 +269,17 @@ def _startup_findings(hooks: tuple[StartupHook, ...], path: Path) -> tuple[Findi
 
 
 def _is_campaign_invocation(command: str) -> bool:
+    return _command_invokes_campaign_file(command, split_depth=0)
+
+
+def _command_invokes_campaign_file(command: str, *, split_depth: int) -> bool:
+    if len(command) > _MAX_COMMAND_LENGTH:
+        return False
     segments = _tokenize_command_segments(command)
-    return any(_segment_invokes_campaign_file(segment) for segment in segments)
+    return any(
+        _segment_invokes_campaign_file(segment, split_depth=split_depth)
+        for segment in segments
+    )
 
 
 def _tokenize_command_segments(command: str) -> tuple[tuple[str, ...], ...]:
@@ -334,10 +345,19 @@ def _tokenize_command_segments(command: str) -> tuple[tuple[str, ...], ...]:
     return tuple(segments)
 
 
-def _segment_invokes_campaign_file(tokens: tuple[str, ...]) -> bool:
+def _segment_invokes_campaign_file(
+    tokens: tuple[str, ...], *, split_depth: int
+) -> bool:
     if not tokens:
         return False
-    command_tokens = _strip_environment_prefix(tokens)
+    command_tokens, split_string = _resolve_environment_command(tokens)
+    if split_string is not None:
+        value, trailing_tokens = split_string
+        return _split_string_invokes_campaign_file(
+            value,
+            trailing_tokens,
+            split_depth=split_depth,
+        )
     if not command_tokens:
         return False
     executable = _command_basename(command_tokens[0])
@@ -348,12 +368,14 @@ def _segment_invokes_campaign_file(tokens: tuple[str, ...]) -> bool:
     return _runtime_entrypoint_is_campaign(executable, command_tokens[1:])
 
 
-def _strip_environment_prefix(tokens: tuple[str, ...]) -> tuple[str, ...]:
+def _resolve_environment_command(
+    tokens: tuple[str, ...],
+) -> tuple[tuple[str, ...], tuple[str, tuple[str, ...]] | None]:
     index = 0
     while index < len(tokens) and _ENVIRONMENT_ASSIGNMENT.fullmatch(tokens[index]):
         index += 1
     if index >= len(tokens) or _command_basename(tokens[index]) != "env":
-        return tokens[index:]
+        return tokens[index:], None
 
     index += 1
     while index < len(tokens):
@@ -361,14 +383,38 @@ def _strip_environment_prefix(tokens: tuple[str, ...]) -> tuple[str, ...]:
         if _ENVIRONMENT_ASSIGNMENT.fullmatch(token):
             index += 1
             continue
+        if token in {"-S", "--split-string"}:
+            if index + 1 >= len(tokens):
+                return (), None
+            return (), (tokens[index + 1], tokens[index + 2 :])
+        if token.startswith("--split-string="):
+            return (), (token.partition("=")[2], tokens[index + 1 :])
         if token in {"-u", "--unset", "-C", "--chdir"}:
+            if index + 1 >= len(tokens):
+                return (), None
             index += 2
             continue
         if token.startswith("-"):
             index += 1
             continue
         break
-    return tokens[index:]
+    return tokens[index:], None
+
+
+def _split_string_invokes_campaign_file(
+    value: str,
+    trailing_tokens: tuple[str, ...],
+    *,
+    split_depth: int,
+) -> bool:
+    if split_depth >= _MAX_ENV_SPLIT_DEPTH or len(value) > _MAX_COMMAND_LENGTH:
+        return False
+    segments = _tokenize_command_segments(value)
+    for index, segment in enumerate(segments):
+        combined = segment + trailing_tokens if index == len(segments) - 1 else segment
+        if _segment_invokes_campaign_file(combined, split_depth=split_depth + 1):
+            return True
+    return False
 
 
 def _runtime_entrypoint_is_campaign(executable: str, arguments: tuple[str, ...]) -> bool:

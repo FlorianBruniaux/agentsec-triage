@@ -493,6 +493,10 @@ def test_payload_only_known_hash_is_detected(tmp_path: Path) -> None:
         "node setup.mjs",
         "NODE_OPTIONS=x node setup.mjs",
         "env NODE_OPTIONS=x node setup.mjs",
+        "env -S 'node setup.mjs'",
+        "env -S 'node' setup.mjs",
+        "env --split-string='node setup.mjs'",
+        "OUTER=1 env INNER=2 -S 'DEEPEST=3 node setup.mjs'",
         "echo harmless\nnode setup.mjs",
         r"node .\setup.mjs",
     ],
@@ -509,12 +513,32 @@ def test_campaign_invocation_recognizes_executed_script(command: str) -> None:
         "node --eval=setup.mjs",
         'echo "node setup.mjs"',
         "node safe.js setup.mjs",
+        "env -S 'echo setup.mjs'",
+        "env -u setup.mjs echo harmless",
+        "env --unset=setup.mjs echo harmless",
+        "env -C setup.mjs echo harmless",
+        "env --chdir=setup.mjs echo harmless",
     ],
 )
 def test_campaign_invocation_rejects_mentions_and_non_entrypoint_arguments(
     command: str,
 ) -> None:
     assert _is_campaign_invocation(command) is False
+
+
+def test_campaign_invocation_bounds_nested_env_split_strings() -> None:
+    within_limit = _nested_env_split_command("node setup.mjs", depth=4)
+    beyond_limit = _nested_env_split_command("node setup.mjs", depth=5)
+
+    assert _is_campaign_invocation(within_limit) is True
+    assert _is_campaign_invocation(beyond_limit) is False
+
+
+def _nested_env_split_command(command: str, depth: int) -> str:
+    for _ in range(depth):
+        escaped = command.replace("\\", "\\\\").replace(" ", "\\ ")
+        command = f"env -S {escaped}"
+    return command
 
 
 def test_structured_file_between_parser_and_hash_caps_is_hashed_then_rejected(
