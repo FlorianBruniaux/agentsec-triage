@@ -109,7 +109,12 @@ def discover(
     if scan_root is None:
         return (), diagnostics.finish()
 
-    if not scan_root.is_dir():
+    try:
+        is_directory = scan_root.is_dir()
+    except (OSError, RuntimeError) as error:
+        diagnostics.add(root, f"cannot inspect scan root: {_error_message(error)}")
+        return (), diagnostics.finish()
+    if not is_directory:
         diagnostics.add(root, "scan root is not a directory")
         return (), diagnostics.finish()
 

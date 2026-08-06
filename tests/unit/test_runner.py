@@ -136,6 +136,37 @@ def test_root_resolution_error_becomes_an_incomplete_scan(
     assert "cannot access scan root" in result.diagnostics[0].message
 
 
+def test_root_validation_error_becomes_an_incomplete_scan(
+    tmp_path: Path, empty_database: ThreatDatabase, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    def failing_is_dir(path: Path) -> bool:
+        raise OSError("root validation denied")
+
+    monkeypatch.setattr(Path, "is_dir", failing_is_dir)
+
+    result = run_scan(tmp_path, (), empty_database, LIMITS)
+
+    assert result.complete is False
+    assert result.exit_code() == 2
+    assert "cannot inspect scan root" in result.diagnostics[0].message
+
+
+def test_root_lstat_error_becomes_an_incomplete_scan(
+    tmp_path: Path, empty_database: ThreatDatabase, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    def failing_lstat(path: Path) -> object:
+        raise OSError("root metadata denied")
+
+    monkeypatch.setattr(Path, "lstat", failing_lstat)
+
+    result = run_scan(tmp_path, (), empty_database, LIMITS)
+
+    assert result.complete is False
+    assert result.exit_code() == 2
+    assert result.diagnostics[0].path == tmp_path
+    assert "cannot inspect entry" in result.diagnostics[0].message
+
+
 def test_detector_errors_share_a_bounded_diagnostic_buffer(
     tmp_path: Path, empty_database: ThreatDatabase
 ) -> None:
