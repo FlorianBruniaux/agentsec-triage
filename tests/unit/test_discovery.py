@@ -145,6 +145,46 @@ def test_directory_mutated_after_open_is_rejected_before_entries_are_processed(
     )
 
 
+def test_path_fallback_revalidates_parent_around_each_child_inspection(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    parent = tmp_path / "parent"
+    parent.mkdir()
+    (parent / "payload.txt").write_text("safe")
+    outside = tmp_path.parent / "outside-agentsec-child-inspection"
+    outside.mkdir()
+    (outside / "payload.txt").write_text("external-secret")
+    parked = tmp_path / "parked-parent"
+    original_entry_lstat = discovery_module._safe_entry_lstat
+    mutated = False
+
+    def mutate_before_child_lstat(
+        path: Path, name: str, parent_fd: int | None, diagnostics: object
+    ):
+        nonlocal mutated
+        if path == parent / "payload.txt" and parent_fd is None and not mutated:
+            mutated = True
+            parent.rename(parked)
+            parent.symlink_to(outside, target_is_directory=True)
+        return original_entry_lstat(path, name, parent_fd, diagnostics)
+
+    monkeypatch.setattr(discovery_module, "_supports_fd_traversal", lambda: False)
+    monkeypatch.setattr(
+        discovery_module,
+        "_safe_entry_lstat",
+        mutate_before_child_lstat,
+    )
+
+    files, diagnostics = discover(tmp_path, LIMITS)
+
+    assert mutated is True
+    assert files == ()
+    assert any(
+        diagnostic.kind is DiagnosticKind.ERROR and diagnostic.path == parent
+        for diagnostic in diagnostics
+    )
+
+
 def test_git_is_pruned_but_evidence_directories_and_oversized_files_are_kept(
     tmp_path: Path,
 ):

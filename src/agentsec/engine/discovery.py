@@ -190,6 +190,13 @@ def _scan_directory(
             if name == ".git":
                 continue
             candidate = path / name
+            if opened.file_descriptor is None and not _path_fallback_parent_is_safe(
+                path,
+                expected_stat,
+                scan_root,
+                diagnostics,
+            ):
+                return False
             if (
                 not directory_entry.listed_as_directory
                 and len(discovered) >= limits.max_files
@@ -205,6 +212,13 @@ def _scan_directory(
                 opened.file_descriptor,
                 diagnostics,
             )
+            if opened.file_descriptor is None and not _path_fallback_parent_is_safe(
+                path,
+                expected_stat,
+                scan_root,
+                diagnostics,
+            ):
+                return False
             if entry_stat is None:
                 continue
             if stat.S_ISDIR(entry_stat.st_mode) and not _is_link_like(entry_stat):
@@ -484,6 +498,19 @@ def _directory_path_matches(
         diagnostics.add(path, "directory changed after opening; subtree skipped")
         return False
     return True
+
+
+def _path_fallback_parent_is_safe(
+    path: Path,
+    expected_stat: os.stat_result,
+    scan_root: Path,
+    diagnostics: _DiagnosticBuffer,
+) -> bool:
+    return _directory_path_matches(path, expected_stat, diagnostics) and _path_is_confined(
+        path,
+        scan_root,
+        diagnostics,
+    )
 
 
 def _is_link_like(entry_stat: os.stat_result) -> bool:
