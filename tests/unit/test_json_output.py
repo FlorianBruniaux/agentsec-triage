@@ -42,6 +42,29 @@ def test_redaction_replaces_known_secrets_recursively_without_mutating_payload(t
     assert payload["nested"][0]["token"] != "<REDACTED_SECRET>"
 
 
+def test_redaction_hides_user_home_paths_in_evidence_and_diagnostics(tmp_path: Path):
+    payload = {
+        "findings": [
+            {"evidence": "Credential file: /Users/alice/.ssh/config"},
+            {"evidence": r"Credential file: C:\Users\alice\.ssh\config"},
+        ],
+        "diagnostics": [{"message": "Could not read /Users/alice/.ssh/config"}],
+        "unchanged": "Repository metadata at /etc/agentsec/config",
+    }
+
+    redacted = redact_result(payload, tmp_path / "repository")
+
+    assert redacted == {
+        "findings": [
+            {"evidence": "Credential file: <REDACTED_PATH>"},
+            {"evidence": "Credential file: <REDACTED_PATH>"},
+        ],
+        "diagnostics": [{"message": "Could not read <REDACTED_PATH>"}],
+        "unchanged": "Repository metadata at /etc/agentsec/config",
+    }
+    assert payload["findings"][0]["evidence"] == "Credential file: /Users/alice/.ssh/config"
+
+
 def test_json_matches_public_schema(empty_scan_result: ScanResult):
     payload = json.loads(render_json(empty_scan_result, redact=False))
     schema = json.loads(Path("schemas/scan-result-v1.schema.json").read_text())
