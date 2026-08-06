@@ -1,0 +1,37 @@
+tests/unit/test_runner.py
+  s_0df90997879182::t_0a5c0cf691b13d 188-194
+tests/fixtures/shai_hulud/positive/renamed-payload
+  s_0df90997879182::t_0ba9d572c379b1 1
+tests/fixtures/shai_hulud/positive/.claude/settings.json
+  s_0df90997879182::t_0ba9d572c379b1 1-10
+tests/fixtures/shai_hulud/negative/.claude/settings.json
+  s_0df90997879182::t_0ba9d572c379b1 1-10
+tests/integration/test_shai_hulud_detector.py
+  s_0df90997879182::t_119916d9d5f548 189,199,227,236,238-245
+  s_0df90997879182::t_ab7de60e7010db 17
+  s_0df90997879182::t_0ba9d572c379b1 1-12,14-16,18-100,104-130,134-157,162-188,190-198,200-226,228-231,237,246-295
+  s_0df90997879182::t_0a5c0cf691b13d 13,101,103,131,133,158-161
+  s_0df90997879182::t_74a37de8f56812 102,132,296-340
+  s_0df90997879182::t_b05bc35c5d50b8 232-235
+src/agentsec/detectors/shai_hulud.py
+  s_0df90997879182::t_8154d3f36fa314 1-80,90-92,96-99,101-102,104-171,177-369
+  s_0df90997879182::t_0a5c0cf691b13d 81-89,93-95,100,103,172-176
+src/agentsec/detectors/registry.py
+  s_0df90997879182::t_8154d3f36fa314 8,10
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "b72b014c6316becd7be4db1ccbb8d83440345da7",
+  "prompts": {},
+  "sessions": {
+    "s_0df90997879182": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019fd73a-588d-7f03-ab50-494ca0e95848",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Florian BRUNIAUX <florian@bruniaux.com>"
+    }
+  }
+}
