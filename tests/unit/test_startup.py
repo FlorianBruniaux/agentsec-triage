@@ -1,8 +1,11 @@
 import json
+import os
+import threading
 from pathlib import Path
 
 import pytest
 
+from agentsec.analyzers import startup
 from agentsec.analyzers.startup import StartupHook, inspect_startup_config
 from agentsec.models import Diagnostic, DiagnosticKind
 
@@ -45,7 +48,7 @@ def test_extracts_only_exact_claude_startup_events(tmp_path: Path):
         '{"hooks": []}',
         '{"hooks": {"SessionStart": {}}}',
         '{"hooks": {"SessionStart": [{"hooks": {}}]}}',
-        '{"hooks": {"SessionStart": [{"hooks": [{"command": 7}]}]}}',
+        '{"hooks": {"SessionStart": [{"hooks": [{"type": "command", "command": 7}]}]}}',
         '{"hooks": {"SessionStart": []}, "hooks": {}}',
         '{"hooks": {"SessionStart": []}, "extra": NaN}',
     ],
@@ -113,6 +116,35 @@ def test_extracts_folder_open_task_from_jsonc_without_changing_strings(tmp_path:
     )
 
 
+def test_ignores_non_command_claude_hook_types(tmp_path: Path):
+    settings = tmp_path / ".claude" / "settings.json"
+    settings.parent.mkdir()
+    settings.write_text(
+        json.dumps(
+            {
+                "hooks": {
+                    "SessionStart": [
+                        {
+                            "hooks": [
+                                {"type": "command", "command": "accepted"},
+                                {"type": "prompt", "command": "ignored-prompt"},
+                                {"type": "http", "command": "ignored-http"},
+                                {"command": "ignored-missing-type"},
+                            ]
+                        }
+                    ]
+                }
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    hooks, diagnostics = inspect_startup_config(settings)
+
+    assert diagnostics == ()
+    assert hooks == (StartupHook("claude", "SessionStart", "accepted", settings),)
+
+
 @pytest.mark.parametrize(
     "document",
     [
@@ -178,7 +210,7 @@ def test_claude_config_file_symlink_is_reported_without_being_followed(tmp_path:
     assert "symlink" in diagnostics[0].message.lower()
 
 
-def test_path_read_race_cannot_redirect_claude_config(
+def test_config_parent_mutation_during_open_is_rejected(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ):
     claude_directory = tmp_path / ".claude"
@@ -195,21 +227,115 @@ def test_path_read_race_cannot_redirect_claude_config(
         encoding="utf-8",
     )
     detached = tmp_path / "detached"
-    original_read_text = Path.read_text
+    original_open = startup.os.open
+    swapped = False
 
-    def redirect_before_read(
-        path: Path, encoding: str | None = None, errors: str | None = None
-    ) -> str:
-        claude_directory.rename(detached)
-        claude_directory.symlink_to(outside, target_is_directory=True)
-        return original_read_text(path, encoding=encoding, errors=errors)
+    def redirect_before_open(
+        path: str | bytes | os.PathLike[str] | os.PathLike[bytes],
+        flags: int,
+        mode: int = 0o777,
+        *,
+        dir_fd: int | None = None,
+    ) -> int:
+        nonlocal swapped
+        if path == "settings.json" and dir_fd is not None and not swapped:
+            swapped = True
+            claude_directory.rename(detached)
+            claude_directory.symlink_to(outside, target_is_directory=True)
+        return original_open(path, flags, mode, dir_fd=dir_fd)
 
-    monkeypatch.setattr(Path, "read_text", redirect_before_read)
+    monkeypatch.setattr(startup.os, "open", redirect_before_open)
 
     hooks, diagnostics = inspect_startup_config(settings)
 
+    _assert_error(settings, hooks, diagnostics)
+
+
+def test_rejects_symlink_in_config_ancestor(tmp_path: Path):
+    outside = tmp_path / "outside"
+    settings = outside / "repo" / ".claude" / "settings.json"
+    settings.parent.mkdir(parents=True)
+    settings.write_text(
+        json.dumps({"hooks": {"SessionStart": [_hook_group("must-not-be-read")]}}),
+        encoding="utf-8",
+    )
+    linked = tmp_path / "linked"
+    try:
+        linked.symlink_to(outside, target_is_directory=True)
+    except OSError as exc:
+        pytest.skip(f"directory symlinks unavailable: {exc}")
+
+    hooks, diagnostics = inspect_startup_config(linked / "repo" / ".claude" / "settings.json")
+
+    assert hooks == ()
+    assert len(diagnostics) == 1
+    assert diagnostics[0].kind is DiagnosticKind.ERROR
+
+
+def test_fails_closed_when_anchored_no_follow_open_is_unavailable(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    settings = tmp_path / ".claude" / "settings.json"
+    settings.parent.mkdir()
+    settings.write_text(
+        json.dumps({"hooks": {"SessionStart": [_hook_group("must-not-be-read")]}}),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(startup, "_supports_anchored_no_follow", lambda: False)
+
+    hooks, diagnostics = inspect_startup_config(settings)
+
+    _assert_error(settings, hooks, diagnostics)
+
+
+def test_rejects_startup_config_larger_than_internal_limit(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    settings = tmp_path / ".claude" / "settings.json"
+    settings.parent.mkdir()
+    monkeypatch.setattr(startup, "_MAX_STARTUP_CONFIG_BYTES", 128, raising=False)
+    settings.write_text('{"hooks": {}}' + " " * 128, encoding="utf-8")
+
+    hooks, diagnostics = inspect_startup_config(settings)
+
+    _assert_error(settings, hooks, diagnostics)
+
+
+@pytest.mark.skipif(not hasattr(os, "mkfifo"), reason="FIFO unavailable")
+def test_rejects_fifo_without_blocking(tmp_path: Path):
+    settings = tmp_path / ".claude" / "settings.json"
+    settings.parent.mkdir()
+    os.mkfifo(settings)
+    writer = threading.Thread(
+        target=lambda: settings.write_text('{"hooks": {}}', encoding="utf-8"),
+        daemon=True,
+    )
+    writer.start()
+
+    hooks, diagnostics = inspect_startup_config(settings)
+
+    _assert_error(settings, hooks, diagnostics)
+
+
+def test_reads_startup_config_in_bounded_chunks(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
+    settings = tmp_path / ".claude" / "settings.json"
+    settings.parent.mkdir()
+    settings.write_text('{"hooks": {}}' + " " * 200_000, encoding="utf-8")
+    original_read = startup.os.read
+    read_sizes: list[int] = []
+
+    def recording_read(descriptor: int, size: int) -> bytes:
+        read_sizes.append(size)
+        return original_read(descriptor, size)
+
+    monkeypatch.setattr(startup.os, "read", recording_read)
+
+    hooks, diagnostics = inspect_startup_config(settings)
+
+    assert hooks == ()
     assert diagnostics == ()
-    assert hooks == (StartupHook("claude", "SessionStart", "safe-command", settings),)
+    assert len(read_sizes) > 1
+    assert max(read_sizes) <= 64 * 1024
 
 
 def _hook_group(command: str) -> dict[str, object]:

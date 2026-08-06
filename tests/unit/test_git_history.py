@@ -1,5 +1,8 @@
+import io
 import os
+import shutil
 import subprocess
+import sys
 from pathlib import Path
 
 import pytest
@@ -52,35 +55,111 @@ def test_invokes_bounded_git_log_without_shell_or_hooks(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ):
     captured: dict[str, object] = {}
-
-    def fake_run(argv: list[str], **kwargs: object) -> subprocess.CompletedProcess[bytes]:
-        captured["argv"] = argv
-        captured["kwargs"] = kwargs
-        return subprocess.CompletedProcess(argv, 0, stdout=b"", stderr=b"")
-
-    monkeypatch.setattr(git_history.subprocess, "run", fake_run)
+    monkeypatch.setenv("GIT_DIR", "/untrusted/git-dir")
+    monkeypatch.setenv("GIT_CONFIG_COUNT", "1")
+    monkeypatch.setenv("GIT_CONFIG_KEY_0", "gpg.program")
+    monkeypatch.setenv("GIT_CONFIG_VALUE_0", "/untrusted/gpg")
+    monkeypatch.setenv("PATH", f".:{os.path.dirname(sys.executable)}")
+    _mock_git(monkeypatch, captured=captured)
 
     indicators, diagnostics = inspect_git_history(tmp_path, max_commits=3)
 
     assert indicators == ()
     assert diagnostics == ()
-    assert captured["argv"] == [
-        "git",
+    argv = captured["argv"]
+    assert isinstance(argv, list)
+    assert Path(argv[0]).is_absolute()
+    assert argv[1:] == [
         "--no-pager",
         "-c",
         f"core.hooksPath={os.devnull}",
+        "-c",
+        "log.showSignature=false",
+        "-c",
+        "protocol.allow=never",
+        "-c",
+        "protocol.file.allow=never",
+        "-c",
+        "protocol.ext.allow=never",
         "log",
         "--all",
+        "--no-show-signature",
+        "--no-ext-diff",
+        "--no-textconv",
         "--max-count=4",
         "--format=%H%x00%an%x00%ae%x00%s%x00%D",
     ]
-    assert captured["kwargs"] == {
-        "cwd": tmp_path,
-        "shell": False,
-        "timeout": 10,
-        "check": False,
-        "capture_output": True,
-    }
+    kwargs = captured["kwargs"]
+    assert isinstance(kwargs, dict)
+    assert kwargs["cwd"] == tmp_path
+    assert kwargs["shell"] is False
+    assert kwargs["stdin"] is subprocess.DEVNULL
+    assert kwargs["stdout"] is subprocess.PIPE
+    assert kwargs["stderr"] is subprocess.PIPE
+    assert kwargs["close_fds"] is True
+    env = kwargs["env"]
+    assert isinstance(env, dict)
+    assert "GIT_DIR" not in env
+    assert "GIT_CONFIG_COUNT" not in env
+    assert env["GIT_CONFIG_NOSYSTEM"] == "1"
+    assert env["GIT_CONFIG_GLOBAL"] == os.devnull
+    assert env["GIT_CONFIG_SYSTEM"] == os.devnull
+    assert env["GIT_NO_LAZY_FETCH"] == "1"
+    assert env["GIT_TERMINAL_PROMPT"] == "0"
+    assert env["GIT_ALLOW_PROTOCOL"] == ""
+    assert all(Path(entry).is_absolute() for entry in env["PATH"].split(os.pathsep))
+
+
+def test_relative_path_cannot_select_repository_git(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    (tmp_path / ".git").mkdir()
+    fake_git = tmp_path / "git"
+    fake_git.write_text("untrusted executable", encoding="utf-8")
+    fake_git.chmod(0o755)
+    attempted = False
+
+    def fake_run(*args: object, **kwargs: object) -> subprocess.CompletedProcess[bytes]:
+        nonlocal attempted
+        attempted = True
+        return subprocess.CompletedProcess(args, 0, stdout=b"", stderr=b"")
+
+    def must_not_popen(*args: object, **kwargs: object) -> _FakeProcess:
+        raise AssertionError("relative PATH executable must not be started")
+
+    monkeypatch.setenv("PATH", ".")
+    monkeypatch.setattr(git_history.subprocess, "run", fake_run)
+    monkeypatch.setattr(git_history.subprocess, "Popen", must_not_popen)
+
+    indicators, diagnostics = inspect_git_history(tmp_path, max_commits=10)
+
+    assert attempted is False
+    assert indicators == ()
+    assert len(diagnostics) == 1
+    assert diagnostics[0].kind is DiagnosticKind.ERROR
+
+
+def test_ignores_git_dir_environment_redirection(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
+    root = _repository(
+        tmp_path,
+        name="root",
+        author="Human",
+        email="human@example.test",
+        subject="normal",
+    )
+    redirected = _repository(
+        tmp_path,
+        name="redirected",
+        author="claude",
+        email="claude@users.noreply.github.com",
+        subject="chore: update config",
+    )
+    monkeypatch.setenv("GIT_DIR", str(redirected / ".git"))
+
+    indicators, diagnostics = inspect_git_history(root, max_commits=10)
+
+    assert indicators == ()
+    assert diagnostics == ()
 
 
 def test_extra_record_only_marks_truncation_and_is_not_inspected(
@@ -106,6 +185,39 @@ def test_extra_record_only_marks_truncation_and_is_not_inspected(
     assert len(diagnostics) == 1
     assert diagnostics[0].kind is DiagnosticKind.ERROR
     assert "truncat" in diagnostics[0].message.lower()
+
+
+def test_rejects_stdout_over_internal_limit(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
+    monkeypatch.setattr(git_history, "_MAX_GIT_STDOUT_BYTES", 128, raising=False)
+    process = _mock_git(
+        monkeypatch,
+        stdout=_record(
+            "a" * 40,
+            "Human",
+            "human@example.test",
+            "x" * 256,
+            "HEAD -> main",
+        ),
+    )
+
+    indicators, diagnostics = inspect_git_history(tmp_path, max_commits=10)
+
+    assert process.killed is True
+    assert indicators == ()
+    assert len(diagnostics) == 1
+    assert diagnostics[0].kind is DiagnosticKind.ERROR
+
+
+def test_rejects_stderr_over_internal_limit(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
+    monkeypatch.setattr(git_history, "_MAX_GIT_STDERR_BYTES", 64, raising=False)
+    process = _mock_git(monkeypatch, stderr=b"x" * 256)
+
+    indicators, diagnostics = inspect_git_history(tmp_path, max_commits=10)
+
+    assert process.killed is True
+    assert indicators == ()
+    assert len(diagnostics) == 1
+    assert diagnostics[0].kind is DiagnosticKind.ERROR
 
 
 @pytest.mark.parametrize(
@@ -174,14 +286,11 @@ def test_non_git_directory_returns_warning_only(tmp_path: Path):
 
 def test_git_timeout_in_repository_returns_error(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
     (tmp_path / ".git").mkdir()
-
-    def timeout(*args: object, **kwargs: object) -> subprocess.CompletedProcess[bytes]:
-        raise subprocess.TimeoutExpired(cmd="git", timeout=10)
-
-    monkeypatch.setattr(git_history.subprocess, "run", timeout)
+    process = _mock_git(monkeypatch, times_out=True)
 
     indicators, diagnostics = inspect_git_history(tmp_path, max_commits=10)
 
+    assert process.killed is True
     assert indicators == ()
     assert len(diagnostics) == 1
     assert diagnostics[0].kind is DiagnosticKind.ERROR
@@ -190,13 +299,25 @@ def test_git_timeout_in_repository_returns_error(tmp_path: Path, monkeypatch: py
 def test_rejects_negative_commit_limit_without_running_git(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ):
-    def must_not_run(*args: object, **kwargs: object) -> subprocess.CompletedProcess[bytes]:
-        raise AssertionError("git must not run")
-
-    monkeypatch.setattr(git_history.subprocess, "run", must_not_run)
+    process = _mock_git(monkeypatch)
 
     indicators, diagnostics = inspect_git_history(tmp_path, max_commits=-1)
 
+    assert process.started is False
+    assert indicators == ()
+    assert len(diagnostics) == 1
+    assert diagnostics[0].kind is DiagnosticKind.ERROR
+
+
+@pytest.mark.parametrize("max_commits", [True, False, 100_001])
+def test_rejects_invalid_or_excessive_commit_limit(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, max_commits: object
+):
+    process = _mock_git(monkeypatch)
+
+    indicators, diagnostics = inspect_git_history(tmp_path, max_commits=max_commits)  # type: ignore[arg-type]
+
+    assert process.started is False
     assert indicators == ()
     assert len(diagnostics) == 1
     assert diagnostics[0].kind is DiagnosticKind.ERROR
@@ -212,8 +333,15 @@ def test_invalid_repository_path_returns_warning_instead_of_raising():
     assert diagnostics[0].kind is DiagnosticKind.WARNING
 
 
-def _repository(tmp_path: Path, *, author: str, email: str, subject: str) -> Path:
-    root = tmp_path / "repository"
+def _repository(
+    tmp_path: Path,
+    *,
+    author: str,
+    email: str,
+    subject: str,
+    name: str = "repository",
+) -> Path:
+    root = tmp_path / name
     root.mkdir()
     _git(root, "init")
     _git(root, "config", "user.name", author)
@@ -251,8 +379,43 @@ def _mock_git(
     stdout: bytes = b"",
     stderr: bytes = b"",
     returncode: int = 0,
-) -> None:
+    times_out: bool = False,
+    captured: dict[str, object] | None = None,
+) -> "_FakeProcess":
+    process = _FakeProcess(stdout, stderr, returncode, times_out=times_out)
+
     def fake_run(argv: list[str], **kwargs: object) -> subprocess.CompletedProcess[bytes]:
         return subprocess.CompletedProcess(argv, returncode, stdout=stdout, stderr=stderr)
 
+    def fake_popen(argv: list[str], **kwargs: object) -> _FakeProcess:
+        process.started = True
+        if captured is not None:
+            captured["argv"] = argv
+            captured["kwargs"] = kwargs
+        return process
+
+    monkeypatch.setattr(shutil, "which", lambda *args, **kwargs: sys.executable)
     monkeypatch.setattr(git_history.subprocess, "run", fake_run)
+    monkeypatch.setattr(git_history.subprocess, "Popen", fake_popen)
+    return process
+
+
+class _FakeProcess:
+    def __init__(
+        self, stdout: bytes, stderr: bytes, returncode: int, *, times_out: bool = False
+    ) -> None:
+        self.stdout = io.BytesIO(stdout)
+        self.stderr = io.BytesIO(stderr)
+        self.returncode = returncode
+        self.times_out = times_out
+        self.started = False
+        self.killed = False
+
+    def wait(self, timeout: float | None = None) -> int:
+        if self.times_out and not self.killed:
+            raise subprocess.TimeoutExpired(cmd="git", timeout=timeout)
+        return self.returncode
+
+    def kill(self) -> None:
+        self.killed = True
+        self.returncode = -9

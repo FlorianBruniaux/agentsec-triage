@@ -10,6 +10,8 @@ from typing import cast
 
 from agentsec.models import Diagnostic, DiagnosticKind
 
+_MAX_STARTUP_CONFIG_BYTES = 1_000_000
+_READ_CHUNK_SIZE = 64 * 1024
 _CLAUDE_STARTUP_EVENTS = (
     "SessionStart",
     "Setup",
@@ -34,6 +36,10 @@ class _SymlinkedConfigError(OSError):
     def __init__(self, path: Path) -> None:
         self.path = path
         super().__init__(f"symlinked startup configuration path: {path}")
+
+
+class _UnsafeConfigError(OSError):
+    pass
 
 
 def inspect_startup_config(
@@ -69,65 +75,179 @@ def inspect_startup_config(
 
 
 def _read_text_without_following_links(path: Path) -> str:
-    if _supports_anchored_no_follow():
-        return _read_text_anchored(path)
-    return _read_text_fallback(path)
+    if not _supports_anchored_no_follow():
+        raise _UnsafeConfigError("safe startup configuration opening is unavailable")
+    return _read_text_anchored(path)
 
 
 def _supports_anchored_no_follow() -> bool:
     return (
-        hasattr(os, "O_DIRECTORY") and hasattr(os, "O_NOFOLLOW") and os.open in os.supports_dir_fd
+        os.name == "posix"
+        and bool(getattr(os, "O_DIRECTORY", 0))
+        and bool(getattr(os, "O_NOFOLLOW", 0))
+        and os.open in os.supports_dir_fd
+        and os.stat in os.supports_dir_fd
     )
 
 
 def _read_text_anchored(path: Path) -> str:
-    parent_flags = os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW
-    file_flags = os.O_RDONLY | os.O_NOFOLLOW
-    if hasattr(os, "O_CLOEXEC"):
-        parent_flags |= os.O_CLOEXEC
-        file_flags |= os.O_CLOEXEC
-
+    parent_fd, filename = _open_parent_directory(path)
     try:
-        parent_fd = os.open(path.parent, parent_flags)
-    except OSError as exc:
-        if _is_symlink(path.parent):
-            raise _SymlinkedConfigError(path.parent) from exc
-        raise
+        path_before = _stat_at(parent_fd, filename)
+        _require_regular_path(path_before, path)
+        _require_within_limit(path_before.st_size)
 
-    try:
+        file_fd = os.open(filename, _file_open_flags(), dir_fd=parent_fd)
         try:
-            file_fd = os.open(path.name, file_flags, dir_fd=parent_fd)
-        except OSError as exc:
-            if _is_symlink_at(path.name, parent_fd):
-                raise _SymlinkedConfigError(path) from exc
-            raise
-        with os.fdopen(file_fd, encoding="utf-8") as stream:
-            return stream.read()
+            opened = os.fstat(file_fd)
+            _require_regular_file(opened)
+            _require_same_identity(path_before, opened)
+            _require_unchanged(path_before, opened)
+            _require_within_limit(opened.st_size)
+            raw = _read_bounded(file_fd)
+
+            file_after = os.fstat(file_fd)
+            path_after = _stat_at(parent_fd, filename)
+            _require_regular_file(file_after)
+            _require_regular_path(path_after, path)
+            _require_same_identity(opened, file_after)
+            _require_same_identity(opened, path_after)
+            _require_unchanged(opened, file_after)
+            _require_unchanged(file_after, path_after)
+            if len(raw) != file_after.st_size:
+                raise _UnsafeConfigError("startup configuration changed while reading")
+            _verify_parent_path(path, parent_fd, filename)
+            return raw.decode("utf-8", errors="strict")
+        finally:
+            os.close(file_fd)
     finally:
         os.close(parent_fd)
 
 
-def _read_text_fallback(path: Path) -> str:
-    if _is_symlink(path.parent):
-        raise _SymlinkedConfigError(path.parent)
-    if _is_symlink(path):
+def _open_parent_directory(path: Path) -> tuple[int, str]:
+    anchor, components = _path_components(path)
+    if not components:
+        raise _UnsafeConfigError("startup configuration path has no file component")
+
+    current = os.open(anchor, _directory_open_flags())
+    current_path = Path(anchor)
+    try:
+        _require_directory_file(os.fstat(current))
+        for component in components[:-1]:
+            current_path /= component
+            path_before = _stat_at(current, component)
+            _require_directory_path(path_before, current_path)
+            following = os.open(component, _directory_open_flags(), dir_fd=current)
+            try:
+                opened = os.fstat(following)
+                _require_directory_file(opened)
+                _require_same_identity(path_before, opened)
+            except BaseException:
+                os.close(following)
+                raise
+            os.close(current)
+            current = following
+    except BaseException:
+        os.close(current)
+        raise
+    return current, components[-1]
+
+
+def _path_components(path: Path) -> tuple[str, tuple[str, ...]]:
+    parts = path.parts
+    components = parts[1:] if path.is_absolute() else parts
+    if any(component in {"", ".", ".."} for component in components):
+        raise _UnsafeConfigError("unsafe startup configuration path component")
+    return (path.anchor if path.is_absolute() else "."), components
+
+
+def _file_open_flags() -> int:
+    return (
+        os.O_RDONLY
+        | getattr(os, "O_BINARY", 0)
+        | getattr(os, "O_CLOEXEC", 0)
+        | getattr(os, "O_NOFOLLOW", 0)
+        | getattr(os, "O_NONBLOCK", 0)
+    )
+
+
+def _directory_open_flags() -> int:
+    return _file_open_flags() | os.O_DIRECTORY
+
+
+def _stat_at(parent_fd: int, component: str) -> os.stat_result:
+    return os.stat(component, dir_fd=parent_fd, follow_symlinks=False)
+
+
+def _read_bounded(file_fd: int) -> bytes:
+    result = bytearray()
+    while True:
+        read_size = min(_READ_CHUNK_SIZE, _MAX_STARTUP_CONFIG_BYTES - len(result) + 1)
+        chunk = os.read(file_fd, read_size)
+        if not chunk:
+            return bytes(result)
+        result.extend(chunk)
+        if len(result) > _MAX_STARTUP_CONFIG_BYTES:
+            raise _UnsafeConfigError("startup configuration exceeds byte limit")
+
+
+def _verify_parent_path(path: Path, original_parent: int, filename: str) -> None:
+    verification_parent, verification_filename = _open_parent_directory(path)
+    try:
+        if verification_filename != filename:
+            raise _UnsafeConfigError("startup configuration filename changed")
+        _require_same_identity(os.fstat(original_parent), os.fstat(verification_parent))
+    finally:
+        os.close(verification_parent)
+
+
+def _require_regular_path(file_stat: os.stat_result, path: Path) -> None:
+    if stat.S_ISLNK(file_stat.st_mode):
         raise _SymlinkedConfigError(path)
-    with path.open(encoding="utf-8") as stream:
-        return stream.read()
+    if not stat.S_ISREG(file_stat.st_mode):
+        raise _UnsafeConfigError("startup configuration is not a regular file")
 
 
-def _is_symlink(path: Path) -> bool:
-    try:
-        return stat.S_ISLNK(path.lstat().st_mode)
-    except (OSError, ValueError):
-        return False
+def _require_regular_file(file_stat: os.stat_result) -> None:
+    if not stat.S_ISREG(file_stat.st_mode):
+        raise _UnsafeConfigError("opened startup configuration is not a regular file")
 
 
-def _is_symlink_at(name: str, parent_fd: int) -> bool:
-    try:
-        return stat.S_ISLNK(os.stat(name, dir_fd=parent_fd, follow_symlinks=False).st_mode)
-    except (OSError, ValueError):
-        return False
+def _require_directory_path(file_stat: os.stat_result, path: Path) -> None:
+    if stat.S_ISLNK(file_stat.st_mode):
+        raise _SymlinkedConfigError(path)
+    if not stat.S_ISDIR(file_stat.st_mode):
+        raise _UnsafeConfigError("startup configuration parent is not a directory")
+
+
+def _require_directory_file(file_stat: os.stat_result) -> None:
+    if not stat.S_ISDIR(file_stat.st_mode):
+        raise _UnsafeConfigError("opened startup configuration parent is not a directory")
+
+
+def _require_within_limit(size: int) -> None:
+    if size < 0 or size > _MAX_STARTUP_CONFIG_BYTES:
+        raise _UnsafeConfigError("startup configuration exceeds byte limit")
+
+
+def _require_same_identity(first: os.stat_result, second: os.stat_result) -> None:
+    if (first.st_dev, first.st_ino) != (second.st_dev, second.st_ino):
+        raise _UnsafeConfigError("startup configuration identity changed")
+
+
+def _require_unchanged(before: os.stat_result, after: os.stat_result) -> None:
+    if (
+        stat.S_IFMT(before.st_mode),
+        before.st_size,
+        before.st_mtime_ns,
+        before.st_ctime_ns,
+    ) != (
+        stat.S_IFMT(after.st_mode),
+        after.st_size,
+        after.st_mtime_ns,
+        after.st_ctime_ns,
+    ):
+        raise _UnsafeConfigError("startup configuration changed while reading")
 
 
 def _load_json(text: str) -> Mapping[str, object]:
@@ -156,8 +276,7 @@ def _extract_claude_hooks(document: Mapping[str, object], path: Path) -> tuple[S
                     raw_hook,
                     f"hooks.{event}[{group_index}].hooks[{hook_index}]",
                 )
-                hook_type = hook.get("type")
-                if hook_type != "command" and "command" not in hook:
+                if hook.get("type") != "command":
                     continue
                 command = hook.get("command")
                 if not isinstance(command, str) or not command:
