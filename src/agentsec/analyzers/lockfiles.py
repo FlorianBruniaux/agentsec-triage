@@ -6,7 +6,10 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 from pathlib import Path
 
+from agentsec.analyzers.safe_io import safe_read_regular_file
 from agentsec.models import Diagnostic, DiagnosticKind
+
+_MAX_LOCKFILE_BYTES = 4_000_000
 
 
 @dataclass(frozen=True, slots=True)
@@ -27,10 +30,24 @@ def parse_lockfile(
     if path.name == "bun.lockb":
         return (), (_error(path, "Unsupported binary Bun lockfile format"),)
 
+    content, diagnostics = safe_read_regular_file(path, _MAX_LOCKFILE_BYTES)
+    if content is None:
+        return (), diagnostics
+    return parse_lockfile_content(content, path)
+
+
+def parse_lockfile_content(
+    content: bytes,
+    path: Path,
+) -> tuple[tuple[ResolvedPackage, ...], tuple[Diagnostic, ...]]:
+    """Parse already-read lockfile bytes without accessing the path again."""
+    if path.name == "bun.lockb":
+        return (), (_error(path, "Unsupported binary Bun lockfile format"),)
+
     try:
-        text = path.read_text(encoding="utf-8")
-    except (OSError, UnicodeError):
-        return (), (_error(path, "Unable to read lockfile"),)
+        text = content.decode("utf-8", errors="strict")
+    except UnicodeError:
+        return (), (_error(path, "Unable to parse lockfile"),)
 
     try:
         if path.suffix == ".json":

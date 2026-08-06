@@ -2,7 +2,10 @@ from pathlib import Path
 
 import pytest
 
-from agentsec.analyzers.packages import inspect_package_manifest
+from agentsec.analyzers.packages import (
+    inspect_package_manifest,
+    inspect_package_manifest_content,
+)
 from agentsec.models import Diagnostic, DiagnosticKind
 
 
@@ -40,6 +43,19 @@ def test_retains_preinstall_script_as_evidence(tmp_path: Path):
     assert diagnostics == ()
     assert package is not None
     assert package.preinstall == "node setup.mjs"
+
+
+def test_extracts_manifest_from_already_read_content(tmp_path: Path):
+    manifest = tmp_path / "package.json"
+
+    package, diagnostics = inspect_package_manifest_content(
+        b'{"name":"keyv","version":"6.0.0"}',
+        manifest,
+    )
+
+    assert diagnostics == ()
+    assert package is not None
+    assert (package.name, package.version) == ("keyv", "6.0.0")
 
 
 def test_does_not_treat_postinstall_as_preinstall_evidence(tmp_path: Path):

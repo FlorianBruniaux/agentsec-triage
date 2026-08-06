@@ -5,7 +5,11 @@ from pathlib import Path
 
 import pytest
 
-from agentsec.analyzers.lockfiles import _normalize_jsonc, parse_lockfile
+from agentsec.analyzers.lockfiles import (
+    _normalize_jsonc,
+    parse_lockfile,
+    parse_lockfile_content,
+)
 from agentsec.models import DiagnosticKind
 
 FIXTURES = Path(__file__).parents[1] / "fixtures" / "lockfiles"
@@ -58,6 +62,20 @@ def test_preserves_safe_package_version_without_parser_diagnostic():
 
     assert diagnostics == ()
     assert [(package.name, package.version) for package in packages] == [("keyv", "5.6.0")]
+
+
+def test_parses_lockfile_from_already_read_content(tmp_path: Path):
+    path = tmp_path / "package-lock.json"
+
+    packages, diagnostics = parse_lockfile_content(
+        b'{"lockfileVersion":3,"packages":{"node_modules/keyv":{"version":"6.0.0"}}}',
+        path,
+    )
+
+    assert diagnostics == ()
+    assert [(item.name, item.version, item.source) for item in packages] == [
+        ("keyv", "6.0.0", path)
+    ]
 
 
 def test_malformed_package_lock_fails_closed():

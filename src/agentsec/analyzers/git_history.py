@@ -13,7 +13,6 @@ from pathlib import Path
 from typing import IO, Any
 
 from agentsec.models import Diagnostic, DiagnosticKind
-from agentsec.threat_db import load_bundled_database
 
 _GIT_FORMAT = "%H%x00%an%x00%ae%x00%s%x00%D"
 _MAX_GIT_COMMITS = 100_000
@@ -111,13 +110,6 @@ def inspect_git_history(
     except (UnicodeError, ValueError):
         return (), (_diagnostic(DiagnosticKind.ERROR, root, "Unable to parse local Git history"),)
 
-    documented = {
-        (item["author"], item["email"], item["subject"])
-        for item in load_bundled_database().commit_indicators
-    }
-    indicators = tuple(
-        commit for commit in commits if (commit.author, commit.email, commit.subject) in documented
-    )
     diagnostics = (
         (
             _diagnostic(
@@ -129,7 +121,7 @@ def inspect_git_history(
         if truncated
         else ()
     )
-    return indicators, diagnostics
+    return commits, diagnostics
 
 
 def _resolve_git_executable(root: Path) -> str | None:

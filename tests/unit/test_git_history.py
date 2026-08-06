@@ -42,14 +42,19 @@ def test_returns_documented_git_indicator_from_local_history(tmp_path: Path):
         ("claude", "claude@users.noreply.github.com", "chore: routine update"),
     ],
 )
-def test_ignores_commits_without_the_complete_documented_identity(
+def test_returns_records_without_applying_threat_database_policy(
     tmp_path: Path, author: str, email: str, subject: str
 ):
     root = _repository(tmp_path, author=author, email=email, subject=subject)
 
     indicators, diagnostics = inspect_git_history(root, max_commits=10)
 
-    assert indicators == ()
+    assert len(indicators) == 1
+    assert (indicators[0].author, indicators[0].email, indicators[0].subject) == (
+        author,
+        email,
+        subject,
+    )
     assert diagnostics == ()
 
 
@@ -325,7 +330,9 @@ def test_ignores_git_dir_environment_redirection(tmp_path: Path, monkeypatch: py
 
     indicators, diagnostics = inspect_git_history(root, max_commits=10)
 
-    assert indicators == ()
+    assert len(indicators) == 1
+    assert indicators[0].author == "Human"
+    assert indicators[0].subject == "normal"
     assert diagnostics == ()
 
 
@@ -348,7 +355,9 @@ def test_extra_record_only_marks_truncation_and_is_not_inspected(
 
     indicators, diagnostics = inspect_git_history(tmp_path, max_commits=1)
 
-    assert indicators == ()
+    assert len(indicators) == 1
+    assert indicators[0].commit == "a" * 40
+    assert indicators[0].author == "Human"
     assert len(diagnostics) == 1
     assert diagnostics[0].kind is DiagnosticKind.ERROR
     assert "truncat" in diagnostics[0].message.lower()

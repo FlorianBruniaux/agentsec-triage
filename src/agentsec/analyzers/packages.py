@@ -5,7 +5,10 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 from pathlib import Path
 
+from agentsec.analyzers.safe_io import safe_read_regular_file
 from agentsec.models import Diagnostic, DiagnosticKind
+
+_MAX_PACKAGE_MANIFEST_BYTES = 1_000_000
 
 
 @dataclass(frozen=True, slots=True)
@@ -24,10 +27,21 @@ def inspect_package_manifest(
     path: Path,
 ) -> tuple[InstalledPackage | None, tuple[Diagnostic, ...]]:
     """Extract exact installed-package evidence from a package manifest."""
+    content, diagnostics = safe_read_regular_file(path, _MAX_PACKAGE_MANIFEST_BYTES)
+    if content is None:
+        return None, diagnostics
+    return inspect_package_manifest_content(content, path)
+
+
+def inspect_package_manifest_content(
+    content: bytes,
+    path: Path,
+) -> tuple[InstalledPackage | None, tuple[Diagnostic, ...]]:
+    """Inspect already-read package-manifest bytes without reopening the path."""
     try:
-        text = path.read_text(encoding="utf-8")
-    except (OSError, UnicodeError, ValueError):
-        return None, (_error(path, "Unable to read package manifest"),)
+        text = content.decode("utf-8", errors="strict")
+    except UnicodeError:
+        return None, (_error(path, "Unable to parse package manifest"),)
 
     try:
         document = json.loads(

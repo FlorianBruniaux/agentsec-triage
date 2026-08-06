@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import hashlib
+import json
 import shutil
 import subprocess
 from pathlib import Path
@@ -50,6 +51,7 @@ def test_positive_fixture_emits_exact_and_correlated_findings(tmp_path: Path) ->
     shutil.copytree(FIXTURES / "positive", root)
 
     result = _scan(root, _database(payload=root / "renamed-payload"))
+    payload_digest = hashlib.sha256((root / "renamed-payload").read_bytes()).hexdigest()
 
     assert result.complete is True
     assert result.exit_code() == 1
@@ -78,7 +80,7 @@ def test_positive_fixture_emits_exact_and_correlated_findings(tmp_path: Path) ->
             "campaign-lifecycle-script",
             "@keyv/mongo@6.0.0 preinstall: node setup.mjs",
         ): (Severity.CRITICAL, Confidence.HIGH),
-        ("known-payload-hash", "sha256: test payload"): (
+        ("known-payload-hash", f"sha256:{payload_digest} (test payload)"): (
             Severity.CRITICAL,
             Confidence.CONFIRMED,
         ),
@@ -203,25 +205,32 @@ def test_oversized_relevant_file_is_not_read_and_marks_scan_incomplete(
     assert result.exit_code() == 2
 
 
-def test_structured_files_are_not_read_twice_for_hashing(
+def test_each_structured_file_is_safely_read_once(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     root = tmp_path / "negative"
     shutil.copytree(FIXTURES / "negative", root)
     import agentsec.detectors.shai_hulud as detector_module
 
-    hashed: list[Path] = []
-    real_hash_file = detector_module.hash_file
+    read_paths: list[Path] = []
+    real_safe_read = detector_module.safe_read_regular_file
 
-    def recording_hash(path: Path, max_bytes: int):
-        hashed.append(path.relative_to(root))
-        return real_hash_file(path, max_bytes)
+    def recording_safe_read(path: Path, max_bytes: int):
+        read_paths.append(path)
+        return real_safe_read(path, max_bytes)
 
-    monkeypatch.setattr(detector_module, "hash_file", recording_hash)
+    monkeypatch.setattr(detector_module, "safe_read_regular_file", recording_safe_read)
 
     _scan(root)
 
-    assert hashed == []
+    expected = {
+        root / ".claude/settings.json",
+        root / "node_modules/esbuild/package.json",
+        root / "node_modules/unrelated/package.json",
+        root / "package-lock.json",
+    }
+    assert len(read_paths) == len(expected)
+    assert set(read_paths) == expected
 
 
 def test_platform_hash_unavailability_fails_closed(
@@ -237,7 +246,7 @@ def test_platform_hash_unavailability_fails_closed(
 
     monkeypatch.setattr(
         detector_module,
-        "hash_file",
+        "safe_read_regular_file",
         lambda path, max_bytes: (
             None,
             (Diagnostic(DiagnosticKind.ERROR, path, "Safe payload opening is unavailable"),),
@@ -338,3 +347,137 @@ def test_detector_diagnostic_truncation_is_an_error(tmp_path: Path) -> None:
     assert diagnostics[0].kind is DiagnosticKind.ERROR
     assert "truncated" in diagnostics[0].message
     assert result.exit_code() == 2
+
+
+def test_structured_file_is_hashed_and_parsed_from_one_safe_read(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    lockfile = tmp_path / "package-lock.json"
+    content = b'{"lockfileVersion":3,"packages":{}}'
+    lockfile.write_bytes(content)
+    digest = hashlib.sha256(content).hexdigest()
+    base = _database()
+    database = ThreatDatabase(
+        version=base.version,
+        updated=base.updated,
+        package_versions=base.package_versions,
+        wildcard_package_versions=base.wildcard_package_versions,
+        hashes={**base.hashes, digest: "structured fixture"},
+        domains=base.domains,
+        commit_indicators=base.commit_indicators,
+    )
+    import agentsec.detectors.shai_hulud as detector_module
+
+    calls: list[Path] = []
+    real_safe_read = detector_module.safe_read_regular_file
+
+    def recording_safe_read(path: Path, max_bytes: int):
+        calls.append(path)
+        return real_safe_read(path, max_bytes)
+
+    monkeypatch.setattr(detector_module, "safe_read_regular_file", recording_safe_read)
+
+    result = _scan(tmp_path, database)
+
+    assert calls == [lockfile]
+    assert result.complete is True
+    finding = next(item for item in result.findings if item.rule_id == "known-payload-hash")
+    assert finding.evidence == f"sha256:{digest} (structured fixture)"
+
+
+@pytest.mark.parametrize(
+    "package_name",
+    ["@keyv/", "@keyv/mongo/extra", "@keyv/invalid name", "@keyv/.hidden"],
+)
+def test_wildcard_ioc_requires_one_valid_scoped_package_segment(
+    tmp_path: Path, package_name: str
+) -> None:
+    lockfile = tmp_path / "package-lock.json"
+    lockfile.write_text(
+        '{"lockfileVersion":3,"packages":{"node_modules/'
+        + package_name
+        + '":{"version":"6.0.0"}}}',
+        encoding="utf-8",
+    )
+
+    result = _scan(tmp_path)
+
+    assert not any(item.rule_id == "compromised-lockfile-version" for item in result.findings)
+
+
+def test_echoing_campaign_filename_stays_review_only(tmp_path: Path) -> None:
+    settings = tmp_path / ".claude" / "settings.json"
+    settings.parent.mkdir()
+    settings.write_text(
+        json.dumps(
+            {
+                "hooks": {
+                    "SessionStart": [
+                        {
+                            "matcher": "",
+                            "hooks": [{"type": "command", "command": "echo setup.mjs"}],
+                        }
+                    ]
+                }
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    result = _scan(tmp_path)
+
+    startup = [item for item in result.findings if "startup-hook" in item.rule_id]
+    assert [(item.rule_id, item.severity, item.confidence) for item in startup] == [
+        ("startup-hook", Severity.MEDIUM, Confidence.REVIEW)
+    ]
+
+
+def test_claude_settings_backup_does_not_make_detector_applicable(tmp_path: Path) -> None:
+    path = ".claude/settings.backup.json"
+    context = ScanContext(
+        root=tmp_path,
+        files=(DiscoveredFile(Path(path), tmp_path / path, 0, False),),
+        database=_database(),
+        limits=LIMITS,
+    )
+
+    assert ShaiHuludDetector().applies(context) is False
+
+
+def test_git_indicator_uses_injected_database_instead_of_bundled_data(
+    tmp_path: Path,
+) -> None:
+    subprocess.run(["git", "init", "-q", str(tmp_path)], check=True)
+    subprocess.run(["git", "config", "user.name", "injected"], cwd=tmp_path, check=True)
+    subprocess.run(
+        ["git", "config", "user.email", "injected@example.test"],
+        cwd=tmp_path,
+        check=True,
+    )
+    (tmp_path / "evidence.txt").write_text("evidence", encoding="utf-8")
+    subprocess.run(["git", "add", "evidence.txt"], cwd=tmp_path, check=True)
+    subprocess.run(
+        ["git", "commit", "-q", "-m", "injected subject"],
+        cwd=tmp_path,
+        check=True,
+    )
+    base = _database()
+    database = ThreatDatabase(
+        version="injected",
+        updated=base.updated,
+        package_versions=base.package_versions,
+        wildcard_package_versions=base.wildcard_package_versions,
+        hashes=base.hashes,
+        domains=base.domains,
+        commit_indicators=(
+            {
+                "author": "injected",
+                "email": "injected@example.test",
+                "subject": "injected subject",
+            },
+        ),
+    )
+
+    result = _scan(tmp_path, database)
+
+    assert any(item.rule_id == "campaign-git-identity" for item in result.findings)

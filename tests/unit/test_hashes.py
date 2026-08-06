@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-import agentsec.analyzers.hashes as hashes
+import agentsec.analyzers.safe_io as safe_io
 from agentsec.analyzers.hashes import hash_file
 from agentsec.models import Diagnostic, DiagnosticKind
 
@@ -72,57 +72,6 @@ def test_symlinked_parent_directory_is_never_dereferenced(tmp_path: Path):
     _assert_hash_error(linked_parent / "payload", digest, diagnostics)
 
 
-def test_windows_without_atomic_nofollow_never_opens_or_reads_raced_reparse(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-):
-    path = tmp_path / "payload"
-    target = tmp_path / "outside"
-    path.write_bytes(b"inside!")
-    target.write_bytes(b"outside")
-    original_open = os.open
-    original_read = os.read
-    original_stat = os.lstat(path)
-    open_calls = 0
-    read_calls = 0
-
-    class UnstableIdentityStat:
-        def __init__(self, source: os.stat_result):
-            self.st_mode = source.st_mode
-            self.st_size = source.st_size
-            self.st_dev = source.st_dev
-            self.st_ino = 0
-            self.st_mtime_ns = source.st_mtime_ns
-            self.st_ctime_ns = source.st_ctime_ns
-
-    def raced_open(open_path: os.PathLike[str] | str, flags: int) -> int:
-        nonlocal open_calls
-        open_calls += 1
-        assert open_path == path
-        path.unlink()
-        path.symlink_to(target)
-        return original_open(target, flags)
-
-    def unstable_fstat(fd: int) -> UnstableIdentityStat:
-        return UnstableIdentityStat(original_stat)
-
-    def recording_read(fd: int, count: int) -> bytes:
-        nonlocal read_calls
-        read_calls += 1
-        return original_read(fd, count)
-
-    monkeypatch.setattr(os, "name", "nt")
-    monkeypatch.setattr(os, "O_NOFOLLOW", 0)
-    monkeypatch.setattr(os, "open", raced_open)
-    monkeypatch.setattr(os, "fstat", unstable_fstat)
-    monkeypatch.setattr(os, "read", recording_read)
-
-    digest, diagnostics = hash_file(path, max_bytes=1024)
-
-    _assert_hash_error(path, digest, diagnostics)
-    assert open_calls == 0
-    assert read_calls == 0
-
-
 def test_parent_replaced_by_symlink_during_open_fails_closed(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ):
@@ -135,7 +84,7 @@ def test_parent_replaced_by_symlink_during_open_fails_closed(
     (outside / "payload").write_bytes(b"outside bytes")
     detached = scan / "detached"
     path = parent / "payload"
-    original_open_file_at = hashes._open_file_at
+    original_open_file_at = safe_io._open_file_at
 
     def racing_open(parent_descriptor: int, filename: str) -> int:
         parent.rename(detached)
@@ -145,7 +94,7 @@ def test_parent_replaced_by_symlink_during_open_fails_closed(
             pytest.skip("symlinks are unavailable on this platform")
         return original_open_file_at(parent_descriptor, filename)
 
-    monkeypatch.setattr(hashes, "_open_file_at", racing_open)
+    monkeypatch.setattr(safe_io, "_open_file_at", racing_open)
 
     digest, diagnostics = hash_file(path, max_bytes=1024)
 
@@ -215,13 +164,13 @@ def test_fails_closed_when_opened_file_identity_differs(
     replacement = tmp_path / "replacement"
     path.write_bytes(b"first")
     replacement.write_bytes(b"second")
-    original_open_file_at = hashes._open_file_at
+    original_open_file_at = safe_io._open_file_at
 
     def switched_open(parent: int, filename: str) -> int:
         assert filename == path.name
         return original_open_file_at(parent, replacement.name)
 
-    monkeypatch.setattr(hashes, "_open_file_at", switched_open)
+    monkeypatch.setattr(safe_io, "_open_file_at", switched_open)
 
     digest, diagnostics = hash_file(path, max_bytes=1024)
 
@@ -233,13 +182,13 @@ def test_fails_closed_when_file_changes_between_lstat_and_open(
 ):
     path = tmp_path / "payload"
     path.write_bytes(b"first")
-    original_open_file_at = hashes._open_file_at
+    original_open_file_at = safe_io._open_file_at
 
     def mutating_open(parent: int, filename: str) -> int:
         path.write_bytes(b"other")
         return original_open_file_at(parent, filename)
 
-    monkeypatch.setattr(hashes, "_open_file_at", mutating_open)
+    monkeypatch.setattr(safe_io, "_open_file_at", mutating_open)
 
     digest, diagnostics = hash_file(path, max_bytes=1024)
 
@@ -253,7 +202,7 @@ def test_fails_closed_when_path_becomes_symlink_after_open(
     target = tmp_path / "target"
     path.write_bytes(b"first")
     target.write_bytes(b"target")
-    original_open_file_at = hashes._open_file_at
+    original_open_file_at = safe_io._open_file_at
 
     def replacing_open(parent: int, filename: str) -> int:
         fd = original_open_file_at(parent, filename)
@@ -265,7 +214,7 @@ def test_fails_closed_when_path_becomes_symlink_after_open(
             pytest.skip("symlinks are unavailable on this platform")
         return fd
 
-    monkeypatch.setattr(hashes, "_open_file_at", replacing_open)
+    monkeypatch.setattr(safe_io, "_open_file_at", replacing_open)
 
     digest, diagnostics = hash_file(path, max_bytes=1024)
 
@@ -300,7 +249,7 @@ def test_fails_closed_when_file_changes_before_final_path_check(
 ):
     path = tmp_path / "payload"
     path.write_bytes(b"first")
-    original_stat_at = hashes._stat_at
+    original_stat_at = safe_io._stat_at
     final_calls = 0
 
     def mutating_stat_at(parent: int, component: str) -> os.stat_result:
@@ -311,7 +260,7 @@ def test_fails_closed_when_file_changes_before_final_path_check(
                 path.write_bytes(b"other")
         return original_stat_at(parent, component)
 
-    monkeypatch.setattr(hashes, "_stat_at", mutating_stat_at)
+    monkeypatch.setattr(safe_io, "_stat_at", mutating_stat_at)
 
     digest, diagnostics = hash_file(path, max_bytes=1024)
 
@@ -364,8 +313,8 @@ def test_close_failure_returns_error_and_attempts_all_cleanup(
 ):
     path = tmp_path / "payload"
     path.write_bytes(b"known bytes")
-    original_open_file_at = hashes._open_file_at
-    original_open_parent = hashes._open_parent_directory
+    original_open_file_at = safe_io._open_file_at
+    original_open_parent = safe_io._open_parent_directory
     original_close = os.close
     original_read = os.read
     file_descriptors: list[int] = []
@@ -403,8 +352,8 @@ def test_close_failure_returns_error_and_attempts_all_cleanup(
             raise OSError("simulated primary read failure")
         return original_read(descriptor, count)
 
-    monkeypatch.setattr(hashes, "_open_file_at", tracking_open_file_at)
-    monkeypatch.setattr(hashes, "_open_parent_directory", tracking_open_parent)
+    monkeypatch.setattr(safe_io, "_open_file_at", tracking_open_file_at)
+    monkeypatch.setattr(safe_io, "_open_parent_directory", tracking_open_parent)
     monkeypatch.setattr(os, "close", failing_close)
     monkeypatch.setattr(os, "read", failing_read)
 

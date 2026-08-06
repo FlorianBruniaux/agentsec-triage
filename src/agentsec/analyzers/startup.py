@@ -1,18 +1,15 @@
 from __future__ import annotations
 
-import ctypes
 import json
-import os
-import stat
 from collections.abc import Mapping
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Protocol, cast
+from typing import cast
 
+from agentsec.analyzers.safe_io import safe_read_regular_file
 from agentsec.models import Diagnostic, DiagnosticKind
 
 _MAX_STARTUP_CONFIG_BYTES = 1_000_000
-_READ_CHUNK_SIZE = 64 * 1024
 _CLAUDE_STARTUP_EVENTS = (
     "SessionStart",
     "Setup",
@@ -33,38 +30,21 @@ class _StartupConfigError(ValueError):
     pass
 
 
-class _SymlinkedConfigError(OSError):
-    def __init__(self, path: Path) -> None:
-        self.path = path
-        super().__init__(f"symlinked startup configuration path: {path}")
-
-
-class _UnsafeConfigError(OSError):
-    pass
-
-
-class _WindowsFileApi(Protocol):
-    def open_directory(self, path: Path) -> int: ...
-
-    def validate_directory(self, handle: int, path: Path) -> None: ...
-
-    def open_file(self, path: Path) -> int: ...
-
-    def validate_file(self, handle: int, path: Path) -> None: ...
-
-    def size(self, handle: int) -> int: ...
-
-    def snapshot(self, handle: int) -> tuple[int, int, int, int]: ...
-
-    def read(self, handle: int, size: int) -> bytes: ...
-
-    def close(self, handle: int) -> None: ...
-
-
 def inspect_startup_config(
     path: Path,
 ) -> tuple[tuple[StartupHook, ...], tuple[Diagnostic, ...]]:
-    """Read startup configuration as data without executing repository content."""
+    """Safely read and parse repository startup configuration."""
+    content, diagnostics = safe_read_regular_file(path, _MAX_STARTUP_CONFIG_BYTES)
+    if content is None:
+        return (), diagnostics
+    return inspect_startup_config_content(content, path)
+
+
+def inspect_startup_config_content(
+    content: bytes,
+    path: Path,
+) -> tuple[tuple[StartupHook, ...], tuple[Diagnostic, ...]]:
+    """Parse already-read startup configuration bytes without reopening the path."""
     is_claude = path.parent.name == ".claude" and path.name in {
         "settings.json",
         "settings.local.json",
@@ -74,451 +54,14 @@ def inspect_startup_config(
         return (), (_error(path, "Unable to parse startup configuration"),)
 
     try:
-        text = _read_text_without_following_links(path)
-    except _SymlinkedConfigError as exc:
-        return (), (_error(exc.path, "Refusing to follow symlinked config path"),)
-    except (OSError, UnicodeError, ValueError):
-        return (), (_error(path, "Unable to read startup configuration"),)
-
-    try:
+        text = content.decode("utf-8", errors="strict")
         if is_claude:
-            document = _load_json(text)
-            hooks = _extract_claude_hooks(document, path)
+            hooks = _extract_claude_hooks(_load_json(text), path)
         else:
-            document = _load_json(_strip_jsonc(text))
-            hooks = _extract_vscode_hooks(document, path)
-    except (ValueError, RecursionError):
+            hooks = _extract_vscode_hooks(_load_json(_strip_jsonc(text)), path)
+    except (UnicodeError, ValueError, RecursionError):
         return (), (_error(path, "Unable to parse startup configuration"),)
-
     return hooks, ()
-
-
-def _read_text_without_following_links(path: Path) -> str:
-    if _is_windows():
-        return _read_text_windows(path)
-    if not _supports_anchored_no_follow():
-        raise _UnsafeConfigError("safe startup configuration opening is unavailable")
-    return _read_text_anchored(path)
-
-
-def _is_windows() -> bool:
-    return os.name == "nt"
-
-
-def _read_text_windows(path: Path) -> str:
-    if not path.is_absolute():
-        raise _UnsafeConfigError("Windows startup configuration path must be absolute")
-    api = _windows_file_api()
-    handles: list[int] = []
-    try:
-        parent_handles: list[tuple[int, Path, tuple[int, int, int, int]]] = []
-        for parent in reversed(path.parents):
-            handle = api.open_directory(parent)
-            handles.append(handle)
-            api.validate_directory(handle, parent)
-            parent_handles.append((handle, parent, api.snapshot(handle)))
-
-        file_handle = api.open_file(path)
-        handles.append(file_handle)
-        api.validate_file(file_handle, path)
-        initial_snapshot = api.snapshot(file_handle)
-        initial_size = initial_snapshot[1]
-        _require_within_limit(initial_size)
-        raw = _read_windows_bounded(api, file_handle)
-        api.validate_file(file_handle, path)
-        if api.snapshot(file_handle) != initial_snapshot or len(raw) != initial_size:
-            raise _UnsafeConfigError("Windows startup configuration changed while reading")
-        verification_file = api.open_file(path)
-        handles.append(verification_file)
-        api.validate_file(verification_file, path)
-        if api.snapshot(verification_file) != initial_snapshot:
-            raise _UnsafeConfigError("Windows startup path binding changed")
-        for handle, parent, initial_parent_snapshot in parent_handles:
-            api.validate_directory(handle, parent)
-            if api.snapshot(handle) != initial_parent_snapshot:
-                raise _UnsafeConfigError("Windows startup parent changed")
-            verification_parent = api.open_directory(parent)
-            handles.append(verification_parent)
-            api.validate_directory(verification_parent, parent)
-            if api.snapshot(verification_parent) != initial_parent_snapshot:
-                raise _UnsafeConfigError("Windows startup parent binding changed")
-        return raw.decode("utf-8", errors="strict")
-    finally:
-        errors: list[OSError] = []
-        for handle in reversed(handles):
-            try:
-                api.close(handle)
-            except OSError as exc:
-                errors.append(exc)
-        if errors:
-            raise _UnsafeConfigError("Unable to close Windows startup handles") from errors[0]
-
-
-def _read_windows_bounded(api: _WindowsFileApi, handle: int) -> bytes:
-    result = bytearray()
-    while True:
-        read_size = min(_READ_CHUNK_SIZE, _MAX_STARTUP_CONFIG_BYTES - len(result) + 1)
-        chunk = api.read(handle, read_size)
-        if not chunk:
-            return bytes(result)
-        result.extend(chunk)
-        if len(result) > _MAX_STARTUP_CONFIG_BYTES:
-            raise _UnsafeConfigError("startup configuration exceeds byte limit")
-
-
-def _windows_file_api() -> _WindowsFileApi:
-    return _CtypesWindowsFileApi()
-
-
-class _FileAttributeTagInfo(ctypes.Structure):
-    _fields_ = [
-        ("file_attributes", ctypes.c_uint32),
-        ("reparse_tag", ctypes.c_uint32),
-    ]
-
-
-class _FileTime(ctypes.Structure):
-    _fields_ = [("low", ctypes.c_uint32), ("high", ctypes.c_uint32)]
-
-
-class _ByHandleFileInformation(ctypes.Structure):
-    _fields_ = [
-        ("file_attributes", ctypes.c_uint32),
-        ("creation_time", _FileTime),
-        ("last_access_time", _FileTime),
-        ("last_write_time", _FileTime),
-        ("volume_serial_number", ctypes.c_uint32),
-        ("file_size_high", ctypes.c_uint32),
-        ("file_size_low", ctypes.c_uint32),
-        ("number_of_links", ctypes.c_uint32),
-        ("file_index_high", ctypes.c_uint32),
-        ("file_index_low", ctypes.c_uint32),
-    ]
-
-
-class _CtypesWindowsFileApi:
-    _FILE_ATTRIBUTE_DIRECTORY = 0x00000010
-    _FILE_ATTRIBUTE_REPARSE_POINT = 0x00000400
-    _FILE_FLAG_OPEN_REPARSE_POINT = 0x00200000
-    _FILE_FLAG_BACKUP_SEMANTICS = 0x02000000
-    _FILE_FLAG_SEQUENTIAL_SCAN = 0x08000000
-    _FILE_READ_ATTRIBUTES = 0x00000080
-    _GENERIC_READ = 0x80000000
-    _FILE_SHARE_READ = 0x00000001
-    _OPEN_EXISTING = 3
-    _FILE_TYPE_DISK = 1
-    _FILE_ATTRIBUTE_TAG_INFO_CLASS = 9
-
-    def __init__(self) -> None:
-        import ctypes
-
-        loader = getattr(ctypes, "WinDLL", None)
-        if loader is None:
-            raise _UnsafeConfigError("Windows file APIs are unavailable")
-        self._ctypes = ctypes
-        self._kernel32: Any = loader("kernel32", use_last_error=True)
-        self._create_file: Any = self._kernel32.CreateFileW
-        self._create_file.argtypes = [
-            ctypes.c_wchar_p,
-            ctypes.c_uint32,
-            ctypes.c_uint32,
-            ctypes.c_void_p,
-            ctypes.c_uint32,
-            ctypes.c_uint32,
-            ctypes.c_void_p,
-        ]
-        self._create_file.restype = ctypes.c_void_p
-        self._get_file_type: Any = self._kernel32.GetFileType
-        self._get_file_type.argtypes = [ctypes.c_void_p]
-        self._get_file_type.restype = ctypes.c_uint32
-        self._get_info: Any = self._kernel32.GetFileInformationByHandleEx
-        self._get_info.argtypes = [
-            ctypes.c_void_p,
-            ctypes.c_int,
-            ctypes.c_void_p,
-            ctypes.c_uint32,
-        ]
-        self._get_info.restype = ctypes.c_int
-        self._get_basic_info: Any = self._kernel32.GetFileInformationByHandle
-        self._get_basic_info.argtypes = [
-            ctypes.c_void_p,
-            ctypes.POINTER(_ByHandleFileInformation),
-        ]
-        self._get_basic_info.restype = ctypes.c_int
-        self._get_size: Any = self._kernel32.GetFileSizeEx
-        self._get_size.argtypes = [ctypes.c_void_p, ctypes.POINTER(ctypes.c_longlong)]
-        self._get_size.restype = ctypes.c_int
-        self._read_file: Any = self._kernel32.ReadFile
-        self._read_file.argtypes = [
-            ctypes.c_void_p,
-            ctypes.c_void_p,
-            ctypes.c_uint32,
-            ctypes.POINTER(ctypes.c_uint32),
-            ctypes.c_void_p,
-        ]
-        self._read_file.restype = ctypes.c_int
-        self._close_handle: Any = self._kernel32.CloseHandle
-        self._close_handle.argtypes = [ctypes.c_void_p]
-        self._close_handle.restype = ctypes.c_int
-
-    def open_directory(self, path: Path) -> int:
-        return self._open(
-            path,
-            self._FILE_READ_ATTRIBUTES,
-            self._FILE_FLAG_OPEN_REPARSE_POINT | self._FILE_FLAG_BACKUP_SEMANTICS,
-        )
-
-    def open_file(self, path: Path) -> int:
-        return self._open(
-            path,
-            self._GENERIC_READ,
-            self._FILE_FLAG_OPEN_REPARSE_POINT | self._FILE_FLAG_SEQUENTIAL_SCAN,
-        )
-
-    def _open(self, path: Path, access: int, flags: int) -> int:
-        handle = self._create_file(
-            str(path),
-            access,
-            self._FILE_SHARE_READ,
-            None,
-            self._OPEN_EXISTING,
-            flags,
-            None,
-        )
-        invalid = self._ctypes.c_void_p(-1).value
-        if handle in {None, invalid}:
-            raise _UnsafeConfigError("Unable to open Windows startup path safely")
-        return int(handle)
-
-    def validate_directory(self, handle: int, path: Path) -> None:
-        attributes = self._attributes(handle)
-        if (
-            attributes & self._FILE_ATTRIBUTE_REPARSE_POINT
-            or not attributes & self._FILE_ATTRIBUTE_DIRECTORY
-            or self._get_file_type(handle) != self._FILE_TYPE_DISK
-        ):
-            raise _SymlinkedConfigError(path)
-
-    def validate_file(self, handle: int, path: Path) -> None:
-        attributes = self._attributes(handle)
-        if (
-            attributes & self._FILE_ATTRIBUTE_REPARSE_POINT
-            or attributes & self._FILE_ATTRIBUTE_DIRECTORY
-            or self._get_file_type(handle) != self._FILE_TYPE_DISK
-        ):
-            raise _SymlinkedConfigError(path)
-
-    def _attributes(self, handle: int) -> int:
-        info = _FileAttributeTagInfo()
-        if not self._get_info(
-            handle,
-            self._FILE_ATTRIBUTE_TAG_INFO_CLASS,
-            self._ctypes.byref(info),
-            self._ctypes.sizeof(info),
-        ):
-            raise _UnsafeConfigError("Unable to inspect Windows startup path")
-        return int(info.file_attributes)
-
-    def size(self, handle: int) -> int:
-        value = self._ctypes.c_longlong()
-        if not self._get_size(handle, self._ctypes.byref(value)):
-            raise _UnsafeConfigError("Unable to size Windows startup configuration")
-        return int(value.value)
-
-    def snapshot(self, handle: int) -> tuple[int, int, int, int]:
-        info = _ByHandleFileInformation()
-        if not self._get_basic_info(handle, self._ctypes.byref(info)):
-            raise _UnsafeConfigError("Unable to snapshot Windows startup path")
-        identity = (
-            int(info.volume_serial_number) << 64
-            | int(info.file_index_high) << 32
-            | int(info.file_index_low)
-        )
-        size = int(info.file_size_high) << 32 | int(info.file_size_low)
-        modified = int(info.last_write_time.high) << 32 | int(info.last_write_time.low)
-        created = int(info.creation_time.high) << 32 | int(info.creation_time.low)
-        return identity, size, modified, created
-
-    def read(self, handle: int, size: int) -> bytes:
-        buffer = self._ctypes.create_string_buffer(size)
-        count = self._ctypes.c_uint32()
-        if not self._read_file(handle, buffer, size, self._ctypes.byref(count), None):
-            raise _UnsafeConfigError("Unable to read Windows startup configuration")
-        return bytes(buffer.raw[: count.value])
-
-    def close(self, handle: int) -> None:
-        if not self._close_handle(handle):
-            raise OSError("Unable to close Windows startup handle")
-
-
-def _supports_anchored_no_follow() -> bool:
-    return (
-        os.name == "posix"
-        and bool(getattr(os, "O_DIRECTORY", 0))
-        and bool(getattr(os, "O_NOFOLLOW", 0))
-        and os.open in os.supports_dir_fd
-        and os.stat in os.supports_dir_fd
-    )
-
-
-def _read_text_anchored(path: Path) -> str:
-    parent_fd, filename = _open_parent_directory(path)
-    try:
-        path_before = _stat_at(parent_fd, filename)
-        _require_regular_path(path_before, path)
-        _require_within_limit(path_before.st_size)
-
-        file_fd = os.open(filename, _file_open_flags(), dir_fd=parent_fd)
-        try:
-            opened = os.fstat(file_fd)
-            _require_regular_file(opened)
-            _require_same_identity(path_before, opened)
-            _require_unchanged(path_before, opened)
-            _require_within_limit(opened.st_size)
-            raw = _read_bounded(file_fd)
-
-            file_after = os.fstat(file_fd)
-            path_after = _stat_at(parent_fd, filename)
-            _require_regular_file(file_after)
-            _require_regular_path(path_after, path)
-            _require_same_identity(opened, file_after)
-            _require_same_identity(opened, path_after)
-            _require_unchanged(opened, file_after)
-            _require_unchanged(file_after, path_after)
-            if len(raw) != file_after.st_size:
-                raise _UnsafeConfigError("startup configuration changed while reading")
-            _verify_parent_path(path, parent_fd, filename)
-            return raw.decode("utf-8", errors="strict")
-        finally:
-            os.close(file_fd)
-    finally:
-        os.close(parent_fd)
-
-
-def _open_parent_directory(path: Path) -> tuple[int, str]:
-    anchor, components = _path_components(path)
-    if not components:
-        raise _UnsafeConfigError("startup configuration path has no file component")
-
-    current = os.open(anchor, _directory_open_flags())
-    current_path = Path(anchor)
-    try:
-        _require_directory_file(os.fstat(current))
-        for component in components[:-1]:
-            current_path /= component
-            path_before = _stat_at(current, component)
-            _require_directory_path(path_before, current_path)
-            following = os.open(component, _directory_open_flags(), dir_fd=current)
-            try:
-                opened = os.fstat(following)
-                _require_directory_file(opened)
-                _require_same_identity(path_before, opened)
-            except BaseException:
-                os.close(following)
-                raise
-            os.close(current)
-            current = following
-    except BaseException:
-        os.close(current)
-        raise
-    return current, components[-1]
-
-
-def _path_components(path: Path) -> tuple[str, tuple[str, ...]]:
-    parts = path.parts
-    components = parts[1:] if path.is_absolute() else parts
-    if any(component in {"", ".", ".."} for component in components):
-        raise _UnsafeConfigError("unsafe startup configuration path component")
-    return (path.anchor if path.is_absolute() else "."), components
-
-
-def _file_open_flags() -> int:
-    return (
-        os.O_RDONLY
-        | getattr(os, "O_BINARY", 0)
-        | getattr(os, "O_CLOEXEC", 0)
-        | getattr(os, "O_NOFOLLOW", 0)
-        | getattr(os, "O_NONBLOCK", 0)
-    )
-
-
-def _directory_open_flags() -> int:
-    return _file_open_flags() | os.O_DIRECTORY
-
-
-def _stat_at(parent_fd: int, component: str) -> os.stat_result:
-    return os.stat(component, dir_fd=parent_fd, follow_symlinks=False)
-
-
-def _read_bounded(file_fd: int) -> bytes:
-    result = bytearray()
-    while True:
-        read_size = min(_READ_CHUNK_SIZE, _MAX_STARTUP_CONFIG_BYTES - len(result) + 1)
-        chunk = os.read(file_fd, read_size)
-        if not chunk:
-            return bytes(result)
-        result.extend(chunk)
-        if len(result) > _MAX_STARTUP_CONFIG_BYTES:
-            raise _UnsafeConfigError("startup configuration exceeds byte limit")
-
-
-def _verify_parent_path(path: Path, original_parent: int, filename: str) -> None:
-    verification_parent, verification_filename = _open_parent_directory(path)
-    try:
-        if verification_filename != filename:
-            raise _UnsafeConfigError("startup configuration filename changed")
-        _require_same_identity(os.fstat(original_parent), os.fstat(verification_parent))
-    finally:
-        os.close(verification_parent)
-
-
-def _require_regular_path(file_stat: os.stat_result, path: Path) -> None:
-    if stat.S_ISLNK(file_stat.st_mode):
-        raise _SymlinkedConfigError(path)
-    if not stat.S_ISREG(file_stat.st_mode):
-        raise _UnsafeConfigError("startup configuration is not a regular file")
-
-
-def _require_regular_file(file_stat: os.stat_result) -> None:
-    if not stat.S_ISREG(file_stat.st_mode):
-        raise _UnsafeConfigError("opened startup configuration is not a regular file")
-
-
-def _require_directory_path(file_stat: os.stat_result, path: Path) -> None:
-    if stat.S_ISLNK(file_stat.st_mode):
-        raise _SymlinkedConfigError(path)
-    if not stat.S_ISDIR(file_stat.st_mode):
-        raise _UnsafeConfigError("startup configuration parent is not a directory")
-
-
-def _require_directory_file(file_stat: os.stat_result) -> None:
-    if not stat.S_ISDIR(file_stat.st_mode):
-        raise _UnsafeConfigError("opened startup configuration parent is not a directory")
-
-
-def _require_within_limit(size: int) -> None:
-    if size < 0 or size > _MAX_STARTUP_CONFIG_BYTES:
-        raise _UnsafeConfigError("startup configuration exceeds byte limit")
-
-
-def _require_same_identity(first: os.stat_result, second: os.stat_result) -> None:
-    if (first.st_dev, first.st_ino) != (second.st_dev, second.st_ino):
-        raise _UnsafeConfigError("startup configuration identity changed")
-
-
-def _require_unchanged(before: os.stat_result, after: os.stat_result) -> None:
-    if (
-        stat.S_IFMT(before.st_mode),
-        before.st_size,
-        before.st_mtime_ns,
-        before.st_ctime_ns,
-    ) != (
-        stat.S_IFMT(after.st_mode),
-        after.st_size,
-        after.st_mtime_ns,
-        after.st_ctime_ns,
-    ):
-        raise _UnsafeConfigError("startup configuration changed while reading")
 
 
 def _load_json(text: str) -> Mapping[str, object]:
@@ -553,7 +96,6 @@ def _extract_claude_hooks(document: Mapping[str, object], path: Path) -> tuple[S
                 if not isinstance(command, str) or not command:
                     raise _StartupConfigError("Claude command hook must contain a command")
                 result.append(StartupHook("claude", event, command, path))
-
     return tuple(result)
 
 
@@ -574,7 +116,6 @@ def _extract_vscode_hooks(document: Mapping[str, object], path: Path) -> tuple[S
         if not isinstance(command, str) or not command:
             raise _StartupConfigError("folderOpen task must contain a command")
         result.append(StartupHook("vscode", "folderOpen", command, path))
-
     return tuple(result)
 
 
@@ -593,7 +134,6 @@ def _strip_comments(text: str) -> str:
     while index < len(text):
         char = text[index]
         next_char = text[index + 1] if index + 1 < len(text) else ""
-
         if in_line_comment:
             if char in "\r\n":
                 in_line_comment = False
@@ -602,7 +142,6 @@ def _strip_comments(text: str) -> str:
                 result.append(" ")
             index += 1
             continue
-
         if in_block_comment:
             if char == "*" and next_char == "/":
                 result.extend((" ", " "))
@@ -612,7 +151,6 @@ def _strip_comments(text: str) -> str:
                 result.append(char if char in "\r\n" else " ")
                 index += 1
             continue
-
         if in_string:
             result.append(char)
             if escaped:
@@ -623,7 +161,6 @@ def _strip_comments(text: str) -> str:
                 in_string = False
             index += 1
             continue
-
         if char == '"':
             in_string = True
             result.append(char)
@@ -639,7 +176,6 @@ def _strip_comments(text: str) -> str:
         else:
             result.append(char)
             index += 1
-
     if in_block_comment:
         raise _StartupConfigError("unterminated JSONC block comment")
     return "".join(result)
@@ -649,7 +185,6 @@ def _strip_trailing_commas(text: str) -> str:
     result: list[str] = []
     in_string = False
     escaped = False
-
     for index, char in enumerate(text):
         if in_string:
             result.append(char)
@@ -660,12 +195,10 @@ def _strip_trailing_commas(text: str) -> str:
             elif char == '"':
                 in_string = False
             continue
-
         if char == '"':
             in_string = True
             result.append(char)
             continue
-
         if char == ",":
             lookahead = index + 1
             while lookahead < len(text) and text[lookahead].isspace():
@@ -673,7 +206,6 @@ def _strip_trailing_commas(text: str) -> str:
             if lookahead < len(text) and text[lookahead] in "]}":
                 continue
         result.append(char)
-
     return "".join(result)
 
 

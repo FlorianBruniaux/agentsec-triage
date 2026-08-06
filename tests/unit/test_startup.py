@@ -6,8 +6,12 @@ from pathlib import Path
 
 import pytest
 
-from agentsec.analyzers import startup
-from agentsec.analyzers.startup import StartupHook, inspect_startup_config
+from agentsec.analyzers import safe_io, startup
+from agentsec.analyzers.startup import (
+    StartupHook,
+    inspect_startup_config,
+    inspect_startup_config_content,
+)
 from agentsec.models import Diagnostic, DiagnosticKind
 
 
@@ -146,6 +150,18 @@ def test_ignores_non_command_claude_hook_types(tmp_path: Path):
     assert hooks == (StartupHook("claude", "SessionStart", "accepted", settings),)
 
 
+def test_extracts_startup_hook_from_already_read_content(tmp_path: Path):
+    settings = tmp_path / ".claude" / "settings.json"
+    content = json.dumps(
+        {"hooks": {"SessionStart": [_hook_group("node setup.mjs")]}}
+    ).encode()
+
+    hooks, diagnostics = inspect_startup_config_content(content, settings)
+
+    assert diagnostics == ()
+    assert hooks == (StartupHook("claude", "SessionStart", "node setup.mjs", settings),)
+
+
 @pytest.mark.parametrize(
     "document",
     [
@@ -228,7 +244,7 @@ def test_config_parent_mutation_during_open_is_rejected(
         encoding="utf-8",
     )
     detached = tmp_path / "detached"
-    original_open = startup.os.open
+    original_open = safe_io.os.open
     swapped = False
 
     def redirect_before_open(
@@ -245,7 +261,7 @@ def test_config_parent_mutation_during_open_is_rejected(
             claude_directory.symlink_to(outside, target_is_directory=True)
         return original_open(path, flags, mode, dir_fd=dir_fd)
 
-    monkeypatch.setattr(startup.os, "open", redirect_before_open)
+    monkeypatch.setattr(safe_io.os, "open", redirect_before_open)
 
     hooks, diagnostics = inspect_startup_config(settings)
 
@@ -282,7 +298,7 @@ def test_fails_closed_when_anchored_no_follow_open_is_unavailable(
         json.dumps({"hooks": {"SessionStart": [_hook_group("must-not-be-read")]}}),
         encoding="utf-8",
     )
-    monkeypatch.setattr(startup, "_supports_anchored_no_follow", lambda: False)
+    monkeypatch.setattr(safe_io, "_supports_anchored_no_follow", lambda: False)
 
     hooks, diagnostics = inspect_startup_config(settings)
 
@@ -297,8 +313,8 @@ def test_windows_secure_reader_keeps_positive_startup_support(
     api = _FakeWindowsFileApi(
         json.dumps({"hooks": {"SessionStart": [_hook_group("windows-command")]}}).encode()
     )
-    monkeypatch.setattr(startup, "_is_windows", lambda: True, raising=False)
-    monkeypatch.setattr(startup, "_windows_file_api", lambda: api, raising=False)
+    monkeypatch.setattr(safe_io, "_is_windows", lambda: True)
+    monkeypatch.setattr(safe_io, "_windows_file_api", lambda: api)
 
     hooks, diagnostics = inspect_startup_config(settings)
 
@@ -314,8 +330,8 @@ def test_windows_parent_reparse_is_rejected_and_handles_are_closed(
     settings = tmp_path / ".claude" / "settings.json"
     settings.parent.mkdir()
     api = _FakeWindowsFileApi(b'{"hooks": {}}', reject_parent=True)
-    monkeypatch.setattr(startup, "_is_windows", lambda: True, raising=False)
-    monkeypatch.setattr(startup, "_windows_file_api", lambda: api, raising=False)
+    monkeypatch.setattr(safe_io, "_is_windows", lambda: True)
+    monkeypatch.setattr(safe_io, "_windows_file_api", lambda: api)
 
     hooks, diagnostics = inspect_startup_config(settings)
 
@@ -328,7 +344,7 @@ def test_windows_parent_reparse_is_rejected_and_handles_are_closed(
 
 def test_windows_open_uses_read_only_share_mode():
     calls: list[tuple[int, int]] = []
-    api = startup._CtypesWindowsFileApi.__new__(startup._CtypesWindowsFileApi)
+    api = safe_io._CtypesWindowsFileApi.__new__(safe_io._CtypesWindowsFileApi)
     api._ctypes = ctypes
 
     def fake_create_file(
@@ -358,8 +374,8 @@ def test_windows_identity_mutation_is_rejected_and_handles_are_closed(
     settings = tmp_path / ".claude" / "settings.json"
     settings.parent.mkdir()
     api = _FakeWindowsFileApi(b'{"hooks": {}}', mutate_identity=True)
-    monkeypatch.setattr(startup, "_is_windows", lambda: True, raising=False)
-    monkeypatch.setattr(startup, "_windows_file_api", lambda: api, raising=False)
+    monkeypatch.setattr(safe_io, "_is_windows", lambda: True)
+    monkeypatch.setattr(safe_io, "_windows_file_api", lambda: api)
 
     hooks, diagnostics = inspect_startup_config(settings)
 
@@ -402,14 +418,14 @@ def test_reads_startup_config_in_bounded_chunks(tmp_path: Path, monkeypatch: pyt
     settings = tmp_path / ".claude" / "settings.json"
     settings.parent.mkdir()
     settings.write_text('{"hooks": {}}' + " " * 200_000, encoding="utf-8")
-    original_read = startup.os.read
+    original_read = safe_io.os.read
     read_sizes: list[int] = []
 
     def recording_read(descriptor: int, size: int) -> bytes:
         read_sizes.append(size)
         return original_read(descriptor, size)
 
-    monkeypatch.setattr(startup.os, "read", recording_read)
+    monkeypatch.setattr(safe_io.os, "read", recording_read)
 
     hooks, diagnostics = inspect_startup_config(settings)
 
@@ -457,7 +473,7 @@ class _FakeWindowsFileApi:
 
     def validate_directory(self, handle: int, path: Path) -> None:
         if self.reject_parent:
-            raise startup._SymlinkedConfigError(path)
+            raise safe_io._SymlinkedFileError(path)
 
     def open_file(self, path: Path) -> int:
         handle = len(self.opened) + 1

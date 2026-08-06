@@ -2,15 +2,20 @@
 
 from __future__ import annotations
 
+import hashlib
 import re
+import shlex
 import stat
 from pathlib import Path
 
 from agentsec.analyzers.git_history import GitIndicator, inspect_git_history
-from agentsec.analyzers.hashes import hash_file
-from agentsec.analyzers.lockfiles import ResolvedPackage, parse_lockfile
-from agentsec.analyzers.packages import InstalledPackage, inspect_package_manifest
-from agentsec.analyzers.startup import StartupHook, inspect_startup_config
+from agentsec.analyzers.lockfiles import ResolvedPackage, parse_lockfile_content
+from agentsec.analyzers.packages import (
+    InstalledPackage,
+    inspect_package_manifest_content,
+)
+from agentsec.analyzers.safe_io import safe_read_regular_file
+from agentsec.analyzers.startup import StartupHook, inspect_startup_config_content
 from agentsec.detectors.base import ScanContext
 from agentsec.engine.discovery import DiscoveredFile
 from agentsec.models import (
@@ -37,11 +42,9 @@ _LOCKFILE_NAMES = frozenset(
         "bun.lockb",
     }
 )
-_CAMPAIGN_SCRIPT = re.compile(
-    r"(?<![A-Za-z0-9_.-])(?:setup\.mjs|math_symbol\.js|math_init\.js)"
-    r"(?![A-Za-z0-9_.-])",
-    re.IGNORECASE,
-)
+_CAMPAIGN_FILENAMES = frozenset({"setup.mjs", "math_symbol.js", "math_init.js"})
+_SCRIPT_INTERPRETERS = frozenset({"node", "node.exe", "bun", "bun.exe", "deno", "deno.exe"})
+_VALID_KEYV_WILDCARD_PACKAGE = re.compile(r"^@keyv/(?![._])[a-z0-9][a-z0-9._~-]*$")
 _MAX_GIT_COMMITS = 100_000
 
 
@@ -65,20 +68,36 @@ class ShaiHuludDetector:
 
         for item in context.files:
             category = _file_category(item.relative_path)
-            if category is None:
-                category = "payload"
-
             safety_error = _file_safety_error(item, context)
             if safety_error is not None:
                 diagnostics.append(safety_error)
                 continue
 
+            content, analyzer_diagnostics = safe_read_regular_file(
+                item.absolute_path,
+                context.limits.max_file_bytes,
+            )
+            diagnostics.extend(analyzer_diagnostics)
+            if content is None:
+                continue
+            inspected_files += 1
+            inspected_bytes += len(content)
+
+            digest = hashlib.sha256(content).hexdigest()
+            if digest in context.database.hashes:
+                findings.append(
+                    _finding(
+                        rule_id="known-payload-hash",
+                        severity=Severity.CRITICAL,
+                        confidence=Confidence.CONFIRMED,
+                        path=item.relative_path,
+                        evidence=(f"sha256:{digest} ({context.database.hashes[digest]})"),
+                    )
+                )
+
             if category == "lockfile":
-                packages, analyzer_diagnostics = parse_lockfile(item.absolute_path)
+                packages, analyzer_diagnostics = parse_lockfile_content(content, item.absolute_path)
                 diagnostics.extend(analyzer_diagnostics)
-                if not analyzer_diagnostics:
-                    inspected_files += 1
-                    inspected_bytes += item.size
                 for resolved_package in packages:
                     if _is_compromised(
                         resolved_package.name,
@@ -89,13 +108,11 @@ class ShaiHuludDetector:
                 continue
 
             if category == "manifest":
-                installed_package, analyzer_diagnostics = inspect_package_manifest(
-                    item.absolute_path
+                installed_package, analyzer_diagnostics = inspect_package_manifest_content(
+                    content,
+                    item.absolute_path,
                 )
                 diagnostics.extend(analyzer_diagnostics)
-                if not analyzer_diagnostics:
-                    inspected_files += 1
-                    inspected_bytes += item.size
                 if installed_package is not None:
                     findings.extend(
                         _installed_package_findings(
@@ -107,32 +124,11 @@ class ShaiHuludDetector:
                 continue
 
             if category == "startup":
-                hooks, analyzer_diagnostics = inspect_startup_config(item.absolute_path)
-                diagnostics.extend(analyzer_diagnostics)
-                if not analyzer_diagnostics:
-                    inspected_files += 1
-                    inspected_bytes += item.size
-                findings.extend(_startup_findings(hooks, item.relative_path))
-                continue
-
-            digest, analyzer_diagnostics = hash_file(
-                item.absolute_path,
-                context.limits.max_file_bytes,
-            )
-            diagnostics.extend(analyzer_diagnostics)
-            if not analyzer_diagnostics:
-                inspected_files += 1
-                inspected_bytes += item.size
-            if digest is not None and digest in context.database.hashes:
-                findings.append(
-                    _finding(
-                        rule_id="known-payload-hash",
-                        severity=Severity.CRITICAL,
-                        confidence=Confidence.CONFIRMED,
-                        path=item.relative_path,
-                        evidence=f"sha256: {context.database.hashes[digest]}",
-                    )
+                hooks, analyzer_diagnostics = inspect_startup_config_content(
+                    content, item.absolute_path
                 )
+                diagnostics.extend(analyzer_diagnostics)
+                findings.extend(_startup_findings(hooks, item.relative_path))
 
         has_git, git_diagnostic = _git_metadata_state(context.root)
         if git_diagnostic is not None:
@@ -168,11 +164,7 @@ def _file_category(path: Path) -> str | None:
     parts = path.parts
     if path.name == "package.json" and "node_modules" in parts[:-1]:
         return "manifest"
-    if (
-        path.parent == Path(".claude")
-        and path.name.startswith("settings")
-        and path.suffix == ".json"
-    ):
+    if path.parent == Path(".claude") and path.name in {"settings.json", "settings.local.json"}:
         return "startup"
     if path == Path(".vscode/tasks.json"):
         return "startup"
@@ -203,7 +195,9 @@ def _is_compromised(name: str, version: str, database: ThreatDatabase) -> bool:
     if version in database.package_versions.get(name, frozenset()):
         return True
     return any(
-        name.startswith(prefix) and name != prefix and version in versions
+        prefix == "@keyv/"
+        and _VALID_KEYV_WILDCARD_PACKAGE.fullmatch(name) is not None
+        and version in versions
         for prefix, versions in database.wildcard_package_versions.items()
     )
 
@@ -236,7 +230,7 @@ def _installed_package_findings(
                 evidence=package_evidence,
             )
         )
-    if package.preinstall is not None and _CAMPAIGN_SCRIPT.search(package.preinstall):
+    if package.preinstall is not None and _is_campaign_invocation(package.preinstall):
         findings.append(
             _finding(
                 rule_id=(
@@ -254,7 +248,7 @@ def _installed_package_findings(
 def _startup_findings(hooks: tuple[StartupHook, ...], path: Path) -> tuple[Finding, ...]:
     findings = []
     for hook in hooks:
-        campaign_correlated = _CAMPAIGN_SCRIPT.search(hook.command) is not None
+        campaign_correlated = _is_campaign_invocation(hook.command)
         findings.append(
             _finding(
                 rule_id="campaign-startup-hook" if campaign_correlated else "startup-hook",
@@ -265,6 +259,41 @@ def _startup_findings(hooks: tuple[StartupHook, ...], path: Path) -> tuple[Findi
             )
         )
     return tuple(findings)
+
+
+def _is_campaign_invocation(command: str) -> bool:
+    try:
+        lexer = shlex.shlex(command, posix=True, punctuation_chars=";&|")
+        lexer.whitespace_split = True
+        lexer.commenters = "#"
+        tokens = list(lexer)
+    except ValueError:
+        return False
+
+    segment: list[str] = []
+    for token in (*tokens, ";"):
+        if token and all(character in ";&|" for character in token):
+            if _segment_invokes_campaign_file(segment):
+                return True
+            segment = []
+        else:
+            segment.append(token)
+    return False
+
+
+def _segment_invokes_campaign_file(tokens: list[str]) -> bool:
+    if not tokens:
+        return False
+    executable = _command_basename(tokens[0])
+    if executable in _CAMPAIGN_FILENAMES:
+        return True
+    if executable not in _SCRIPT_INTERPRETERS:
+        return False
+    return any(_command_basename(token) in _CAMPAIGN_FILENAMES for token in tokens[1:])
+
+
+def _command_basename(token: str) -> str:
+    return token.replace("\\", "/").rsplit("/", 1)[-1].lower()
 
 
 def _git_findings(
