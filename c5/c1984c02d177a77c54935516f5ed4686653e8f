@@ -1,0 +1,26 @@
+src/agentsec/detectors/shai_hulud.py
+  s_0df90997879182::t_02ac99785f2139 272-275,280
+  s_0df90997879182::t_f402220efbc6f9 355,357-358,373,389,391,406,413-415
+  s_0df90997879182::t_a3f0bc4ed8d84a 49-50,276-277,279,281-282,348-350,353-354,356,359-360,371-372,378,386-388,390,393-394,401-405,407-412,416-417
+tests/integration/test_shai_hulud_detector.py
+  s_0df90997879182::t_88f072df268857 496,498-499,516-520,529-538,541
+  s_0df90997879182::t_8349490d4fe394 539-540
+  s_0df90997879182::t_4a517278455d8d 497
+  s_0df90997879182::t_48e623eeadee84 542-543
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "c5c1984c02d177a77c54935516f5ed4686653e8f",
+  "prompts": {},
+  "sessions": {
+    "s_0df90997879182": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019fd73a-588d-7f03-ab50-494ca0e95848",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Florian BRUNIAUX <florian@bruniaux.com>"
+    }
+  }
+}
