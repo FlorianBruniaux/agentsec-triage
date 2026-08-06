@@ -33,22 +33,41 @@ class YamlNode(Protocol):
     tag: str
 
 
-class MappingNode(Protocol):
-    value: list[tuple[YamlNode, object]]
+class MappingNode(YamlNode, Protocol):
+    value: list[tuple[YamlNode, YamlNode]]
+
+
+class SequenceNode(YamlNode, Protocol):
+    value: list[YamlNode]
 
 
 _YAML_MERGE_TAG = "tag:yaml.org,2002:merge"
+_YAML_MAPPING_TAG = "tag:yaml.org,2002:map"
+_YAML_SEQUENCE_TAG = "tag:yaml.org,2002:seq"
 _YAML_MERGE_KEY = object()
 
 
 class UniqueKeySafeLoader(yaml.SafeLoader):  # type: ignore[misc]
     """Safe YAML loader that rejects duplicate keys at every mapping depth."""
 
+    def __init__(self, stream: object) -> None:
+        super().__init__(stream)
+        self._validated_mapping_node_ids: set[int] = set()
+
     def construct_mapping(
         self, node: MappingNode, deep: bool = False
     ) -> dict[object, object]:
+        self._validate_mapping_node(node, deep=deep)
+        return cast(dict[object, object], super().construct_mapping(node, deep=deep))
+
+    def _validate_mapping_node(self, node: MappingNode, *, deep: bool) -> None:
+        node_id = id(node)
+        if node_id in self._validated_mapping_node_ids:
+            return
+        self._validated_mapping_node_ids.add(node_id)
+
         local_keys: dict[object, None] = {}
-        for key_node, _value_node in node.value:
+        for key_node, value_node in node.value:
             key = (
                 _YAML_MERGE_KEY
                 if key_node.tag == _YAML_MERGE_TAG
@@ -61,7 +80,18 @@ class UniqueKeySafeLoader(yaml.SafeLoader):  # type: ignore[misc]
             if duplicate:
                 raise DuplicateYamlKeyError
             local_keys[key] = None
-        return cast(dict[object, object], super().construct_mapping(node, deep=deep))
+            if key_node.tag == _YAML_MERGE_TAG:
+                self._validate_merge_sources(value_node, deep=deep)
+
+    def _validate_merge_sources(self, node: YamlNode, *, deep: bool) -> None:
+        if node.tag == _YAML_MAPPING_TAG:
+            self._validate_mapping_node(cast(MappingNode, node), deep=deep)
+            return
+        if node.tag != _YAML_SEQUENCE_TAG:
+            return
+        for source in cast(SequenceNode, node).value:
+            if source.tag == _YAML_MAPPING_TAG:
+                self._validate_mapping_node(cast(MappingNode, source), deep=deep)
 
 
 def _reject_duplicate_json_keys(pairs: list[tuple[str, object]]) -> dict[str, object]:

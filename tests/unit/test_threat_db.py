@@ -80,8 +80,35 @@ def test_builder_rejects_invalid_authoring_source(tmp_path: Path):
             '    - hash: "first"\n'
             '      hash: "do-not-leak"\n'
         ),
+        (
+            "entry:\n"
+            "  <<:\n"
+            '    source: "first"\n'
+            '    source: "do-not-leak"\n'
+        ),
+        (
+            "entry:\n"
+            "  <<:\n"
+            '    - source: "first"\n'
+            '      source: "do-not-leak"\n'
+            '    - notes: "inherited"\n'
+        ),
+        (
+            "first-entry:\n"
+            "  <<: &defaults\n"
+            '    source: "first"\n'
+            '    source: "do-not-leak"\n'
+            "second-entry:\n"
+            "  <<: *defaults\n"
+        ),
     ],
-    ids=["top-level", "nested"],
+    ids=[
+        "top-level",
+        "nested",
+        "inline-merge-source",
+        "inline-merge-sequence-source",
+        "anchored-alias-merge-source",
+    ],
 )
 def test_builder_rejects_duplicate_yaml_keys_without_leaking_context(
     source_text: str, tmp_path: Path
