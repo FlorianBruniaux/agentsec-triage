@@ -65,6 +65,26 @@ def test_redaction_hides_user_home_paths_in_evidence_and_diagnostics(tmp_path: P
     assert payload["findings"][0]["evidence"] == "Credential file: /Users/alice/.ssh/config"
 
 
+def test_redaction_hides_user_home_paths_with_spaces_without_swallowing_context(
+    tmp_path: Path,
+):
+    payload = {
+        "posix": "Evidence: (/Users/alice/My Docs/report.txt).",
+        "windows": 'Evidence: "C:\\Users\\alice\\My Docs\\report.txt".',
+        "at_end": "Evidence: /Users/alice/My Docs/report.txt",
+        "unchanged": "Repository metadata at /etc/agentsec/config",
+    }
+
+    redacted = redact_result(payload, tmp_path / "repository")
+
+    assert redacted == {
+        "posix": "Evidence: (<REDACTED_PATH>).",
+        "windows": 'Evidence: "<REDACTED_PATH>".',
+        "at_end": "Evidence: <REDACTED_PATH>",
+        "unchanged": "Repository metadata at /etc/agentsec/config",
+    }
+
+
 def test_json_matches_public_schema(empty_scan_result: ScanResult):
     payload = json.loads(render_json(empty_scan_result, redact=False))
     schema = json.loads(Path("schemas/scan-result-v1.schema.json").read_text())

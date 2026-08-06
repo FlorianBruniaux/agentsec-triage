@@ -8,8 +8,8 @@ _SECRET_PATTERN = re.compile(
     r"gh[pousr]_[A-Za-z0-9_]{20,}|npm_[A-Za-z0-9]{20,}|AKIA[0-9A-Z]{16}|sk-ant-[A-Za-z0-9_-]{20,}"
 )
 _USER_HOME_PATH_PATTERN = re.compile(
-    r"(?<![A-Za-z0-9_/])(?:/(?:Users|home)/[^/\s]+(?:/[^\s\"'<>]*)*|"
-    r"[A-Za-z]:\\Users\\[^\\\s]+(?:\\[^\s\"'<>]*)*)"
+    r"(?<![A-Za-z0-9_/])(?:/(?:Users|home)/[^\"'<>)]*?(?=[\"')]|$)|"
+    r"[A-Za-z]:\\Users\\[^\"'<>)]*?(?=[\"')]|$))"
 )
 
 
