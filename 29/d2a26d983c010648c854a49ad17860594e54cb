@@ -1,0 +1,28 @@
+src/agentsec/engine/runner.py
+  s_0df90997879182::t_1e5643ec4428e7 1-91
+src/agentsec/detectors/__init__.py
+  s_0df90997879182::t_1e5643ec4428e7 1-6
+tests/unit/test_runner.py
+  s_0df90997879182::t_dada582124bb94 7-8,124-125
+  s_0df90997879182::t_13b516cfb5d22e 1-6,9-123
+src/agentsec/detectors/base.py
+  s_0df90997879182::t_1e5643ec4428e7 1-31
+src/agentsec/detectors/registry.py
+  s_0df90997879182::t_1e5643ec4428e7 1-23
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "29d2a26d983c010648c854a49ad17860594e54cb",
+  "prompts": {},
+  "sessions": {
+    "s_0df90997879182": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019fd73a-588d-7f03-ab50-494ca0e95848",
+        "model": "gpt-5.6-terra"
+      },
+      "human_author": "Florian BRUNIAUX <florian@bruniaux.com>"
+    }
+  }
+}
