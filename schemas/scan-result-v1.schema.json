@@ -1,0 +1,90 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agentsec.dev/schemas/scan-result-v1.schema.json",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "tool_version",
+    "database_version",
+    "root",
+    "complete",
+    "elapsed_ms",
+    "coverage",
+    "not_scanned",
+    "diagnostics",
+    "findings"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": { "const": "1" },
+    "tool_version": { "type": "string" },
+    "database_version": { "type": "string" },
+    "root": { "type": "string" },
+    "complete": { "type": "boolean" },
+    "elapsed_ms": { "type": "integer", "minimum": 0 },
+    "coverage": {
+      "type": "object",
+      "required": ["files_seen", "files_inspected", "bytes_inspected"],
+      "additionalProperties": false,
+      "properties": {
+        "files_seen": { "type": "integer", "minimum": 0 },
+        "files_inspected": { "type": "integer", "minimum": 0 },
+        "bytes_inspected": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "not_scanned": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "diagnostics": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["kind", "path", "message"],
+        "additionalProperties": false,
+        "properties": {
+          "kind": { "enum": ["error", "warning"] },
+          "path": { "type": "string" },
+          "message": { "type": "string" }
+        }
+      }
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "detector_id",
+          "rule_id",
+          "severity",
+          "confidence",
+          "path",
+          "evidence",
+          "campaign_ids",
+          "technique_ids",
+          "line",
+          "remediation_url"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "detector_id": { "type": "string" },
+          "rule_id": { "type": "string" },
+          "severity": { "enum": ["critical", "high", "medium", "low", "info"] },
+          "confidence": { "enum": ["confirmed", "high", "review", "contested"] },
+          "path": { "type": "string" },
+          "evidence": { "type": "string" },
+          "campaign_ids": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "technique_ids": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "line": { "type": ["integer", "null"], "minimum": 1 },
+          "remediation_url": { "type": ["string", "null"] }
+        }
+      }
+    }
+  }
+}
