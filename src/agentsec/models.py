@@ -4,6 +4,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 from enum import StrEnum
 from pathlib import Path
+from types import MappingProxyType
 
 
 class Severity(StrEnum):
@@ -79,6 +80,35 @@ class ThreatDatabase:
     domains: frozenset[str]
     commit_indicators: tuple[Mapping[str, str], ...]
     complete: bool = True
+
+    def __post_init__(self) -> None:
+        object.__setattr__(
+            self,
+            "package_versions",
+            MappingProxyType(
+                {
+                    package: frozenset(versions)
+                    for package, versions in self.package_versions.items()
+                }
+            ),
+        )
+        object.__setattr__(
+            self,
+            "wildcard_package_versions",
+            MappingProxyType(
+                {
+                    package: frozenset(versions)
+                    for package, versions in self.wildcard_package_versions.items()
+                }
+            ),
+        )
+        object.__setattr__(self, "hashes", MappingProxyType(dict(self.hashes)))
+        object.__setattr__(self, "domains", frozenset(self.domains))
+        object.__setattr__(
+            self,
+            "commit_indicators",
+            tuple(MappingProxyType(dict(indicator)) for indicator in self.commit_indicators),
+        )
 
 
 @dataclass(frozen=True, slots=True)
