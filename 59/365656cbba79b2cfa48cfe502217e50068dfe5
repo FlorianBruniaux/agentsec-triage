@@ -1,0 +1,20 @@
+docs/superpowers/specs/2026-08-06-agentsec-triage-design.md
+  s_0df90997879182::t_d963b4240e25c2 3,46,48-49,134,151-157,194-196,314-315,362
+  s_0df90997879182::t_0e7f6a0a9515ef 1-2,4-45,47,50-133,135-150,158-193,197-313,316-361,363-379
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "59365656cbba79b2cfa48cfe502217e50068dfe5",
+  "prompts": {},
+  "sessions": {
+    "s_0df90997879182": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019fd73a-588d-7f03-ab50-494ca0e95848",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Florian BRUNIAUX <florian@bruniaux.com>"
+    }
+  }
+}
