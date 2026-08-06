@@ -1,0 +1,22 @@
+tests/unit/test_discovery.py
+  s_0df90997879182::t_3fe9d98bddb69a 148-187
+src/agentsec/engine/discovery.py
+  s_0df90997879182::t_6e56ec98258f1f 193-199,215-221,503-513
+  s_0df90997879182::t_a382940a12928e 514-515
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "86d8b674e0bb4150e8d1a80bfddaa7025596e6ad",
+  "prompts": {},
+  "sessions": {
+    "s_0df90997879182": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019fd73a-588d-7f03-ab50-494ca0e95848",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Florian BRUNIAUX <florian@bruniaux.com>"
+    }
+  }
+}
