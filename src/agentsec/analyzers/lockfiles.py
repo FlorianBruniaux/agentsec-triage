@@ -50,7 +50,7 @@ def parse_lockfile(
 
 
 def _parse_npm(text: str, source: Path) -> list[ResolvedPackage]:
-    document = json.loads(text)
+    document = json.loads(text, object_pairs_hook=_reject_duplicate_json_keys)
     if not isinstance(document, dict):
         raise _LockfileParseError("npm lockfile root must be an object")
 
@@ -71,14 +71,33 @@ def _parse_npm(text: str, source: Path) -> list[ResolvedPackage]:
     for package_path, raw_metadata in package_entries.items():
         if not isinstance(package_path, str) or not package_path:
             continue
-        if "node_modules/" not in package_path:
+        name = _npm_package_name(package_path)
+        if name is None:
             continue
         metadata = _as_mapping(raw_metadata, "npm package metadata")
+        if "version" not in metadata and _is_npm_workspace_link(metadata):
+            continue
         version = _required_string(metadata, "version")
-        name = package_path.rsplit("node_modules/", 1)[1]
         name, version = _normalize_npm_alias(name, version)
         packages.append(ResolvedPackage(name, version, source))
     return packages
+
+
+def _npm_package_name(package_path: str) -> str | None:
+    if package_path.startswith("node_modules/"):
+        name = package_path.removeprefix("node_modules/")
+    elif "/node_modules/" in package_path:
+        name = package_path.rsplit("/node_modules/", 1)[1]
+    else:
+        return None
+    if not name:
+        raise _LockfileParseError("npm package path has no package name")
+    return name
+
+
+def _is_npm_workspace_link(metadata: Mapping[object, object]) -> bool:
+    resolved = metadata.get("resolved")
+    return metadata.get("link") is True and isinstance(resolved, str) and bool(resolved)
 
 
 def _parse_pnpm(text: str, source: Path) -> list[ResolvedPackage]:
@@ -104,10 +123,15 @@ def _pnpm_lockfile_version(text: str) -> int:
     for line in text.splitlines():
         if line.startswith("lockfileVersion:"):
             raw_version = _unquote(line.partition(":")[2].strip())
+            if len(raw_version) > 16:
+                raise _LockfileParseError("pnpm lockfileVersion is too long")
             match = re.fullmatch(r"([0-9]+)(?:\.[0-9]+)?", raw_version)
             if match is None:
                 raise _LockfileParseError("invalid pnpm lockfileVersion")
-            return int(match.group(1))
+            try:
+                return int(match.group(1))
+            except ValueError as error:
+                raise _LockfileParseError("invalid pnpm lockfileVersion") from error
     raise _LockfileParseError("missing pnpm lockfileVersion")
 
 
@@ -176,7 +200,9 @@ def _parse_yarn(text: str, source: Path) -> list[ResolvedPackage]:
             return
         if version is None:
             raise _LockfileParseError("Yarn package block has no version")
-        name = _yarn_name(header, resolution)
+        name, resolution_version = _yarn_identity(header, resolution)
+        if resolution_version is not None and resolution_version != version:
+            raise _LockfileParseError("Yarn resolution version does not match version field")
         packages.append(ResolvedPackage(name, version, source))
         header = None
         version = None
@@ -207,24 +233,29 @@ def _parse_yarn(text: str, source: Path) -> list[ResolvedPackage]:
     return packages
 
 
-def _yarn_name(header: str, resolution: str | None) -> str:
+def _yarn_identity(header: str, resolution: str | None) -> tuple[str, str | None]:
     if resolution is not None:
-        resolved_name, separator, _ = resolution.rpartition("@npm:")
-        if separator and resolved_name:
-            return resolved_name
+        resolved_name, separator, resolved_version = resolution.rpartition("@npm:")
+        if separator:
+            resolved_version = resolved_version.partition("::")[0]
+            if not resolved_name or not resolved_version:
+                raise _LockfileParseError("invalid Yarn npm resolution")
+            return resolved_name, resolved_version
 
     first_descriptor = header.split(",", 1)[0].strip()
     first_descriptor = _unquote(first_descriptor)
     _, alias_separator, alias_target = first_descriptor.partition("@npm:")
     if alias_separator:
         name, _ = _split_name_version(alias_target, "Yarn npm alias")
-        return name
+        return name, None
     name, _ = _split_name_version(first_descriptor, "Yarn descriptor")
-    return name
+    return name, None
 
 
 def _parse_bun(text: str, source: Path) -> list[ResolvedPackage]:
-    document = json.loads(_normalize_jsonc(text))
+    document = json.loads(
+        _normalize_jsonc(text), object_pairs_hook=_reject_duplicate_json_keys
+    )
     root = _as_mapping(document, "Bun lockfile root")
     package_entries = _required_mapping(root, "packages")
     packages = []
@@ -281,7 +312,9 @@ def _normalize_jsonc(text: str) -> str:
     without_trailing_commas: list[str] = []
     in_string = False
     escaped = False
-    for index, character in enumerate(normalized):
+    index = 0
+    while index < len(normalized):
+        character = normalized[index]
         if in_string:
             without_trailing_commas.append(character)
             if escaped:
@@ -290,17 +323,32 @@ def _normalize_jsonc(text: str) -> str:
                 escaped = True
             elif character == '"':
                 in_string = False
+            index += 1
             continue
         if character == '"':
             in_string = True
             without_trailing_commas.append(character)
+            index += 1
             continue
         if character == ",":
-            remainder = normalized[index + 1 :].lstrip()
-            if remainder.startswith(("}", "]")):
+            lookahead = index + 1
+            while lookahead < len(normalized) and normalized[lookahead].isspace():
+                lookahead += 1
+            if lookahead < len(normalized) and normalized[lookahead] in "}]":
+                index += 1
                 continue
         without_trailing_commas.append(character)
+        index += 1
     return "".join(without_trailing_commas)
+
+
+def _reject_duplicate_json_keys(pairs: list[tuple[str, object]]) -> dict[str, object]:
+    result: dict[str, object] = {}
+    for key, value in pairs:
+        if key in result:
+            raise _LockfileParseError("duplicate JSON object key")
+        result[key] = value
+    return result
 
 
 def _collect_npm_dependencies(

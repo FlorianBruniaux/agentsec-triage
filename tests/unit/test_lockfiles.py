@@ -1,8 +1,11 @@
+import ast
+import inspect
+import textwrap
 from pathlib import Path
 
 import pytest
 
-from agentsec.analyzers.lockfiles import parse_lockfile
+from agentsec.analyzers.lockfiles import _normalize_jsonc, parse_lockfile
 from agentsec.models import DiagnosticKind
 
 FIXTURES = Path(__file__).parents[1] / "fixtures" / "lockfiles"
@@ -92,3 +95,125 @@ def test_binary_bun_lock_is_explicitly_unsupported():
     assert diagnostics[0].kind is DiagnosticKind.ERROR
     assert diagnostics[0].path == path
     assert "unsupported" in diagnostics[0].message.lower()
+
+
+def test_ignores_npm_workspace_link_without_version(tmp_path: Path):
+    path = tmp_path / "package-lock.json"
+    path.write_text(
+        """{
+  "lockfileVersion": 3,
+  "packages": {
+    "node_modules/workspace-package": {
+      "resolved": "packages/workspace-package",
+      "link": true
+    }
+  }
+}
+""",
+        encoding="utf-8",
+    )
+
+    packages, diagnostics = parse_lockfile(path)
+
+    assert packages == ()
+    assert diagnostics == ()
+
+
+def test_rejects_yarn_resolution_version_mismatch(tmp_path: Path):
+    path = tmp_path / "yarn.lock"
+    path.write_text(
+        '"local-keyv@npm:keyv@6.0.0":\n'
+        "  version: 6.0.0\n"
+        '  resolution: "keyv@npm:5.6.0"\n',
+        encoding="utf-8",
+    )
+
+    _assert_parse_error(path)
+
+
+def test_rejects_excessively_long_pnpm_lockfile_version(tmp_path: Path):
+    path = tmp_path / "pnpm-lock.yaml"
+    path.write_text(
+        f"lockfileVersion: {'9' * 5_000}\n\npackages:\n",
+        encoding="utf-8",
+    )
+
+    _assert_parse_error(path)
+
+
+def test_ignores_npm_near_miss_node_modules_path(tmp_path: Path):
+    path = tmp_path / "package-lock.json"
+    path.write_text(
+        """{
+  "lockfileVersion": 3,
+  "packages": {
+    "not_node_modules/keyv": {"version": "6.0.0"}
+  }
+}
+""",
+        encoding="utf-8",
+    )
+
+    packages, diagnostics = parse_lockfile(path)
+
+    assert packages == ()
+    assert diagnostics == ()
+
+
+def test_bun_trailing_comma_normalizer_does_not_slice_remaining_suffix():
+    tree = ast.parse(textwrap.dedent(inspect.getsource(_normalize_jsonc)))
+
+    assert not any(
+        isinstance(node, ast.Subscript) and isinstance(node.slice, ast.Slice)
+        for node in ast.walk(tree)
+    )
+
+
+@pytest.mark.parametrize(
+    ("filename", "document"),
+    [
+        (
+            "package-lock.json",
+            '{"lockfileVersion": 4, "lockfileVersion": 3, "packages": {}}',
+        ),
+        (
+            "package-lock.json",
+            """{
+  "lockfileVersion": 3,
+  "packages": {
+    "node_modules/keyv": {"version": "5.6.0", "version": "6.0.0"}
+  }
+}
+""",
+        ),
+        (
+            "bun.lock",
+            '{"packages": {"keyv": ["keyv@5.6.0"]}, "packages": {}}',
+        ),
+        (
+            "bun.lock",
+            """{
+  "packages": {
+    "keyv": ["keyv@6.0.0", "", {"integrity": "first", "integrity": "second"}]
+  }
+}
+""",
+        ),
+    ],
+)
+def test_rejects_duplicate_json_object_keys(
+    tmp_path: Path, filename: str, document: str
+):
+    path = tmp_path / filename
+    path.write_text(document, encoding="utf-8")
+
+    _assert_parse_error(path)
+
+
+def _assert_parse_error(path: Path) -> None:
+    packages, diagnostics = parse_lockfile(path)
+
+    assert packages == ()
+    assert len(diagnostics) == 1
+    assert diagnostics[0].kind is DiagnosticKind.ERROR
+    assert diagnostics[0].path == path
