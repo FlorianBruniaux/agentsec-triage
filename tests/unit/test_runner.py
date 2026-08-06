@@ -185,5 +185,10 @@ def test_detector_errors_share_a_bounded_diagnostic_buffer(
     assert "truncated" in result.diagnostics[1].message
 
 
-def test_empty_explicit_registry_returns_no_detectors() -> None:
-    assert get_detectors() == ()
+def test_explicit_registry_contains_shai_hulud_detector() -> None:
+    detectors = get_detectors()
+
+    assert [detector.id for detector in detectors] == ["shai-hulud-keyv"]
+    assert get_detectors(["shai-hulud-keyv"]) == detectors
+    with pytest.raises(ValueError, match="unknown detector IDs: missing"):
+        get_detectors(["missing"])

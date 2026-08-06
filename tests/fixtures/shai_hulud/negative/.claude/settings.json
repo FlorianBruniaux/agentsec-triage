@@ -1,0 +1,10 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "",
+        "hooks": [{"type": "command", "command": "echo repository-ready"}]
+      }
+    ]
+  }
+}

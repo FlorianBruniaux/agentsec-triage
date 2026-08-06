@@ -5,8 +5,9 @@ from __future__ import annotations
 from collections.abc import Sequence
 
 from agentsec.detectors.base import Detector
+from agentsec.detectors.shai_hulud import ShaiHuludDetector
 
-_DETECTORS: tuple[Detector, ...] = ()
+_DETECTORS: tuple[Detector, ...] = (ShaiHuludDetector(),)
 
 
 def get_detectors(ids: Sequence[str] | None = None) -> tuple[Detector, ...]:
