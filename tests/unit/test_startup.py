@@ -1,3 +1,4 @@
+import ctypes
 import json
 import os
 import threading
@@ -325,6 +326,49 @@ def test_windows_parent_reparse_is_rejected_and_handles_are_closed(
     assert api.closed == list(reversed(api.opened))
 
 
+def test_windows_open_uses_read_only_share_mode():
+    calls: list[tuple[int, int]] = []
+    api = startup._CtypesWindowsFileApi.__new__(startup._CtypesWindowsFileApi)
+    api._ctypes = ctypes
+
+    def fake_create_file(
+        path: str,
+        access: int,
+        share: int,
+        security: object,
+        creation: int,
+        flags: int,
+        template: object,
+    ) -> int:
+        calls.append((access, share))
+        return 123
+
+    api._create_file = fake_create_file
+
+    api.open_directory(Path("C:/repo"))
+    api.open_file(Path("C:/repo/settings.json"))
+
+    assert calls
+    assert all(share == 0x00000001 for _access, share in calls)
+
+
+def test_windows_identity_mutation_is_rejected_and_handles_are_closed(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    settings = tmp_path / ".claude" / "settings.json"
+    settings.parent.mkdir()
+    api = _FakeWindowsFileApi(b'{"hooks": {}}', mutate_identity=True)
+    monkeypatch.setattr(startup, "_is_windows", lambda: True, raising=False)
+    monkeypatch.setattr(startup, "_windows_file_api", lambda: api, raising=False)
+
+    hooks, diagnostics = inspect_startup_config(settings)
+
+    assert hooks == ()
+    assert len(diagnostics) == 1
+    assert diagnostics[0].kind is DiagnosticKind.ERROR
+    assert api.closed == list(reversed(api.opened))
+
+
 def test_rejects_startup_config_larger_than_internal_limit(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ):
@@ -388,16 +432,27 @@ def _assert_error(path: Path, hooks: object, diagnostics: tuple[Diagnostic, ...]
 
 
 class _FakeWindowsFileApi:
-    def __init__(self, content: bytes, *, reject_parent: bool = False) -> None:
+    def __init__(
+        self,
+        content: bytes,
+        *,
+        reject_parent: bool = False,
+        mutate_identity: bool = False,
+    ) -> None:
         self.content = content
         self.initial_size = len(content)
         self.reject_parent = reject_parent
+        self.mutate_identity = mutate_identity
         self.opened: list[int] = []
         self.closed: list[int] = []
+        self.file_handles: set[int] = set()
+        self.file_snapshot_calls = 0
+        self.handle_paths: dict[int, Path] = {}
 
     def open_directory(self, path: Path) -> int:
         handle = len(self.opened) + 1
         self.opened.append(handle)
+        self.handle_paths[handle] = path
         return handle
 
     def validate_directory(self, handle: int, path: Path) -> None:
@@ -407,6 +462,8 @@ class _FakeWindowsFileApi:
     def open_file(self, path: Path) -> int:
         handle = len(self.opened) + 1
         self.opened.append(handle)
+        self.file_handles.add(handle)
+        self.handle_paths[handle] = path
         return handle
 
     def validate_file(self, handle: int, path: Path) -> None:
@@ -414,6 +471,13 @@ class _FakeWindowsFileApi:
 
     def size(self, handle: int) -> int:
         return self.initial_size
+
+    def snapshot(self, handle: int) -> tuple[int, int, int, int]:
+        if handle in self.file_handles:
+            self.file_snapshot_calls += 1
+            identity = 2 if self.mutate_identity and self.file_snapshot_calls > 1 else 1
+            return identity, self.initial_size, 10, 20
+        return hash(self.handle_paths[handle]), 0, 10, 20
 
     def read(self, handle: int, size: int) -> bytes:
         content, self.content = self.content[:size], self.content[size:]

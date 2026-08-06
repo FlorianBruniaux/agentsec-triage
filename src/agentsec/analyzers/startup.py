@@ -54,6 +54,8 @@ class _WindowsFileApi(Protocol):
 
     def size(self, handle: int) -> int: ...
 
+    def snapshot(self, handle: int) -> tuple[int, int, int, int]: ...
+
     def read(self, handle: int, size: int) -> bytes: ...
 
     def close(self, handle: int) -> None: ...
@@ -109,24 +111,37 @@ def _read_text_windows(path: Path) -> str:
     api = _windows_file_api()
     handles: list[int] = []
     try:
-        parent_handles: list[tuple[int, Path]] = []
+        parent_handles: list[tuple[int, Path, tuple[int, int, int, int]]] = []
         for parent in reversed(path.parents):
             handle = api.open_directory(parent)
             handles.append(handle)
             api.validate_directory(handle, parent)
-            parent_handles.append((handle, parent))
+            parent_handles.append((handle, parent, api.snapshot(handle)))
 
         file_handle = api.open_file(path)
         handles.append(file_handle)
         api.validate_file(file_handle, path)
-        initial_size = api.size(file_handle)
+        initial_snapshot = api.snapshot(file_handle)
+        initial_size = initial_snapshot[1]
         _require_within_limit(initial_size)
         raw = _read_windows_bounded(api, file_handle)
         api.validate_file(file_handle, path)
-        if api.size(file_handle) != initial_size or len(raw) != initial_size:
+        if api.snapshot(file_handle) != initial_snapshot or len(raw) != initial_size:
             raise _UnsafeConfigError("Windows startup configuration changed while reading")
-        for handle, parent in parent_handles:
+        verification_file = api.open_file(path)
+        handles.append(verification_file)
+        api.validate_file(verification_file, path)
+        if api.snapshot(verification_file) != initial_snapshot:
+            raise _UnsafeConfigError("Windows startup path binding changed")
+        for handle, parent, initial_parent_snapshot in parent_handles:
             api.validate_directory(handle, parent)
+            if api.snapshot(handle) != initial_parent_snapshot:
+                raise _UnsafeConfigError("Windows startup parent changed")
+            verification_parent = api.open_directory(parent)
+            handles.append(verification_parent)
+            api.validate_directory(verification_parent, parent)
+            if api.snapshot(verification_parent) != initial_parent_snapshot:
+                raise _UnsafeConfigError("Windows startup parent binding changed")
         return raw.decode("utf-8", errors="strict")
     finally:
         errors: list[OSError] = []
@@ -162,6 +177,25 @@ class _FileAttributeTagInfo(ctypes.Structure):
     ]
 
 
+class _FileTime(ctypes.Structure):
+    _fields_ = [("low", ctypes.c_uint32), ("high", ctypes.c_uint32)]
+
+
+class _ByHandleFileInformation(ctypes.Structure):
+    _fields_ = [
+        ("file_attributes", ctypes.c_uint32),
+        ("creation_time", _FileTime),
+        ("last_access_time", _FileTime),
+        ("last_write_time", _FileTime),
+        ("volume_serial_number", ctypes.c_uint32),
+        ("file_size_high", ctypes.c_uint32),
+        ("file_size_low", ctypes.c_uint32),
+        ("number_of_links", ctypes.c_uint32),
+        ("file_index_high", ctypes.c_uint32),
+        ("file_index_low", ctypes.c_uint32),
+    ]
+
+
 class _CtypesWindowsFileApi:
     _FILE_ATTRIBUTE_DIRECTORY = 0x00000010
     _FILE_ATTRIBUTE_REPARSE_POINT = 0x00000400
@@ -170,7 +204,7 @@ class _CtypesWindowsFileApi:
     _FILE_FLAG_SEQUENTIAL_SCAN = 0x08000000
     _FILE_READ_ATTRIBUTES = 0x00000080
     _GENERIC_READ = 0x80000000
-    _FILE_SHARE_ALL = 0x00000007
+    _FILE_SHARE_READ = 0x00000001
     _OPEN_EXISTING = 3
     _FILE_TYPE_DISK = 1
     _FILE_ATTRIBUTE_TAG_INFO_CLASS = 9
@@ -205,6 +239,12 @@ class _CtypesWindowsFileApi:
             ctypes.c_uint32,
         ]
         self._get_info.restype = ctypes.c_int
+        self._get_basic_info: Any = self._kernel32.GetFileInformationByHandle
+        self._get_basic_info.argtypes = [
+            ctypes.c_void_p,
+            ctypes.POINTER(_ByHandleFileInformation),
+        ]
+        self._get_basic_info.restype = ctypes.c_int
         self._get_size: Any = self._kernel32.GetFileSizeEx
         self._get_size.argtypes = [ctypes.c_void_p, ctypes.POINTER(ctypes.c_longlong)]
         self._get_size.restype = ctypes.c_int
@@ -239,7 +279,7 @@ class _CtypesWindowsFileApi:
         handle = self._create_file(
             str(path),
             access,
-            self._FILE_SHARE_ALL,
+            self._FILE_SHARE_READ,
             None,
             self._OPEN_EXISTING,
             flags,
@@ -284,6 +324,20 @@ class _CtypesWindowsFileApi:
         if not self._get_size(handle, self._ctypes.byref(value)):
             raise _UnsafeConfigError("Unable to size Windows startup configuration")
         return int(value.value)
+
+    def snapshot(self, handle: int) -> tuple[int, int, int, int]:
+        info = _ByHandleFileInformation()
+        if not self._get_basic_info(handle, self._ctypes.byref(info)):
+            raise _UnsafeConfigError("Unable to snapshot Windows startup path")
+        identity = (
+            int(info.volume_serial_number) << 64
+            | int(info.file_index_high) << 32
+            | int(info.file_index_low)
+        )
+        size = int(info.file_size_high) << 32 | int(info.file_size_low)
+        modified = int(info.last_write_time.high) << 32 | int(info.last_write_time.low)
+        created = int(info.creation_time.high) << 32 | int(info.creation_time.low)
+        return identity, size, modified, created
 
     def read(self, handle: int, size: int) -> bytes:
         buffer = self._ctypes.create_string_buffer(size)

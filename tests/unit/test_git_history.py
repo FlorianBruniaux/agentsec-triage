@@ -119,6 +119,7 @@ def test_relative_path_cannot_select_repository_git(
     fake_git = tmp_path / "git"
     fake_git.write_text("untrusted executable", encoding="utf-8")
     fake_git.chmod(0o755)
+    selected: list[str] = []
     attempted = False
 
     def fake_run(*args: object, **kwargs: object) -> subprocess.CompletedProcess[bytes]:
@@ -126,45 +127,44 @@ def test_relative_path_cannot_select_repository_git(
         attempted = True
         return subprocess.CompletedProcess(args, 0, stdout=b"", stderr=b"")
 
-    def must_not_popen(*args: object, **kwargs: object) -> _FakeProcess:
-        raise AssertionError("relative PATH executable must not be started")
+    def fake_popen(argv: list[str], **kwargs: object) -> _FakeProcess:
+        selected.append(argv[0])
+        return _FakeProcess(b"", b"", 0)
 
     monkeypatch.setenv("PATH", ".")
     monkeypatch.setattr(git_history.subprocess, "run", fake_run)
-    monkeypatch.setattr(git_history.subprocess, "Popen", must_not_popen)
+    monkeypatch.setattr(git_history.subprocess, "Popen", fake_popen)
 
-    indicators, diagnostics = inspect_git_history(tmp_path, max_commits=10)
+    indicators, _diagnostics = inspect_git_history(tmp_path, max_commits=10)
 
     assert attempted is False
+    assert str(fake_git) not in selected
     assert indicators == ()
-    assert len(diagnostics) == 1
-    assert diagnostics[0].kind is DiagnosticKind.ERROR
 
 
-def test_absolute_git_inside_scan_root_is_never_started(
+def test_user_writable_absolute_path_git_is_not_selected(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ):
-    (tmp_path / ".git").mkdir()
-    candidate = tmp_path / "bin" / "git"
+    root = tmp_path / "repository"
+    root.mkdir()
+    (root / ".git").mkdir()
+    candidate = tmp_path / "user-bin" / "git"
     candidate.parent.mkdir()
     candidate.write_text("untrusted executable", encoding="utf-8")
     candidate.chmod(0o755)
-    started = False
+    selected: list[str] = []
 
-    def fake_popen(*args: object, **kwargs: object) -> _FakeProcess:
-        nonlocal started
-        started = True
+    def fake_popen(argv: list[str], **kwargs: object) -> _FakeProcess:
+        selected.append(argv[0])
         return _FakeProcess(b"", b"", 0)
 
+    monkeypatch.setenv("PATH", str(candidate.parent))
     monkeypatch.setattr(shutil, "which", lambda *args, **kwargs: str(candidate))
     monkeypatch.setattr(git_history.subprocess, "Popen", fake_popen)
 
-    indicators, diagnostics = inspect_git_history(tmp_path, max_commits=10)
+    inspect_git_history(root, max_commits=10)
 
-    assert started is False
-    assert indicators == ()
-    assert len(diagnostics) == 1
-    assert diagnostics[0].kind is DiagnosticKind.ERROR
+    assert str(candidate) not in selected
 
 
 def test_symlinked_git_executable_is_never_started(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
@@ -173,21 +173,42 @@ def test_symlinked_git_executable_is_never_started(tmp_path: Path, monkeypatch: 
         candidate.symlink_to(sys.executable)
     except OSError as exc:
         pytest.skip(f"executable symlinks unavailable: {exc}")
-    started = False
+    selected: list[str] = []
 
-    def fake_popen(*args: object, **kwargs: object) -> _FakeProcess:
-        nonlocal started
-        started = True
+    def fake_popen(argv: list[str], **kwargs: object) -> _FakeProcess:
+        selected.append(argv[0])
         return _FakeProcess(b"", b"", 0)
 
     monkeypatch.setattr(shutil, "which", lambda *args, **kwargs: str(candidate))
     monkeypatch.setattr(git_history.subprocess, "Popen", fake_popen)
 
+    indicators, _diagnostics = inspect_git_history(tmp_path, max_commits=10)
+
+    assert str(Path(sys.executable).resolve()) not in selected
+    assert indicators == ()
+
+
+def test_posix_system_git_is_accepted_outside_scan_root(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    system_git = Path("/usr/bin/git")
+    if not system_git.is_file() or system_git.is_symlink():
+        pytest.skip("trusted /usr/bin/git unavailable")
+    selected: list[str] = []
+
+    def fake_popen(argv: list[str], **kwargs: object) -> _FakeProcess:
+        selected.append(argv[0])
+        return _FakeProcess(b"", b"", 0)
+
+    monkeypatch.setenv("PATH", "/untrusted")
+    monkeypatch.setattr(shutil, "which", lambda *args, **kwargs: None)
+    monkeypatch.setattr(git_history.subprocess, "Popen", fake_popen)
+
     indicators, diagnostics = inspect_git_history(tmp_path, max_commits=10)
 
-    assert started is False
     assert indicators == ()
-    assert len(diagnostics) == 1
+    assert diagnostics == ()
+    assert selected == [str(system_git.resolve())]
 
 
 def test_ignores_git_dir_environment_redirection(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
@@ -412,6 +433,29 @@ def test_missing_pipe_cleans_process_and_remaining_pipe(
     assert process.killed is True
     assert process.waited is True
     assert process.stderr.closed is True
+
+
+def test_taskkill_nonzero_reports_failure_and_direct_kill_remains_available(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    system_root = tmp_path / "Windows"
+    helper = system_root / "System32" / "taskkill.exe"
+    helper.parent.mkdir(parents=True)
+    helper.write_bytes(b"trusted helper")
+    monkeypatch.setenv("SYSTEMROOT", str(system_root))
+    monkeypatch.setattr(
+        git_history.subprocess,
+        "run",
+        lambda *args, **kwargs: subprocess.CompletedProcess(args, 1),
+    )
+
+    assert git_history._taskkill_process_tree(1234) is False
+
+    process = _FakeProcess(b"", b"", 0)
+    monkeypatch.setattr(git_history.os, "name", "nt")
+    monkeypatch.setattr(git_history, "_taskkill_process_tree", lambda _pid: False)
+    git_history._terminate_process_tree(process)
+    assert process.killed is True
 
 
 def test_rejects_negative_commit_limit_without_running_git(

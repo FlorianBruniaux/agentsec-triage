@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import os
-import shutil
 import signal
 import stat
 import subprocess
@@ -56,10 +55,10 @@ def inspect_git_history(
     ):
         return (), (_diagnostic(DiagnosticKind.ERROR, root, "Invalid Git commit limit"),)
 
-    safe_path = _absolute_path_entries(os.environ.get("PATH", os.defpath))
-    executable = _resolve_git_executable(safe_path, root)
+    executable = _resolve_git_executable(root)
     if executable is None:
         return (), (_git_failure_diagnostic(root),)
+    safe_path = _trusted_helper_path(executable)
 
     argv = [
         executable,
@@ -122,34 +121,109 @@ def inspect_git_history(
     return indicators, diagnostics
 
 
-def _absolute_path_entries(raw_path: str) -> str:
-    entries = [entry for entry in raw_path.split(os.pathsep) if entry and Path(entry).is_absolute()]
-    return os.pathsep.join(dict.fromkeys(entries))
-
-
-def _resolve_git_executable(safe_path: str, root: Path) -> str | None:
-    candidate = shutil.which("git", path=safe_path)
-    if candidate is None:
-        return None
-    candidate_path = Path(candidate)
-    if not candidate_path.is_absolute():
-        return None
+def _resolve_git_executable(root: Path) -> str | None:
     try:
-        candidate_stat = candidate_path.lstat()
-        resolved = candidate_path.resolve(strict=True)
         resolved_root = root.resolve(strict=True)
     except (OSError, RuntimeError, ValueError):
         return None
+    for trusted_root, candidate in _system_git_candidates():
+        resolved = _validate_system_executable(candidate, trusted_root, resolved_root)
+        if resolved is not None:
+            return str(resolved)
+    return None
+
+
+def _system_git_candidates() -> tuple[tuple[Path, Path], ...]:
+    if os.name == "nt":
+        candidates: list[tuple[Path, Path]] = []
+        system_root = os.environ.get("SYSTEMROOT")
+        if system_root:
+            root = Path(system_root)
+            candidates.append((root, root / "System32" / "git.exe"))
+        program_files = os.environ.get("PROGRAMFILES")
+        if program_files:
+            root = Path(program_files)
+            candidates.extend(
+                (
+                    (root, root / "Git" / "cmd" / "git.exe"),
+                    (root, root / "Git" / "bin" / "git.exe"),
+                )
+            )
+        return tuple(candidates)
+    return (
+        (Path("/usr/bin"), Path("/usr/bin/git")),
+        (Path("/bin"), Path("/bin/git")),
+    )
+
+
+def _validate_system_executable(
+    candidate: Path, trusted_root: Path, scan_root: Path
+) -> Path | None:
+    try:
+        candidate_stat = candidate.lstat()
+        resolved = candidate.resolve(strict=True)
+        resolved_trusted_root = trusted_root.resolve(strict=True)
+    except (OSError, RuntimeError, ValueError):
+        return None
     if (
-        stat.S_ISLNK(candidate_stat.st_mode)
+        not candidate.is_absolute()
+        or stat.S_ISLNK(candidate_stat.st_mode)
         or not stat.S_ISREG(candidate_stat.st_mode)
-        or not resolved.is_absolute()
-        or not resolved.is_file()
-        or candidate_path.is_relative_to(resolved_root)
-        or resolved.is_relative_to(resolved_root)
+        or not resolved.is_relative_to(resolved_trusted_root)
+        or candidate.is_relative_to(scan_root)
+        or resolved.is_relative_to(scan_root)
     ):
         return None
-    return str(resolved)
+    if os.name == "posix" and not _posix_path_is_uncontrolled(candidate):
+        return None
+    if os.name == "nt" and not _windows_path_has_no_reparse_components(candidate):
+        return None
+    return resolved
+
+
+def _posix_path_is_uncontrolled(path: Path) -> bool:
+    current_uid = os.geteuid()
+    current_groups = {os.getegid(), *os.getgroups()}
+    for component in (*reversed(path.parents), path):
+        try:
+            component_stat = component.lstat()
+        except (OSError, ValueError):
+            return False
+        mode = component_stat.st_mode
+        if stat.S_ISLNK(mode):
+            return False
+        if component != path and not stat.S_ISDIR(mode):
+            return False
+        if component == path and not stat.S_ISREG(mode):
+            return False
+        if mode & stat.S_IWOTH:
+            return False
+        if component_stat.st_gid in current_groups and mode & stat.S_IWGRP:
+            return False
+        if component_stat.st_uid == current_uid and mode & stat.S_IWUSR:
+            return False
+    return True
+
+
+def _windows_path_has_no_reparse_components(path: Path) -> bool:
+    reparse_flag = getattr(stat, "FILE_ATTRIBUTE_REPARSE_POINT", 0x00000400)
+    for component in (*reversed(path.parents), path):
+        try:
+            component_stat = component.lstat()
+        except (OSError, ValueError):
+            return False
+        if stat.S_ISLNK(component_stat.st_mode):
+            return False
+        if getattr(component_stat, "st_file_attributes", 0) & reparse_flag:
+            return False
+    return True
+
+
+def _trusted_helper_path(executable: str) -> str:
+    entries = [str(Path(executable).parent)]
+    if os.name == "nt" and (system_root := os.environ.get("SYSTEMROOT")):
+        entries.append(str(Path(system_root) / "System32"))
+    return os.pathsep.join(entries)
 
 
 def _git_environment(safe_path: str) -> dict[str, str]:
@@ -335,7 +409,7 @@ def _taskkill_process_tree(pid: int) -> bool:
     if stat.S_ISLNK(helper_stat.st_mode) or not stat.S_ISREG(helper_stat.st_mode):
         return False
     try:
-        subprocess.run(
+        completed = subprocess.run(
             [str(resolved), "/PID", str(pid), "/T", "/F"],
             shell=False,
             stdin=subprocess.DEVNULL,
@@ -347,7 +421,7 @@ def _taskkill_process_tree(pid: int) -> bool:
         )
     except (OSError, subprocess.SubprocessError, ValueError):
         return False
-    return True
+    return completed.returncode == 0
 
 
 def _wait_after_termination(process: subprocess.Popen[bytes]) -> None:
