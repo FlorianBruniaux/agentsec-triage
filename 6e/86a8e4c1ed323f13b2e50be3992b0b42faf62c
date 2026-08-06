@@ -1,0 +1,25 @@
+tests/unit/test_git_history.py
+  s_0df90997879182::t_46cc612cf68d54 541
+  s_0df90997879182::t_cfd18b7a6bb944 270
+  s_0df90997879182::t_d000c32ec2899a 214-269,273-301,303-308
+  s_0df90997879182::t_0a1f055f00917b 271-272,302
+src/agentsec/analyzers/git_history.py
+  s_0df90997879182::t_0e6287cf2c5b9b 3,9,28-36,148,150-153,157-158,168-195,197-207,209-224,226-239,258,260,279,281,283,304-305,480-481,483,500
+  s_0df90997879182::t_712028329e1de6 13,196,208,225
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "6e86a8e4c1ed323f13b2e50be3992b0b42faf62c",
+  "prompts": {},
+  "sessions": {
+    "s_0df90997879182": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019fd73a-588d-7f03-ab50-494ca0e95848",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Florian BRUNIAUX <florian@bruniaux.com>"
+    }
+  }
+}
