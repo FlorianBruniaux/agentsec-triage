@@ -13,6 +13,19 @@ class ThreatDatabaseError(RuntimeError):
     """Raised when the bundled runtime threat database is missing or invalid."""
 
 
+class DuplicateJsonKeyError(ValueError):
+    """Raised when JSON contains an ambiguous object."""
+
+
+def _reject_duplicate_json_keys(pairs: list[tuple[str, object]]) -> dict[str, object]:
+    result: dict[str, object] = {}
+    for key, value in pairs:
+        if key in result:
+            raise DuplicateJsonKeyError
+        result[key] = value
+    return result
+
+
 _REQUIRED_KEYS = (
     "version",
     "updated",
@@ -111,7 +124,14 @@ def _load_payload() -> dict[str, object]:
         raw = resources.files("agentsec.resources").joinpath("threat-db.json").read_text(
             encoding="utf-8"
         )
-        loaded = cast(object, json.loads(raw))
+        loaded = cast(
+            object,
+            json.loads(raw, object_pairs_hook=_reject_duplicate_json_keys),
+        )
+    except DuplicateJsonKeyError as exc:
+        raise ThreatDatabaseError(
+            "bundled threat database contains duplicate JSON object key"
+        ) from exc
     except (OSError, UnicodeError, json.JSONDecodeError) as exc:
         raise ThreatDatabaseError(f"cannot load bundled threat database: {exc}") from exc
     payload = _object(loaded, "bundled threat database")

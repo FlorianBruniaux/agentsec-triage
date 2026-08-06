@@ -6,7 +6,7 @@ import re
 import sys
 from collections.abc import Mapping, Sequence
 from pathlib import Path
-from typing import TypedDict, cast
+from typing import Protocol, TypedDict, cast
 
 import yaml  # type: ignore[import-untyped]
 from jsonschema import Draft202012Validator  # type: ignore[import-untyped]
@@ -19,6 +19,47 @@ DEFAULT_OUTPUT = PROJECT_ROOT / "src" / "agentsec" / "resources" / "threat-db.js
 
 class ThreatDatabaseBuildError(Exception):
     """Raised when authoring data cannot be loaded, validated, or normalized."""
+
+
+class DuplicateYamlKeyError(ValueError):
+    """Raised when YAML contains an ambiguous mapping."""
+
+
+class DuplicateJsonKeyError(ValueError):
+    """Raised when JSON contains an ambiguous object."""
+
+
+class MappingNode(Protocol):
+    value: list[tuple[object, object]]
+
+
+class UniqueKeySafeLoader(yaml.SafeLoader):  # type: ignore[misc]
+    """Safe YAML loader that rejects duplicate keys at every mapping depth."""
+
+    def construct_mapping(
+        self, node: MappingNode, deep: bool = False
+    ) -> dict[object, object]:
+        self.flatten_mapping(node)
+        mapping: dict[object, object] = {}
+        for key_node, value_node in node.value:
+            key = cast(object, self.construct_object(key_node, deep=deep))
+            try:
+                duplicate = key in mapping
+            except TypeError as exc:
+                raise TypeError("invalid YAML mapping key") from exc
+            if duplicate:
+                raise DuplicateYamlKeyError
+            mapping[key] = cast(object, self.construct_object(value_node, deep=deep))
+        return mapping
+
+
+def _reject_duplicate_json_keys(pairs: list[tuple[str, object]]) -> dict[str, object]:
+    result: dict[str, object] = {}
+    for key, value in pairs:
+        if key in result:
+            raise DuplicateJsonKeyError
+        result[key] = value
+    return result
 
 
 class NormalizedPayload(TypedDict):
@@ -34,7 +75,19 @@ class NormalizedPayload(TypedDict):
 
 def _load_yaml(path: Path) -> dict[str, object]:
     try:
-        loaded = cast(object, yaml.safe_load(path.read_text(encoding="utf-8")))
+        loaded = cast(
+            object,
+            yaml.load(
+                path.read_text(encoding="utf-8"),
+                Loader=UniqueKeySafeLoader,
+            ),
+        )
+    except DuplicateYamlKeyError as exc:
+        raise ThreatDatabaseBuildError(
+            "load failed: duplicate YAML mapping key"
+        ) from exc
+    except TypeError as exc:
+        raise ThreatDatabaseBuildError("load failed: invalid YAML mapping key") from exc
     except (OSError, UnicodeError, yaml.YAMLError) as exc:
         raise ThreatDatabaseBuildError(f"load failed for {path}: {exc}") from exc
     if not isinstance(loaded, dict) or not all(isinstance(key, str) for key in loaded):
@@ -44,7 +97,17 @@ def _load_yaml(path: Path) -> dict[str, object]:
 
 def _load_schema(path: Path) -> dict[str, object]:
     try:
-        loaded = cast(object, json.loads(path.read_text(encoding="utf-8")))
+        loaded = cast(
+            object,
+            json.loads(
+                path.read_text(encoding="utf-8"),
+                object_pairs_hook=_reject_duplicate_json_keys,
+            ),
+        )
+    except DuplicateJsonKeyError as exc:
+        raise ThreatDatabaseBuildError(
+            "schema load failed: duplicate JSON object key"
+        ) from exc
     except (OSError, UnicodeError, json.JSONDecodeError) as exc:
         raise ThreatDatabaseBuildError(f"schema load failed for {path}: {exc}") from exc
     if not isinstance(loaded, dict) or not all(isinstance(key, str) for key in loaded):

@@ -61,6 +61,81 @@ def test_builder_rejects_invalid_authoring_source(tmp_path: Path):
     assert not output.exists()
 
 
+@pytest.mark.parametrize(
+    "source_text",
+    [
+        'version: "2.26.0"\nversion: "do-not-leak"\n',
+        (
+            "iocs:\n"
+            "  malware_hashes:\n"
+            '    - hash: "first"\n'
+            '      hash: "do-not-leak"\n'
+        ),
+    ],
+    ids=["top-level", "nested"],
+)
+def test_builder_rejects_duplicate_yaml_keys_without_leaking_context(
+    source_text: str, tmp_path: Path
+):
+    source = tmp_path / "secret-source.yaml"
+    output = tmp_path / "threat-db.json"
+    source.write_text(source_text, encoding="utf-8")
+
+    result = subprocess.run(
+        [
+            sys.executable,
+            "scripts/build_threat_db.py",
+            "--source",
+            str(source),
+            "--output",
+            str(output),
+        ],
+        cwd=PROJECT_ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert result.returncode != 0
+    assert result.stderr == "error: load failed: duplicate YAML mapping key\n"
+    assert str(tmp_path) not in result.stderr
+    assert "do-not-leak" not in result.stderr
+    assert not output.exists()
+
+
+def test_builder_rejects_duplicate_schema_json_keys_without_leaking_context(
+    tmp_path: Path,
+):
+    schema = tmp_path / "secret-schema.json"
+    output = tmp_path / "threat-db.json"
+    schema.write_text(
+        '{"type":"object","properties":{"version":{"type":"string",'
+        '"type":"do-not-leak"}}}',
+        encoding="utf-8",
+    )
+
+    result = subprocess.run(
+        [
+            sys.executable,
+            "scripts/build_threat_db.py",
+            "--schema",
+            str(schema),
+            "--output",
+            str(output),
+        ],
+        cwd=PROJECT_ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert result.returncode != 0
+    assert result.stderr == "error: schema load failed: duplicate JSON object key\n"
+    assert str(tmp_path) not in result.stderr
+    assert "do-not-leak" not in result.stderr
+    assert not output.exists()
+
+
 def test_builder_normalizes_canonical_source_deterministically(tmp_path: Path):
     first_output = tmp_path / "first.json"
     second_output = tmp_path / "second.json"
@@ -181,3 +256,44 @@ def test_runtime_loader_rejects_duplicate_commit_indicators(
 
     with pytest.raises(threat_db.ThreatDatabaseError, match="sorted and unique"):
         threat_db.load_bundled_database()
+
+
+@pytest.mark.parametrize(
+    ("original", "replacement"),
+    [
+        (
+            '"version": "2.26.0"',
+            '"version": "2.26.0",\n  "version": "do-not-leak"',
+        ),
+        (
+            '"author": "claude"',
+            '"author": "claude",\n      "author": "do-not-leak"',
+        ),
+    ],
+    ids=["top-level", "nested"],
+)
+def test_runtime_loader_rejects_duplicate_json_keys_without_leaking_context(
+    original: str,
+    replacement: str,
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+):
+    from agentsec import threat_db
+
+    resource = (PROJECT_ROOT / "src/agentsec/resources/threat-db.json").read_text(
+        encoding="utf-8"
+    )
+    assert resource.count(original) == 1
+    (tmp_path / "threat-db.json").write_text(
+        resource.replace(original, replacement, 1), encoding="utf-8"
+    )
+    monkeypatch.setattr(threat_db.resources, "files", lambda _package: tmp_path)
+
+    with pytest.raises(threat_db.ThreatDatabaseError) as exc_info:
+        threat_db.load_bundled_database()
+
+    assert str(exc_info.value) == (
+        "bundled threat database contains duplicate JSON object key"
+    )
+    assert str(tmp_path) not in str(exc_info.value)
+    assert "do-not-leak" not in str(exc_info.value)
