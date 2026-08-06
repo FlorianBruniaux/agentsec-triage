@@ -9,7 +9,7 @@ from typing import cast
 from agentsec.analyzers.safe_io import safe_read_regular_file
 from agentsec.models import Diagnostic, DiagnosticKind
 
-_MAX_STARTUP_CONFIG_BYTES = 1_000_000
+_MAX_STARTUP_CONFIG_BYTES = 1024 * 1024
 _CLAUDE_STARTUP_EVENTS = (
     "SessionStart",
     "Setup",
@@ -45,6 +45,8 @@ def inspect_startup_config_content(
     path: Path,
 ) -> tuple[tuple[StartupHook, ...], tuple[Diagnostic, ...]]:
     """Parse already-read startup configuration bytes without reopening the path."""
+    if len(content) > _MAX_STARTUP_CONFIG_BYTES:
+        return (), (_error(path, "Startup configuration exceeds 1 MiB parser limit"),)
     is_claude = path.parent.name == ".claude" and path.name in {
         "settings.json",
         "settings.local.json",

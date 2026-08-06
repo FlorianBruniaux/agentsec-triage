@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import hashlib
 import re
-import shlex
 import stat
 from pathlib import Path
 
@@ -44,7 +43,9 @@ _LOCKFILE_NAMES = frozenset(
 )
 _CAMPAIGN_FILENAMES = frozenset({"setup.mjs", "math_symbol.js", "math_init.js"})
 _SCRIPT_INTERPRETERS = frozenset({"node", "node.exe", "bun", "bun.exe", "deno", "deno.exe"})
-_VALID_KEYV_WILDCARD_PACKAGE = re.compile(r"^@keyv/(?![._])[a-z0-9][a-z0-9._~-]*$")
+_VALID_KEYV_PACKAGE_SEGMENT = re.compile(r"^[a-z0-9_~-][a-z0-9._~-]*$")
+_ENVIRONMENT_ASSIGNMENT = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*=.*$")
+_MAX_NPM_PACKAGE_NAME_LENGTH = 214
 _MAX_GIT_COMMITS = 100_000
 
 
@@ -55,10 +56,7 @@ class ShaiHuludDetector:
     version = "1"
 
     def applies(self, context: ScanContext) -> bool:
-        return (
-            any(_is_applicability_file(item.relative_path) for item in context.files)
-            or (_git_metadata_state(context.root)[0])
-        )
+        return bool(context.files) or _git_metadata_state(context.root)[0]
 
     def run(self, context: ScanContext) -> DetectorResult:
         findings: list[Finding] = []
@@ -171,10 +169,6 @@ def _file_category(path: Path) -> str | None:
     return None
 
 
-def _is_applicability_file(path: Path) -> bool:
-    return _file_category(path) is not None
-
-
 def _file_safety_error(item: DiscoveredFile, context: ScanContext) -> Diagnostic | None:
     if item.symlink:
         return Diagnostic(
@@ -196,9 +190,20 @@ def _is_compromised(name: str, version: str, database: ThreatDatabase) -> bool:
         return True
     return any(
         prefix == "@keyv/"
-        and _VALID_KEYV_WILDCARD_PACKAGE.fullmatch(name) is not None
+        and _is_valid_keyv_wildcard_package(name)
         and version in versions
         for prefix, versions in database.wildcard_package_versions.items()
+    )
+
+
+def _is_valid_keyv_wildcard_package(name: str) -> bool:
+    if len(name) > _MAX_NPM_PACKAGE_NAME_LENGTH or not name.startswith("@keyv/"):
+        return False
+    segment = name.removeprefix("@keyv/")
+    return (
+        bool(segment)
+        and not segment.startswith(".")
+        and _VALID_KEYV_PACKAGE_SEGMENT.fullmatch(segment) is not None
     )
 
 
@@ -262,34 +267,125 @@ def _startup_findings(hooks: tuple[StartupHook, ...], path: Path) -> tuple[Findi
 
 
 def _is_campaign_invocation(command: str) -> bool:
-    try:
-        lexer = shlex.shlex(command, posix=True, punctuation_chars=";&|")
-        lexer.whitespace_split = True
-        lexer.commenters = "#"
-        tokens = list(lexer)
-    except ValueError:
-        return False
+    segments = _tokenize_command_segments(command)
+    return any(_segment_invokes_campaign_file(segment) for segment in segments)
 
-    segment: list[str] = []
-    for token in (*tokens, ";"):
-        if token and all(character in ";&|" for character in token):
-            if _segment_invokes_campaign_file(segment):
-                return True
-            segment = []
+
+def _tokenize_command_segments(command: str) -> tuple[tuple[str, ...], ...]:
+    segments: list[tuple[str, ...]] = []
+    tokens: list[str] = []
+    token: list[str] = []
+    token_started = False
+    quote: str | None = None
+    index = 0
+
+    def finish_token() -> None:
+        nonlocal token_started
+        if token_started:
+            tokens.append("".join(token))
+            token.clear()
+            token_started = False
+
+    def finish_segment() -> None:
+        finish_token()
+        if tokens:
+            segments.append(tuple(tokens))
+            tokens.clear()
+
+    while index < len(command):
+        character = command[index]
+        if quote is not None:
+            if character == quote:
+                quote = None
+            elif character == "\\" and index + 1 < len(command) and command[index + 1] == quote:
+                token.append(command[index + 1])
+                index += 1
+            else:
+                token.append(character)
+            index += 1
+            continue
+
+        if character in {'"', "'"}:
+            quote = character
+            token_started = True
+        elif character == "\\" and index + 1 < len(command) and (
+            command[index + 1].isspace() or command[index + 1] in "\"';|&\\"
+        ):
+            token.append(command[index + 1])
+            token_started = True
+            index += 1
+        elif character == "#" and not token_started:
+            finish_token()
+            while index < len(command) and command[index] not in "\r\n":
+                index += 1
+            continue
+        elif character in "\r\n;|&":
+            finish_segment()
+        elif character.isspace():
+            finish_token()
         else:
-            segment.append(token)
-    return False
+            token.append(character)
+            token_started = True
+        index += 1
+
+    if quote is not None:
+        return ()
+    finish_segment()
+    return tuple(segments)
 
 
-def _segment_invokes_campaign_file(tokens: list[str]) -> bool:
+def _segment_invokes_campaign_file(tokens: tuple[str, ...]) -> bool:
     if not tokens:
         return False
-    executable = _command_basename(tokens[0])
+    command_tokens = _strip_environment_prefix(tokens)
+    if not command_tokens:
+        return False
+    executable = _command_basename(command_tokens[0])
     if executable in _CAMPAIGN_FILENAMES:
         return True
     if executable not in _SCRIPT_INTERPRETERS:
         return False
-    return any(_command_basename(token) in _CAMPAIGN_FILENAMES for token in tokens[1:])
+    return _runtime_entrypoint_is_campaign(executable, command_tokens[1:])
+
+
+def _strip_environment_prefix(tokens: tuple[str, ...]) -> tuple[str, ...]:
+    index = 0
+    while index < len(tokens) and _ENVIRONMENT_ASSIGNMENT.fullmatch(tokens[index]):
+        index += 1
+    if index >= len(tokens) or _command_basename(tokens[index]) != "env":
+        return tokens[index:]
+
+    index += 1
+    while index < len(tokens):
+        token = tokens[index]
+        if _ENVIRONMENT_ASSIGNMENT.fullmatch(token):
+            index += 1
+            continue
+        if token in {"-u", "--unset", "-C", "--chdir"}:
+            index += 2
+            continue
+        if token.startswith("-"):
+            index += 1
+            continue
+        break
+    return tokens[index:]
+
+
+def _runtime_entrypoint_is_campaign(executable: str, arguments: tuple[str, ...]) -> bool:
+    deno_run_pending = executable in {"deno", "deno.exe"}
+    for token in arguments:
+        lowered = token.lower()
+        if lowered in {"-e", "--eval", "-p", "--print"} or lowered.startswith(
+            ("--eval=", "--print=")
+        ):
+            return False
+        if token == "--" or token.startswith("-"):
+            continue
+        if deno_run_pending and lowered == "run":
+            deno_run_pending = False
+            continue
+        return _command_basename(token) in _CAMPAIGN_FILENAMES
+    return False
 
 
 def _command_basename(token: str) -> str:

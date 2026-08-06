@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from contextlib import suppress
 from pathlib import Path
 
 import pytest
@@ -27,6 +28,56 @@ def test_rejects_oversized_file_without_partial_content(tmp_path: Path) -> None:
 
     assert content is None
     assert diagnostics[0].kind is DiagnosticKind.ERROR
+
+
+def test_absolute_safe_read_cap_cannot_be_increased_by_caller(tmp_path: Path) -> None:
+    path = tmp_path / "payload"
+    path.write_bytes(b"x" * (4 * 1024 * 1024 + 1))
+
+    content, diagnostics = safe_read_regular_file(path, max_bytes=100 * 1024 * 1024)
+
+    assert content is None
+    assert diagnostics[0].kind is DiagnosticKind.ERROR
+
+
+def test_parent_traversal_close_failure_still_closes_following_descriptor(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    nested = tmp_path / "nested"
+    nested.mkdir()
+    path = nested / "payload"
+    path.write_bytes(b"payload")
+    opened: list[int] = []
+    close_attempts: list[int] = []
+    real_open = safe_io.os.open
+    real_close = safe_io.os.close
+    injected = False
+
+    def recording_open(*args: object, **kwargs: object) -> int:
+        descriptor = real_open(*args, **kwargs)
+        opened.append(descriptor)
+        return descriptor
+
+    def failing_close(descriptor: int) -> None:
+        nonlocal injected
+        close_attempts.append(descriptor)
+        if not injected and len(opened) >= 2 and descriptor == opened[-2]:
+            injected = True
+            real_close(descriptor)
+            raise OSError("injected close failure")
+        with suppress(OSError):
+            real_close(descriptor)
+
+    monkeypatch.setattr(safe_io.os, "open", recording_open)
+    monkeypatch.setattr(safe_io.os, "close", failing_close)
+    monkeypatch.setattr(safe_io, "_supports_anchored_no_follow", lambda: True)
+
+    content, diagnostics = safe_read_regular_file(path, max_bytes=100)
+
+    assert content is None
+    assert diagnostics[0].kind is DiagnosticKind.ERROR
+    assert len(opened) >= 2
+    assert set(opened[:2]).issubset(close_attempts)
 
 
 def test_windows_reader_returns_content_instead_of_failing_platform_closed(

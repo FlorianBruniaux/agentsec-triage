@@ -8,7 +8,7 @@ from pathlib import Path
 from agentsec.analyzers.safe_io import safe_read_regular_file
 from agentsec.models import Diagnostic, DiagnosticKind
 
-_MAX_PACKAGE_MANIFEST_BYTES = 1_000_000
+_MAX_PACKAGE_MANIFEST_BYTES = 1024 * 1024
 
 
 @dataclass(frozen=True, slots=True)
@@ -38,6 +38,8 @@ def inspect_package_manifest_content(
     path: Path,
 ) -> tuple[InstalledPackage | None, tuple[Diagnostic, ...]]:
     """Inspect already-read package-manifest bytes without reopening the path."""
+    if len(content) > _MAX_PACKAGE_MANIFEST_BYTES:
+        return None, (_error(path, "Package manifest exceeds 1 MiB parser limit"),)
     try:
         text = content.decode("utf-8", errors="strict")
     except UnicodeError:

@@ -10,7 +10,7 @@ import pytest
 
 from agentsec.detectors.base import ScanContext
 from agentsec.detectors.registry import get_detectors
-from agentsec.detectors.shai_hulud import ShaiHuludDetector
+from agentsec.detectors.shai_hulud import ShaiHuludDetector, _is_campaign_invocation
 from agentsec.engine.discovery import DiscoveredFile, DiscoveryLimits
 from agentsec.engine.runner import run_scan
 from agentsec.models import (
@@ -280,7 +280,16 @@ def test_applicability_and_registry_are_explicit(tmp_path: Path) -> None:
     assert detector.applies(context("node_modules/keyv/package.json")) is True
     assert detector.applies(context(".claude/settings.local.json")) is True
     assert detector.applies(context(".vscode/tasks.json")) is True
-    assert detector.applies(context("package.json")) is False
+    assert detector.applies(context("package.json")) is True
+    assert detector.applies(context("payload")) is True
+    assert detector.applies(
+        ScanContext(
+            root=tmp_path,
+            files=(),
+            database=database,
+            limits=LIMITS,
+        )
+    ) is False
     assert [item.id for item in get_detectors()] == ["shai-hulud-keyv"]
 
 
@@ -387,7 +396,14 @@ def test_structured_file_is_hashed_and_parsed_from_one_safe_read(
 
 @pytest.mark.parametrize(
     "package_name",
-    ["@keyv/", "@keyv/mongo/extra", "@keyv/invalid name", "@keyv/.hidden"],
+    [
+        "@keyv/",
+        "@keyv/mongo/extra",
+        "@keyv/invalid name",
+        "@keyv/.hidden",
+        "@keyv/Mongo",
+        "@keyv/" + "a" * 209,
+    ],
 )
 def test_wildcard_ioc_requires_one_valid_scoped_package_segment(
     tmp_path: Path, package_name: str
@@ -403,6 +419,23 @@ def test_wildcard_ioc_requires_one_valid_scoped_package_segment(
     result = _scan(tmp_path)
 
     assert not any(item.rule_id == "compromised-lockfile-version" for item in result.findings)
+
+
+@pytest.mark.parametrize("package_name", ["@keyv/_mongo", "@keyv/-mongo"])
+def test_wildcard_ioc_accepts_valid_leading_punctuation(
+    tmp_path: Path, package_name: str
+) -> None:
+    lockfile = tmp_path / "package-lock.json"
+    lockfile.write_text(
+        '{"lockfileVersion":3,"packages":{"node_modules/'
+        + package_name
+        + '":{"version":"6.0.0"}}}',
+        encoding="utf-8",
+    )
+
+    result = _scan(tmp_path)
+
+    assert any(item.rule_id == "compromised-lockfile-version" for item in result.findings)
 
 
 def test_echoing_campaign_filename_stays_review_only(tmp_path: Path) -> None:
@@ -432,7 +465,7 @@ def test_echoing_campaign_filename_stays_review_only(tmp_path: Path) -> None:
     ]
 
 
-def test_claude_settings_backup_does_not_make_detector_applicable(tmp_path: Path) -> None:
+def test_any_discovered_file_makes_detector_applicable(tmp_path: Path) -> None:
     path = ".claude/settings.backup.json"
     context = ScanContext(
         root=tmp_path,
@@ -441,7 +474,72 @@ def test_claude_settings_backup_does_not_make_detector_applicable(tmp_path: Path
         limits=LIMITS,
     )
 
-    assert ShaiHuludDetector().applies(context) is False
+    assert ShaiHuludDetector().applies(context) is True
+
+
+def test_payload_only_known_hash_is_detected(tmp_path: Path) -> None:
+    payload = tmp_path / "renamed-payload"
+    payload.write_bytes(b"known malicious payload")
+
+    result = _scan(tmp_path, _database(payload=payload))
+
+    assert result.exit_code() == 1
+    assert [item.rule_id for item in result.findings] == ["known-payload-hash"]
+
+
+@pytest.mark.parametrize(
+    "command",
+    [
+        "node setup.mjs",
+        "NODE_OPTIONS=x node setup.mjs",
+        "env NODE_OPTIONS=x node setup.mjs",
+        "echo harmless\nnode setup.mjs",
+        r"node .\setup.mjs",
+    ],
+)
+def test_campaign_invocation_recognizes_executed_script(command: str) -> None:
+    assert _is_campaign_invocation(command) is True
+
+
+@pytest.mark.parametrize(
+    "command",
+    [
+        "echo setup.mjs",
+        'node -e "console.log(\'setup.mjs\')"',
+        "node --eval=setup.mjs",
+        'echo "node setup.mjs"',
+        "node safe.js setup.mjs",
+    ],
+)
+def test_campaign_invocation_rejects_mentions_and_non_entrypoint_arguments(
+    command: str,
+) -> None:
+    assert _is_campaign_invocation(command) is False
+
+
+def test_structured_file_between_parser_and_hash_caps_is_hashed_then_rejected(
+    tmp_path: Path,
+) -> None:
+    settings = tmp_path / ".claude" / "settings.json"
+    settings.parent.mkdir()
+    prefix = b'{"hooks":{}}'
+    content = prefix + b" " * (2 * 1024 * 1024 - len(prefix))
+    settings.write_bytes(content)
+    limits = DiscoveryLimits(
+        max_file_bytes=10 * 1024 * 1024,
+        max_files=100,
+        max_diagnostics=100,
+    )
+
+    result = _scan(tmp_path, _database(payload=settings), limits)
+
+    assert result.exit_code() == 2
+    assert any(item.rule_id == "known-payload-hash" for item in result.findings)
+    assert any(
+        diagnostic.kind is DiagnosticKind.ERROR
+        and "limit" in diagnostic.message.lower()
+        for diagnostic in result.detector_results[0].diagnostics
+    )
 
 
 def test_git_indicator_uses_injected_database_instead_of_bundled_data(

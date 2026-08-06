@@ -78,6 +78,16 @@ def test_parses_lockfile_from_already_read_content(tmp_path: Path):
     ]
 
 
+def test_content_api_rejects_lockfile_above_four_mib(tmp_path: Path):
+    path = tmp_path / "package-lock.json"
+
+    packages, diagnostics = parse_lockfile_content(b" " * (4 * 1024 * 1024 + 1), path)
+
+    assert packages == ()
+    assert diagnostics[0].kind is DiagnosticKind.ERROR
+    assert "limit" in diagnostics[0].message.lower()
+
+
 def test_malformed_package_lock_fails_closed():
     path = FIXTURES / "malformed-package-lock.json"
 

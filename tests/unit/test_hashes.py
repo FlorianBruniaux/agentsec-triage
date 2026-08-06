@@ -41,6 +41,15 @@ def test_file_above_max_bytes_returns_error(tmp_path: Path):
     _assert_hash_error(path, digest, diagnostics)
 
 
+def test_hash_absolute_cap_cannot_be_increased_by_caller(tmp_path: Path):
+    path = tmp_path / "payload"
+    path.write_bytes(b"x" * (4 * 1024 * 1024 + 1))
+
+    digest, diagnostics = hash_file(path, max_bytes=100 * 1024 * 1024)
+
+    _assert_hash_error(path, digest, diagnostics)
+
+
 def test_symlink_is_never_dereferenced(tmp_path: Path):
     target = tmp_path / "target"
     target.write_bytes(b"known bytes")

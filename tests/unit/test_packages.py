@@ -58,6 +58,18 @@ def test_extracts_manifest_from_already_read_content(tmp_path: Path):
     assert (package.name, package.version) == ("keyv", "6.0.0")
 
 
+def test_content_api_rejects_manifest_above_one_mib(tmp_path: Path):
+    manifest = tmp_path / "package.json"
+
+    package, diagnostics = inspect_package_manifest_content(
+        b" " * (1024 * 1024 + 1), manifest
+    )
+
+    assert package is None
+    assert diagnostics[0].kind is DiagnosticKind.ERROR
+    assert "limit" in diagnostics[0].message.lower()
+
+
 def test_does_not_treat_postinstall_as_preinstall_evidence(tmp_path: Path):
     manifest = tmp_path / "package.json"
     manifest.write_text(

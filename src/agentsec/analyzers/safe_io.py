@@ -11,6 +11,7 @@ from typing import Any, Protocol
 from agentsec.models import Diagnostic, DiagnosticKind
 
 _READ_CHUNK_SIZE = 64 * 1024
+_MAX_SAFE_FILE_BYTES = 4 * 1024 * 1024
 
 
 class _UnsafeFileError(OSError):
@@ -47,8 +48,13 @@ def safe_read_regular_file(
     """Read one regular file once, bounded and without following links."""
     if isinstance(max_bytes, bool) or not isinstance(max_bytes, int) or max_bytes < 0:
         return None, (_error(path, "Invalid safe read byte limit"),)
+    effective_limit = min(max_bytes, _MAX_SAFE_FILE_BYTES)
     try:
-        content = _read_windows(path, max_bytes) if _is_windows() else _read_posix(path, max_bytes)
+        content = (
+            _read_windows(path, effective_limit)
+            if _is_windows()
+            else _read_posix(path, effective_limit)
+        )
     except _SymlinkedFileError as error:
         return None, (_error(error.path, "Refusing to follow symlinked file path"),)
     except (OSError, OverflowError, UnicodeError, ValueError):
@@ -124,9 +130,11 @@ def _open_parent_directory(path: Path) -> tuple[int, str]:
     if not components:
         raise _UnsafeFileError("file path has no file component")
 
-    current = os.open(anchor, _directory_open_flags())
+    current: int | None = os.open(anchor, _directory_open_flags())
     current_path = Path(anchor)
     try:
+        if current is None:
+            raise _UnsafeFileError("file parent descriptor was not opened")
         _require_directory_file(os.fstat(current))
         for component in components[:-1]:
             current_path /= component
@@ -139,13 +147,21 @@ def _open_parent_directory(path: Path) -> tuple[int, str]:
                 _require_same_identity(path_before, opened)
                 _require_unchanged(path_before, opened)
             except BaseException:
-                os.close(following)
+                _close_descriptors(following)
                 raise
-            os.close(current)
+            previous = current
             current = following
+            try:
+                os.close(previous)
+            except BaseException:
+                _close_descriptors(previous, current)
+                current = None
+                raise
     except BaseException:
-        os.close(current)
+        _close_descriptors(current)
         raise
+    if current is None:
+        raise _UnsafeFileError("file parent descriptor was not retained")
     return current, components[-1]
 
 

@@ -9,7 +9,7 @@ from pathlib import Path
 from agentsec.analyzers.safe_io import safe_read_regular_file
 from agentsec.models import Diagnostic, DiagnosticKind
 
-_MAX_LOCKFILE_BYTES = 4_000_000
+_MAX_LOCKFILE_BYTES = 4 * 1024 * 1024
 
 
 @dataclass(frozen=True, slots=True)
@@ -41,6 +41,8 @@ def parse_lockfile_content(
     path: Path,
 ) -> tuple[tuple[ResolvedPackage, ...], tuple[Diagnostic, ...]]:
     """Parse already-read lockfile bytes without accessing the path again."""
+    if len(content) > _MAX_LOCKFILE_BYTES:
+        return (), (_error(path, "Lockfile content exceeds 4 MiB parser limit"),)
     if path.name == "bun.lockb":
         return (), (_error(path, "Unsupported binary Bun lockfile format"),)
 

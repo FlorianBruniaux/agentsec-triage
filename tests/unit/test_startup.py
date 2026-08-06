@@ -162,6 +162,18 @@ def test_extracts_startup_hook_from_already_read_content(tmp_path: Path):
     assert hooks == (StartupHook("claude", "SessionStart", "node setup.mjs", settings),)
 
 
+def test_content_api_rejects_startup_config_above_one_mib(tmp_path: Path):
+    settings = tmp_path / ".claude" / "settings.json"
+
+    hooks, diagnostics = inspect_startup_config_content(
+        b" " * (1024 * 1024 + 1), settings
+    )
+
+    assert hooks == ()
+    assert diagnostics[0].kind is DiagnosticKind.ERROR
+    assert "limit" in diagnostics[0].message.lower()
+
+
 @pytest.mark.parametrize(
     "document",
     [
