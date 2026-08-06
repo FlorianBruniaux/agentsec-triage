@@ -1,0 +1,31 @@
+scripts/build_threat_db.py
+  s_0df90997879182::t_e98a346c5a8d41 32-35,37-41,50-56,58,63-64
+tests/unit/test_threat_db.py
+  s_0df90997879182::t_808a9e4cc13721 115-126,128-146,148-153
+  s_0df90997879182::t_a6e39e53b8ad8f 2,5,7,16-21,127,147
+  s_e50e57e9ccf8eb::t_98a560614b2e21 154-155
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "f44300ea5849fe54b6a1560b2cdb56748c9897a7",
+  "prompts": {},
+  "sessions": {
+    "s_0df90997879182": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019fd73a-588d-7f03-ab50-494ca0e95848",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Florian BRUNIAUX <florian@bruniaux.com>"
+    },
+    "s_e50e57e9ccf8eb": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "cd5fca57-fc8c-4ca6-a936-950a4aa3fce3",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "Florian BRUNIAUX <florian@bruniaux.com>"
+    }
+  }
+}
