@@ -1,0 +1,24 @@
+src/agentsec/threat_db.py
+  s_0df90997879182::t_ad7f9c754d6c2b 16-28,127-134
+tests/unit/test_threat_db.py
+  s_0df90997879182::t_98831739ffd54f 64-138,259-299
+scripts/build_threat_db.py
+  s_0df90997879182::t_ad7f9c754d6c2b 24-31,36-39,41-43,45-64,78-90,100-110
+  s_0df90997879182::t_19092c81d5aeb0 9,32-35,40,44
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "8c92f93d76dbafecb05f8aae70b00751dd5f9e3c",
+  "prompts": {},
+  "sessions": {
+    "s_0df90997879182": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019fd73a-588d-7f03-ab50-494ca0e95848",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Florian BRUNIAUX <florian@bruniaux.com>"
+    }
+  }
+}
