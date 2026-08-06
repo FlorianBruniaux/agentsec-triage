@@ -29,8 +29,16 @@ class DuplicateJsonKeyError(ValueError):
     """Raised when JSON contains an ambiguous object."""
 
 
+class YamlNode(Protocol):
+    tag: str
+
+
 class MappingNode(Protocol):
-    value: list[tuple[object, object]]
+    value: list[tuple[YamlNode, object]]
+
+
+_YAML_MERGE_TAG = "tag:yaml.org,2002:merge"
+_YAML_MERGE_KEY = object()
 
 
 class UniqueKeySafeLoader(yaml.SafeLoader):  # type: ignore[misc]
@@ -39,18 +47,21 @@ class UniqueKeySafeLoader(yaml.SafeLoader):  # type: ignore[misc]
     def construct_mapping(
         self, node: MappingNode, deep: bool = False
     ) -> dict[object, object]:
-        self.flatten_mapping(node)
-        mapping: dict[object, object] = {}
-        for key_node, value_node in node.value:
-            key = cast(object, self.construct_object(key_node, deep=deep))
+        local_keys: dict[object, None] = {}
+        for key_node, _value_node in node.value:
+            key = (
+                _YAML_MERGE_KEY
+                if key_node.tag == _YAML_MERGE_TAG
+                else cast(object, self.construct_object(key_node, deep=deep))
+            )
             try:
-                duplicate = key in mapping
+                duplicate = key in local_keys
             except TypeError as exc:
                 raise TypeError("invalid YAML mapping key") from exc
             if duplicate:
                 raise DuplicateYamlKeyError
-            mapping[key] = cast(object, self.construct_object(value_node, deep=deep))
-        return mapping
+            local_keys[key] = None
+        return cast(dict[object, object], super().construct_mapping(node, deep=deep))
 
 
 def _reject_duplicate_json_keys(pairs: list[tuple[str, object]]) -> dict[str, object]:

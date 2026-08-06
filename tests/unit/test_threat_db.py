@@ -1,13 +1,22 @@
 import json
+import runpy
 import subprocess
 import sys
+from collections.abc import Callable
 from pathlib import Path
+from typing import cast
 
 import pytest
 import yaml
 from jsonschema import Draft202012Validator
 
 PROJECT_ROOT = Path(__file__).parents[2]
+
+
+def _load_authoring_yaml(path: Path) -> dict[str, object]:
+    namespace = runpy.run_path(str(PROJECT_ROOT / "scripts/build_threat_db.py"))
+    loader = cast(Callable[[Path], dict[str, object]], namespace["_load_yaml"])
+    return loader(path)
 
 
 def test_bundled_database_contains_keyv_campaign_iocs():
@@ -101,6 +110,47 @@ def test_builder_rejects_duplicate_yaml_keys_without_leaking_context(
     assert str(tmp_path) not in result.stderr
     assert "do-not-leak" not in result.stderr
     assert not output.exists()
+
+
+def test_yaml_loader_preserves_explicit_override_of_merged_mapping(tmp_path: Path):
+    source = tmp_path / "merge.yaml"
+    source.write_text(
+        "defaults: &defaults\n"
+        "  source: merged\n"
+        "  risk: high\n"
+        "entry:\n"
+        "  <<: *defaults\n"
+        "  risk: critical\n",
+        encoding="utf-8",
+    )
+
+    document = _load_authoring_yaml(source)
+
+    assert document["entry"] == {"source": "merged", "risk": "critical"}
+
+
+def test_yaml_loader_preserves_merge_sequence_precedence(tmp_path: Path):
+    source = tmp_path / "merge-sequence.yaml"
+    source.write_text(
+        "first: &first\n"
+        "  source: first\n"
+        "  risk: high\n"
+        "second: &second\n"
+        "  source: second\n"
+        "  notes: inherited\n"
+        "entry:\n"
+        "  <<: [*first, *second]\n"
+        "  risk: critical\n",
+        encoding="utf-8",
+    )
+
+    document = _load_authoring_yaml(source)
+
+    assert document["entry"] == {
+        "source": "first",
+        "notes": "inherited",
+        "risk": "critical",
+    }
 
 
 def test_builder_rejects_duplicate_schema_json_keys_without_leaking_context(
