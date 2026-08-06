@@ -1,0 +1,22 @@
+src/agentsec/engine/discovery.py
+  s_0df90997879182::t_58768753e7e63e 112-117
+tests/unit/test_runner.py
+  s_0df90997879182::t_828c3122ff151b 154-169
+  s_0df90997879182::t_36622399e0cfaa 139-153
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "5004bae40136fe0973477397f0bc7039185c6e9a",
+  "prompts": {},
+  "sessions": {
+    "s_0df90997879182": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019fd73a-588d-7f03-ab50-494ca0e95848",
+        "model": "gpt-5.6-terra"
+      },
+      "human_author": "Florian BRUNIAUX <florian@bruniaux.com>"
+    }
+  }
+}
