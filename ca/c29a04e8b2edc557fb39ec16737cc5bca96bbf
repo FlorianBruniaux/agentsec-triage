@@ -1,0 +1,38 @@
+src/agentsec/analyzers/packages.py
+  s_0df90997879182::t_ba9c5f3355b544 33-37,80-83
+  s_0df90997879182::t_a61851686a39e9 42
+  s_0df90997879182::t_b22804854501e3 1-28,30-32,38-41,43-79,84-87
+  s_0df90997879182::t_5467160fdeb76e 29
+src/agentsec/analyzers/hashes.py
+  s_0df90997879182::t_ba9c5f3355b544 39,52,92
+  s_0df90997879182::t_1ffa85207bbbfc 7,18-21,73,83
+  s_0df90997879182::t_5467160fdeb76e 58
+  s_0df90997879182::t_66a5ade3edd9f8 1-6,8-17,22-38,40-51,53-57,59-72,74-82,84-91,93-146
+tests/unit/test_packages.py
+  s_0df90997879182::t_56a3263720ce67 105-118
+  s_0df90997879182::t_ac4620f6328af4 1-5,7-75,77-96,124-126
+  s_0df90997879182::t_01448a4fa95cd3 97-104
+  s_0df90997879182::t_2597b752bdb04d 76
+  s_0df90997879182::t_1ffa85207bbbfc 6,119-123,127-128
+tests/unit/test_hashes.py
+  s_0df90997879182::t_ac4620f6328af4 1-2,4-8,10-13,21-80,89-132,151-193,245-250,256-258
+  s_0df90997879182::t_01448a4fa95cd3 14-20,81-88
+  s_0df90997879182::t_1ffa85207bbbfc 9,251-255,259-260
+  s_0df90997879182::t_2597b752bdb04d 3,133-150,194-244
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "cac29a04e8b2edc557fb39ec16737cc5bca96bbf",
+  "prompts": {},
+  "sessions": {
+    "s_0df90997879182": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019fd73a-588d-7f03-ab50-494ca0e95848",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Florian BRUNIAUX <florian@bruniaux.com>"
+    }
+  }
+}
