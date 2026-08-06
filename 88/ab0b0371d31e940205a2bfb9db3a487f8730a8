@@ -1,0 +1,23 @@
+tests/unit/test_hashes.py
+  s_0df90997879182::t_22fb8c2a806b70 350-351,358-386,391,397,399-418
+  s_0df90997879182::t_fa06037ae4f40a 352-357,387-390,392-396,398
+src/agentsec/analyzers/hashes.py
+  s_0df90997879182::t_c4f4f9e87ee856 33-34,63,65,67,69-71,156-165
+  s_0df90997879182::t_8c7d4759d2fbfc 166-167
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "88ab0b0371d31e940205a2bfb9db3a487f8730a8",
+  "prompts": {},
+  "sessions": {
+    "s_0df90997879182": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019fd73a-588d-7f03-ab50-494ca0e95848",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Florian BRUNIAUX <florian@bruniaux.com>"
+    }
+  }
+}
