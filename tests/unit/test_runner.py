@@ -121,5 +121,38 @@ def test_discovery_error_keeps_scan_incomplete(
     assert result.exit_code() == 2
 
 
+def test_root_resolution_error_becomes_an_incomplete_scan(
+    tmp_path: Path, empty_database: ThreatDatabase, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    def failing_resolve(path: Path, *, strict: bool = False) -> Path:
+        raise OSError("root resolution denied")
+
+    monkeypatch.setattr(Path, "resolve", failing_resolve)
+
+    result = run_scan(tmp_path, (), empty_database, LIMITS)
+
+    assert result.complete is False
+    assert result.exit_code() == 2
+    assert "cannot access scan root" in result.diagnostics[0].message
+
+
+def test_detector_errors_share_a_bounded_diagnostic_buffer(
+    tmp_path: Path, empty_database: ThreatDatabase
+) -> None:
+    limits = DiscoveryLimits(max_file_bytes=4_000_000, max_files=1000, max_diagnostics=1)
+
+    result = run_scan(
+        tmp_path,
+        [ExplodingDetector(), ExplodingDetector(), ExplodingDetector()],
+        empty_database,
+        limits,
+    )
+
+    assert result.complete is False
+    assert len(result.diagnostics) == 2
+    assert "detector failed" in result.diagnostics[0].message
+    assert "truncated" in result.diagnostics[1].message
+
+
 def test_empty_explicit_registry_returns_no_detectors() -> None:
     assert get_detectors() == ()

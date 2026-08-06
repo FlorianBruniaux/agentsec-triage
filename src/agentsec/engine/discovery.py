@@ -100,13 +100,13 @@ class _TraversalState:
 
 
 def discover(
-    root: Path, limits: DiscoveryLimits
+    root: Path, limits: DiscoveryLimits, *, resolved_root: Path | None = None
 ) -> tuple[tuple[DiscoveredFile, ...], tuple[Diagnostic, ...]]:
     diagnostics = _DiagnosticBuffer(root=root, limit=limits.max_diagnostics)
-    try:
-        scan_root = root.resolve(strict=True)
-    except (OSError, RuntimeError) as error:
-        diagnostics.add(root, f"cannot access scan root: {_error_message(error)}")
+    scan_root = (
+        _resolve_scan_root(root, diagnostics) if resolved_root is None else resolved_root
+    )
+    if scan_root is None:
         return (), diagnostics.finish()
 
     if not scan_root.is_dir():
@@ -137,6 +137,23 @@ def discover(
         tuple(sorted(discovered, key=lambda item: item.relative_path.as_posix())),
         diagnostics.finish(),
     )
+
+
+def resolve_scan_root(
+    root: Path, limits: DiscoveryLimits
+) -> tuple[Path | None, tuple[Diagnostic, ...]]:
+    """Resolve a root once, returning a bounded diagnostic instead of raising."""
+    diagnostics = _DiagnosticBuffer(root=root, limit=limits.max_diagnostics)
+    scan_root = _resolve_scan_root(root, diagnostics)
+    return scan_root, diagnostics.finish()
+
+
+def _resolve_scan_root(root: Path, diagnostics: _DiagnosticBuffer) -> Path | None:
+    try:
+        return root.resolve(strict=True)
+    except (OSError, RuntimeError, ValueError) as error:
+        diagnostics.add(root, f"cannot access scan root: {_error_message(error)}")
+        return None
 
 
 def _scan_directory(
