@@ -1,0 +1,57 @@
+src/agentsec/analyzers/safe_io.py
+  s_0df90997879182::t_fee8a6e82c0779 74,102-103,107,109-112
+  s_0df90997879182::t_70b5f587d9d093 1-73,75-101,104-106,108,113-534
+tests/unit/test_safe_io.py
+  s_0df90997879182::t_d3754d048e2614 1-74,76-83
+  s_0df90997879182::t_fee8a6e82c0779 75
+tests/unit/test_packages.py
+  s_0df90997879182::t_d3754d048e2614 5-8,48-58
+  s_0df90997879182::t_4052eae6fb04d6 59-60
+src/agentsec/analyzers/lockfiles.py
+  s_0df90997879182::t_e72c5377b9fb3d 9,12-13,33-46,48-50
+src/agentsec/analyzers/hashes.py
+  s_0df90997879182::t_e72c5377b9fb3d 6,10-13,15
+tests/unit/test_startup.py
+  s_0df90997879182::t_d3754d048e2614 10-14,153-162
+  s_0df90997879182::t_fee8a6e82c0779 247,264,301,316-317,333-334,347,377-378,421,428,476
+  s_0df90997879182::t_71cf4a79aa1d1a 9
+  s_0df90997879182::t_00d062c5316f33 163-164
+src/agentsec/detectors/shai_hulud.py
+  s_0df90997879182::t_73232a8fd9619f 5
+  s_0df90997879182::t_9ede4727fd215d 7,12-18,45-47,76-97,99,111-113,127-129,167,198-200,233,251,264-296,298
+  s_0df90997879182::t_fc902b0234f8e2 297
+src/agentsec/analyzers/packages.py
+  s_0df90997879182::t_e72c5377b9fb3d 8,11-12,30-40,42-44
+src/agentsec/analyzers/git_history.py
+  s_0df90997879182::t_863ce6d9c67e5d 124
+tests/unit/test_lockfiles.py
+  s_0df90997879182::t_d3754d048e2614 8-12,67-78
+  s_0df90997879182::t_2ce47bdb083227 79-80
+tests/integration/test_shai_hulud_detector.py
+  s_0df90997879182::t_eccf3376bc5fc1 350-413,428-483
+  s_0df90997879182::t_64df2ce4450dc7 4,414-427
+  s_0df90997879182::t_1c10dd6898ca16 54,83,208,215-216,218-220,222,226-233,249
+src/agentsec/analyzers/startup.py
+  s_0df90997879182::t_e72c5377b9fb3d 7,9,33-40,43-44,47,57,59,61-62
+tests/unit/test_hashes.py
+  s_0df90997879182::t_fee8a6e82c0779 8,87,97,167,173,185,191,205,217,252,263,316-317,355-356
+tests/unit/test_git_history.py
+  s_0df90997879182::t_fda3c7f3273033 45,52-57
+  s_0df90997879182::t_931a1bdf52a650 333-335,358-360
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "9bde0798a9b64494b9bbf6aa62e33c075868bcc8",
+  "prompts": {},
+  "sessions": {
+    "s_0df90997879182": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019fd73a-588d-7f03-ab50-494ca0e95848",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Florian BRUNIAUX <florian@bruniaux.com>"
+    }
+  }
+}
