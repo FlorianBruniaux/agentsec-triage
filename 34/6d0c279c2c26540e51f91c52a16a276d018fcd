@@ -1,0 +1,29 @@
+README.md
+  s_0df90997879182::t_1c46da5f4d40a6 1-5
+pyproject.toml
+  s_0df90997879182::t_abc5e1aa67d695 1-46
+.gitignore
+  s_0df90997879182::t_1c46da5f4d40a6 2-10
+src/agentsec/__init__.py
+  s_0df90997879182::t_1c46da5f4d40a6 1
+src/agentsec/cli.py
+  s_0df90997879182::t_1c46da5f4d40a6 1-25
+tests/unit/test_package.py
+  s_0df90997879182::t_71e813d879d840 1-12
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "346d0c279c2c26540e51f91c52a16a276d018fcd",
+  "prompts": {},
+  "sessions": {
+    "s_0df90997879182": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019fd73a-588d-7f03-ab50-494ca0e95848",
+        "model": "gpt-5.6-terra"
+      },
+      "human_author": "Florian BRUNIAUX <florian@bruniaux.com>"
+    }
+  }
+}
