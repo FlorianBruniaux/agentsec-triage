@@ -1,0 +1,50 @@
+tests/unit/test_threat_db.py
+  s_0df90997879182::t_dc29a5fca6a5af 1,4-5,9,27-36
+  s_0df90997879182::t_1033b8bf60a696 6,106-119
+  s_0df90997879182::t_e452d8d00296cd 147-165
+  s_0df90997879182::t_dff4b91a8bb744 7
+  s_0df90997879182::t_8b1808cc75a3bd 8
+  s_0df90997879182::t_dbdb7884046333 2-3,10-12,37-61
+  s_0df90997879182::t_dace95b100b71b 14-15,24-25
+  s_0df90997879182::t_ab3057a22250a7 13,16-23,26
+  s_0df90997879182::t_b7e500b7743815 62-101,103-105
+  s_0df90997879182::t_5842d7a3464e6a 102
+  s_0df90997879182::t_3f786634fb5a3d 120-146,166-183
+src/agentsec/resources/__init__.py
+  s_0df90997879182::t_ea6dc46157b29f 1
+src/agentsec/threat_db.py
+  s_0df90997879182::t_81cd804e9f5afe 51-53,55,136-138
+  s_0df90997879182::t_ea6dc46157b29f 1-43,46-50,54,57-68,71-81,84-86,88-95,98-100,106-135,139-144
+  s_0df90997879182::t_2523a48d1c98c3 44-45,56,69-70,82-83,101-105
+  s_0df90997879182::t_7d071b94420970 87,96-97
+data/IMPORT_PROVENANCE.md
+  s_0df90997879182::t_3ce9483a61d383 1-10
+data/threat-db.schema.json
+  s_0df90997879182::t_e6b389c5d5af18 1-137
+scripts/build_threat_db.py
+  s_0df90997879182::t_dff4b91a8bb744 9,11,24-34,186
+  s_0df90997879182::t_5c79eeb4259cea 1-4,6,8,10,13-23,35-63,65-73,214-224,228-230,241-245
+  s_0df90997879182::t_9453d4a05c48a4 5,7,64,74-180,182-185,187-213,225-227,231-240
+  s_0df90997879182::t_7d071b94420970 181
+  s_0df90997879182::t_8b1808cc75a3bd 12
+data/threat-db.yaml
+  s_0df90997879182::t_d6d5326f25ac6b 1-4315
+src/agentsec/resources/threat-db.json
+  s_0df90997879182::t_b6395c753a5d6b 1-81
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "54c7d456be2469ad3373bc6314815a952d766443",
+  "prompts": {},
+  "sessions": {
+    "s_0df90997879182": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019fd73a-588d-7f03-ab50-494ca0e95848",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Florian BRUNIAUX <florian@bruniaux.com>"
+    }
+  }
+}
