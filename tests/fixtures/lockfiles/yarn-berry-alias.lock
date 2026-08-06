@@ -1,0 +1,7 @@
+__metadata:
+  version: 8
+  cacheKey: 10c0
+
+"local-keyv@npm:keyv@6.0.0":
+  version: 6.0.0
+  resolution: "keyv@npm:6.0.0"

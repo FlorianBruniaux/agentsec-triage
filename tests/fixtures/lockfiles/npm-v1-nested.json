@@ -1,0 +1,14 @@
+{
+  "name": "npm-v1-nested-fixture",
+  "lockfileVersion": 1,
+  "dependencies": {
+    "wrapper": {
+      "version": "1.0.0",
+      "dependencies": {
+        "keyv": {
+          "version": "6.0.0"
+        }
+      }
+    }
+  }
+}

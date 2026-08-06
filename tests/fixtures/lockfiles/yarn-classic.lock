@@ -1,0 +1,5 @@
+# yarn lockfile v1
+
+keyv@^6.0.0:
+  version "6.0.0"
+  resolved "https://registry.yarnpkg.com/keyv/-/keyv-6.0.0.tgz"

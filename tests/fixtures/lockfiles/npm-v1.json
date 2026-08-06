@@ -1,0 +1,9 @@
+{
+  "name": "npm-v1-fixture",
+  "lockfileVersion": 1,
+  "dependencies": {
+    "keyv": {
+      "version": "6.0.0"
+    }
+  }
+}

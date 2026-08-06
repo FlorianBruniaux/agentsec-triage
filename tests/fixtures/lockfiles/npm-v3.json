@@ -1,0 +1,12 @@
+{
+  "name": "npm-v3-fixture",
+  "lockfileVersion": 3,
+  "packages": {
+    "": {
+      "name": "fixture"
+    },
+    "node_modules/@keyv/mongo": {
+      "version": "6.0.0"
+    }
+  }
+}

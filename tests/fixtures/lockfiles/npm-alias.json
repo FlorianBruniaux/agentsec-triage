@@ -1,0 +1,13 @@
+{
+  "name": "npm-alias-fixture",
+  "lockfileVersion": 2,
+  "packages": {
+    "": {
+      "name": "fixture"
+    },
+    "node_modules/local-keyv": {
+      "name": "local-keyv",
+      "version": "npm:keyv@6.0.0"
+    }
+  }
+}
