@@ -288,6 +288,43 @@ def test_fails_closed_when_anchored_no_follow_open_is_unavailable(
     _assert_error(settings, hooks, diagnostics)
 
 
+def test_windows_secure_reader_keeps_positive_startup_support(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    settings = tmp_path / ".claude" / "settings.json"
+    settings.parent.mkdir()
+    api = _FakeWindowsFileApi(
+        json.dumps({"hooks": {"SessionStart": [_hook_group("windows-command")]}}).encode()
+    )
+    monkeypatch.setattr(startup, "_is_windows", lambda: True, raising=False)
+    monkeypatch.setattr(startup, "_windows_file_api", lambda: api, raising=False)
+
+    hooks, diagnostics = inspect_startup_config(settings)
+
+    assert diagnostics == ()
+    assert hooks == (StartupHook("claude", "SessionStart", "windows-command", settings),)
+    assert api.opened
+    assert api.closed == list(reversed(api.opened))
+
+
+def test_windows_parent_reparse_is_rejected_and_handles_are_closed(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    settings = tmp_path / ".claude" / "settings.json"
+    settings.parent.mkdir()
+    api = _FakeWindowsFileApi(b'{"hooks": {}}', reject_parent=True)
+    monkeypatch.setattr(startup, "_is_windows", lambda: True, raising=False)
+    monkeypatch.setattr(startup, "_windows_file_api", lambda: api, raising=False)
+
+    hooks, diagnostics = inspect_startup_config(settings)
+
+    assert hooks == ()
+    assert len(diagnostics) == 1
+    assert diagnostics[0].kind is DiagnosticKind.ERROR
+    assert api.opened
+    assert api.closed == list(reversed(api.opened))
+
+
 def test_rejects_startup_config_larger_than_internal_limit(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ):
@@ -348,3 +385,39 @@ def _assert_error(path: Path, hooks: object, diagnostics: tuple[Diagnostic, ...]
     diagnostic = diagnostics[0]
     assert diagnostic.kind is DiagnosticKind.ERROR
     assert diagnostic.path == path
+
+
+class _FakeWindowsFileApi:
+    def __init__(self, content: bytes, *, reject_parent: bool = False) -> None:
+        self.content = content
+        self.initial_size = len(content)
+        self.reject_parent = reject_parent
+        self.opened: list[int] = []
+        self.closed: list[int] = []
+
+    def open_directory(self, path: Path) -> int:
+        handle = len(self.opened) + 1
+        self.opened.append(handle)
+        return handle
+
+    def validate_directory(self, handle: int, path: Path) -> None:
+        if self.reject_parent:
+            raise startup._SymlinkedConfigError(path)
+
+    def open_file(self, path: Path) -> int:
+        handle = len(self.opened) + 1
+        self.opened.append(handle)
+        return handle
+
+    def validate_file(self, handle: int, path: Path) -> None:
+        return None
+
+    def size(self, handle: int) -> int:
+        return self.initial_size
+
+    def read(self, handle: int, size: int) -> bytes:
+        content, self.content = self.content[:size], self.content[size:]
+        return content
+
+    def close(self, handle: int) -> None:
+        self.closed.append(handle)

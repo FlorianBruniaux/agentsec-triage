@@ -2,12 +2,14 @@ from __future__ import annotations
 
 import os
 import shutil
+import signal
+import stat
 import subprocess
 import threading
 from contextlib import suppress
 from dataclasses import dataclass
 from pathlib import Path
-from typing import BinaryIO
+from typing import IO
 
 from agentsec.models import Diagnostic, DiagnosticKind
 from agentsec.threat_db import load_bundled_database
@@ -18,6 +20,8 @@ _MAX_GIT_STDOUT_BYTES = 64 * 1024 * 1024
 _MAX_GIT_STDERR_BYTES = 64 * 1024
 _PIPE_CHUNK_SIZE = 64 * 1024
 _GIT_TIMEOUT_SECONDS = 10
+_READER_JOIN_SECONDS = 0.25
+_REAL_POPEN_TYPE = subprocess.Popen
 
 
 @dataclass(frozen=True, slots=True)
@@ -53,7 +57,7 @@ def inspect_git_history(
         return (), (_diagnostic(DiagnosticKind.ERROR, root, "Invalid Git commit limit"),)
 
     safe_path = _absolute_path_entries(os.environ.get("PATH", os.defpath))
-    executable = _resolve_git_executable(safe_path)
+    executable = _resolve_git_executable(safe_path, root)
     if executable is None:
         return (), (_git_failure_diagnostic(root),)
 
@@ -123,15 +127,27 @@ def _absolute_path_entries(raw_path: str) -> str:
     return os.pathsep.join(dict.fromkeys(entries))
 
 
-def _resolve_git_executable(safe_path: str) -> str | None:
+def _resolve_git_executable(safe_path: str, root: Path) -> str | None:
     candidate = shutil.which("git", path=safe_path)
     if candidate is None:
         return None
+    candidate_path = Path(candidate)
+    if not candidate_path.is_absolute():
+        return None
     try:
-        resolved = Path(candidate).resolve(strict=True)
+        candidate_stat = candidate_path.lstat()
+        resolved = candidate_path.resolve(strict=True)
+        resolved_root = root.resolve(strict=True)
     except (OSError, RuntimeError, ValueError):
         return None
-    if not resolved.is_absolute() or not resolved.is_file():
+    if (
+        stat.S_ISLNK(candidate_stat.st_mode)
+        or not stat.S_ISREG(candidate_stat.st_mode)
+        or not resolved.is_absolute()
+        or not resolved.is_file()
+        or candidate_path.is_relative_to(resolved_root)
+        or resolved.is_relative_to(resolved_root)
+    ):
         return None
     return str(resolved)
 
@@ -167,18 +183,14 @@ def _git_environment(safe_path: str) -> dict[str, str]:
 
 
 def _run_git_bounded(argv: list[str], root: Path, env: dict[str, str]) -> tuple[int, bytes]:
-    process = subprocess.Popen(
-        argv,
-        cwd=root,
-        shell=False,
-        stdin=subprocess.DEVNULL,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        close_fds=True,
-        env=env,
-    )
+    process = _start_isolated_process(argv, root, env)
     if process.stdout is None or process.stderr is None:
-        _kill(process)
+        _terminate_process_tree(process)
+        _wait_after_termination(process)
+        for stream in (process.stdout, process.stderr):
+            if stream is not None:
+                with suppress(OSError, ValueError):
+                    stream.close()
         raise _GitExecutionError("Git pipes unavailable")
 
     stdout_result = _PipeResult(bytearray())
@@ -187,38 +199,63 @@ def _run_git_bounded(argv: list[str], root: Path, env: dict[str, str]) -> tuple[
         threading.Thread(
             target=_read_pipe_bounded,
             args=(process.stdout, _MAX_GIT_STDOUT_BYTES, process, stdout_result),
-            daemon=True,
+            name="agentsec-git-stdout",
         ),
         threading.Thread(
             target=_read_pipe_bounded,
             args=(process.stderr, _MAX_GIT_STDERR_BYTES, process, stderr_result),
-            daemon=True,
+            name="agentsec-git-stderr",
         ),
     )
-    for reader in readers:
-        reader.start()
-
+    started_readers: list[threading.Thread] = []
     timed_out = False
+    start_failed = False
+    descendants_held_pipes = False
+    returncode = -1
     try:
-        returncode = process.wait(timeout=_GIT_TIMEOUT_SECONDS)
-    except subprocess.TimeoutExpired:
-        timed_out = True
-        _kill(process)
         try:
-            returncode = process.wait(timeout=1)
-        except subprocess.TimeoutExpired as exc:
-            raise _GitExecutionError("Git did not terminate") from exc
+            for reader in readers:
+                reader.start()
+                started_readers.append(reader)
+        except RuntimeError:
+            start_failed = True
+            _terminate_process_tree(process)
+        if not start_failed:
+            try:
+                returncode = process.wait(timeout=_GIT_TIMEOUT_SECONDS)
+            except subprocess.TimeoutExpired:
+                timed_out = True
+                _terminate_process_tree(process)
     finally:
-        for reader in readers:
-            reader.join(timeout=1)
-        process.stdout.close()
-        process.stderr.close()
+        _wait_after_termination(process)
+        for reader in started_readers:
+            reader.join(timeout=_READER_JOIN_SECONDS)
+        if any(reader.is_alive() for reader in started_readers):
+            descendants_held_pipes = True
+            _terminate_process_tree(process)
+            _wait_after_termination(process)
+            for reader in started_readers:
+                reader.join(timeout=_READER_JOIN_SECONDS)
+        if any(reader.is_alive() for reader in started_readers):
+            _force_close_pipe(process.stdout)
+            _force_close_pipe(process.stderr)
+            for reader in started_readers:
+                reader.join(timeout=_READER_JOIN_SECONDS)
+        readers_stopped = not any(reader.is_alive() for reader in started_readers)
+        if readers_stopped:
+            with suppress(OSError, ValueError):
+                process.stdout.close()
+            with suppress(OSError, ValueError):
+                process.stderr.close()
 
+    if start_failed:
+        raise _GitExecutionError("Unable to start Git output readers")
     if timed_out:
         raise subprocess.TimeoutExpired(argv, _GIT_TIMEOUT_SECONDS)
-    if any(reader.is_alive() for reader in readers):
-        _kill(process)
+    if not readers_stopped:
         raise _GitExecutionError("Git output reader did not terminate")
+    if descendants_held_pipes:
+        raise _GitExecutionError("Git descendants retained output pipes")
     if stdout_result.overflow or stderr_result.overflow:
         raise _GitExecutionError("Git output exceeded byte limit")
     if stdout_result.failed or stderr_result.failed:
@@ -227,7 +264,7 @@ def _run_git_bounded(argv: list[str], root: Path, env: dict[str, str]) -> tuple[
 
 
 def _read_pipe_bounded(
-    stream: BinaryIO,
+    stream: IO[bytes],
     limit: int,
     process: subprocess.Popen[bytes],
     result: _PipeResult,
@@ -239,15 +276,92 @@ def _read_pipe_bounded(
                 result.data.extend(chunk[:remaining])
             if len(chunk) > remaining:
                 result.overflow = True
-                _kill(process)
+                _terminate_process_tree(process)
     except (OSError, ValueError):
         result.failed = True
-        _kill(process)
+        _terminate_process_tree(process)
 
 
-def _kill(process: subprocess.Popen[bytes]) -> None:
+def _start_isolated_process(
+    argv: list[str], root: Path, env: dict[str, str]
+) -> subprocess.Popen[bytes]:
+    if os.name == "nt":
+        creation_flags = int(getattr(subprocess, "CREATE_NEW_PROCESS_GROUP", 0x00000200))
+        return subprocess.Popen(
+            argv,
+            cwd=root,
+            shell=False,
+            stdin=subprocess.DEVNULL,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            close_fds=True,
+            env=env,
+            creationflags=creation_flags,
+        )
+    return subprocess.Popen(
+        argv,
+        cwd=root,
+        shell=False,
+        stdin=subprocess.DEVNULL,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        close_fds=True,
+        env=env,
+        start_new_session=True,
+    )
+
+
+def _terminate_process_tree(process: subprocess.Popen[bytes]) -> None:
+    if os.name == "posix" and isinstance(process, _REAL_POPEN_TYPE):
+        with suppress(OSError, ProcessLookupError):
+            os.killpg(process.pid, signal.SIGKILL)
+            return
+    if os.name == "nt" and _taskkill_process_tree(process.pid):
+        return
     with suppress(OSError):
         process.kill()
+
+
+def _taskkill_process_tree(pid: int) -> bool:
+    system_root = os.environ.get("SYSTEMROOT")
+    if not system_root:
+        return False
+    helper = Path(system_root) / "System32" / "taskkill.exe"
+    try:
+        helper_stat = helper.lstat()
+        resolved = helper.resolve(strict=True)
+    except (OSError, RuntimeError, ValueError):
+        return False
+    if stat.S_ISLNK(helper_stat.st_mode) or not stat.S_ISREG(helper_stat.st_mode):
+        return False
+    try:
+        subprocess.run(
+            [str(resolved), "/PID", str(pid), "/T", "/F"],
+            shell=False,
+            stdin=subprocess.DEVNULL,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            timeout=2,
+            check=False,
+            env={"SYSTEMROOT": system_root},
+        )
+    except (OSError, subprocess.SubprocessError, ValueError):
+        return False
+    return True
+
+
+def _wait_after_termination(process: subprocess.Popen[bytes]) -> None:
+    with suppress(OSError, subprocess.TimeoutExpired):
+        process.wait(timeout=1)
+
+
+def _force_close_pipe(stream: IO[bytes]) -> None:
+    try:
+        descriptor = stream.fileno()
+    except (OSError, ValueError):
+        return
+    with suppress(OSError):
+        os.close(descriptor)
 
 
 def _parse_record(record: bytes) -> GitIndicator:

@@ -1,12 +1,13 @@
 from __future__ import annotations
 
+import ctypes
 import json
 import os
 import stat
 from collections.abc import Mapping
 from dataclasses import dataclass
 from pathlib import Path
-from typing import cast
+from typing import Any, Protocol, cast
 
 from agentsec.models import Diagnostic, DiagnosticKind
 
@@ -42,6 +43,22 @@ class _UnsafeConfigError(OSError):
     pass
 
 
+class _WindowsFileApi(Protocol):
+    def open_directory(self, path: Path) -> int: ...
+
+    def validate_directory(self, handle: int, path: Path) -> None: ...
+
+    def open_file(self, path: Path) -> int: ...
+
+    def validate_file(self, handle: int, path: Path) -> None: ...
+
+    def size(self, handle: int) -> int: ...
+
+    def read(self, handle: int, size: int) -> bytes: ...
+
+    def close(self, handle: int) -> None: ...
+
+
 def inspect_startup_config(
     path: Path,
 ) -> tuple[tuple[StartupHook, ...], tuple[Diagnostic, ...]]:
@@ -75,9 +92,209 @@ def inspect_startup_config(
 
 
 def _read_text_without_following_links(path: Path) -> str:
+    if _is_windows():
+        return _read_text_windows(path)
     if not _supports_anchored_no_follow():
         raise _UnsafeConfigError("safe startup configuration opening is unavailable")
     return _read_text_anchored(path)
+
+
+def _is_windows() -> bool:
+    return os.name == "nt"
+
+
+def _read_text_windows(path: Path) -> str:
+    if not path.is_absolute():
+        raise _UnsafeConfigError("Windows startup configuration path must be absolute")
+    api = _windows_file_api()
+    handles: list[int] = []
+    try:
+        parent_handles: list[tuple[int, Path]] = []
+        for parent in reversed(path.parents):
+            handle = api.open_directory(parent)
+            handles.append(handle)
+            api.validate_directory(handle, parent)
+            parent_handles.append((handle, parent))
+
+        file_handle = api.open_file(path)
+        handles.append(file_handle)
+        api.validate_file(file_handle, path)
+        initial_size = api.size(file_handle)
+        _require_within_limit(initial_size)
+        raw = _read_windows_bounded(api, file_handle)
+        api.validate_file(file_handle, path)
+        if api.size(file_handle) != initial_size or len(raw) != initial_size:
+            raise _UnsafeConfigError("Windows startup configuration changed while reading")
+        for handle, parent in parent_handles:
+            api.validate_directory(handle, parent)
+        return raw.decode("utf-8", errors="strict")
+    finally:
+        errors: list[OSError] = []
+        for handle in reversed(handles):
+            try:
+                api.close(handle)
+            except OSError as exc:
+                errors.append(exc)
+        if errors:
+            raise _UnsafeConfigError("Unable to close Windows startup handles") from errors[0]
+
+
+def _read_windows_bounded(api: _WindowsFileApi, handle: int) -> bytes:
+    result = bytearray()
+    while True:
+        read_size = min(_READ_CHUNK_SIZE, _MAX_STARTUP_CONFIG_BYTES - len(result) + 1)
+        chunk = api.read(handle, read_size)
+        if not chunk:
+            return bytes(result)
+        result.extend(chunk)
+        if len(result) > _MAX_STARTUP_CONFIG_BYTES:
+            raise _UnsafeConfigError("startup configuration exceeds byte limit")
+
+
+def _windows_file_api() -> _WindowsFileApi:
+    return _CtypesWindowsFileApi()
+
+
+class _FileAttributeTagInfo(ctypes.Structure):
+    _fields_ = [
+        ("file_attributes", ctypes.c_uint32),
+        ("reparse_tag", ctypes.c_uint32),
+    ]
+
+
+class _CtypesWindowsFileApi:
+    _FILE_ATTRIBUTE_DIRECTORY = 0x00000010
+    _FILE_ATTRIBUTE_REPARSE_POINT = 0x00000400
+    _FILE_FLAG_OPEN_REPARSE_POINT = 0x00200000
+    _FILE_FLAG_BACKUP_SEMANTICS = 0x02000000
+    _FILE_FLAG_SEQUENTIAL_SCAN = 0x08000000
+    _FILE_READ_ATTRIBUTES = 0x00000080
+    _GENERIC_READ = 0x80000000
+    _FILE_SHARE_ALL = 0x00000007
+    _OPEN_EXISTING = 3
+    _FILE_TYPE_DISK = 1
+    _FILE_ATTRIBUTE_TAG_INFO_CLASS = 9
+
+    def __init__(self) -> None:
+        import ctypes
+
+        loader = getattr(ctypes, "WinDLL", None)
+        if loader is None:
+            raise _UnsafeConfigError("Windows file APIs are unavailable")
+        self._ctypes = ctypes
+        self._kernel32: Any = loader("kernel32", use_last_error=True)
+        self._create_file: Any = self._kernel32.CreateFileW
+        self._create_file.argtypes = [
+            ctypes.c_wchar_p,
+            ctypes.c_uint32,
+            ctypes.c_uint32,
+            ctypes.c_void_p,
+            ctypes.c_uint32,
+            ctypes.c_uint32,
+            ctypes.c_void_p,
+        ]
+        self._create_file.restype = ctypes.c_void_p
+        self._get_file_type: Any = self._kernel32.GetFileType
+        self._get_file_type.argtypes = [ctypes.c_void_p]
+        self._get_file_type.restype = ctypes.c_uint32
+        self._get_info: Any = self._kernel32.GetFileInformationByHandleEx
+        self._get_info.argtypes = [
+            ctypes.c_void_p,
+            ctypes.c_int,
+            ctypes.c_void_p,
+            ctypes.c_uint32,
+        ]
+        self._get_info.restype = ctypes.c_int
+        self._get_size: Any = self._kernel32.GetFileSizeEx
+        self._get_size.argtypes = [ctypes.c_void_p, ctypes.POINTER(ctypes.c_longlong)]
+        self._get_size.restype = ctypes.c_int
+        self._read_file: Any = self._kernel32.ReadFile
+        self._read_file.argtypes = [
+            ctypes.c_void_p,
+            ctypes.c_void_p,
+            ctypes.c_uint32,
+            ctypes.POINTER(ctypes.c_uint32),
+            ctypes.c_void_p,
+        ]
+        self._read_file.restype = ctypes.c_int
+        self._close_handle: Any = self._kernel32.CloseHandle
+        self._close_handle.argtypes = [ctypes.c_void_p]
+        self._close_handle.restype = ctypes.c_int
+
+    def open_directory(self, path: Path) -> int:
+        return self._open(
+            path,
+            self._FILE_READ_ATTRIBUTES,
+            self._FILE_FLAG_OPEN_REPARSE_POINT | self._FILE_FLAG_BACKUP_SEMANTICS,
+        )
+
+    def open_file(self, path: Path) -> int:
+        return self._open(
+            path,
+            self._GENERIC_READ,
+            self._FILE_FLAG_OPEN_REPARSE_POINT | self._FILE_FLAG_SEQUENTIAL_SCAN,
+        )
+
+    def _open(self, path: Path, access: int, flags: int) -> int:
+        handle = self._create_file(
+            str(path),
+            access,
+            self._FILE_SHARE_ALL,
+            None,
+            self._OPEN_EXISTING,
+            flags,
+            None,
+        )
+        invalid = self._ctypes.c_void_p(-1).value
+        if handle in {None, invalid}:
+            raise _UnsafeConfigError("Unable to open Windows startup path safely")
+        return int(handle)
+
+    def validate_directory(self, handle: int, path: Path) -> None:
+        attributes = self._attributes(handle)
+        if (
+            attributes & self._FILE_ATTRIBUTE_REPARSE_POINT
+            or not attributes & self._FILE_ATTRIBUTE_DIRECTORY
+            or self._get_file_type(handle) != self._FILE_TYPE_DISK
+        ):
+            raise _SymlinkedConfigError(path)
+
+    def validate_file(self, handle: int, path: Path) -> None:
+        attributes = self._attributes(handle)
+        if (
+            attributes & self._FILE_ATTRIBUTE_REPARSE_POINT
+            or attributes & self._FILE_ATTRIBUTE_DIRECTORY
+            or self._get_file_type(handle) != self._FILE_TYPE_DISK
+        ):
+            raise _SymlinkedConfigError(path)
+
+    def _attributes(self, handle: int) -> int:
+        info = _FileAttributeTagInfo()
+        if not self._get_info(
+            handle,
+            self._FILE_ATTRIBUTE_TAG_INFO_CLASS,
+            self._ctypes.byref(info),
+            self._ctypes.sizeof(info),
+        ):
+            raise _UnsafeConfigError("Unable to inspect Windows startup path")
+        return int(info.file_attributes)
+
+    def size(self, handle: int) -> int:
+        value = self._ctypes.c_longlong()
+        if not self._get_size(handle, self._ctypes.byref(value)):
+            raise _UnsafeConfigError("Unable to size Windows startup configuration")
+        return int(value.value)
+
+    def read(self, handle: int, size: int) -> bytes:
+        buffer = self._ctypes.create_string_buffer(size)
+        count = self._ctypes.c_uint32()
+        if not self._read_file(handle, buffer, size, self._ctypes.byref(count), None):
+            raise _UnsafeConfigError("Unable to read Windows startup configuration")
+        return bytes(buffer.raw[: count.value])
+
+    def close(self, handle: int) -> None:
+        if not self._close_handle(handle):
+            raise OSError("Unable to close Windows startup handle")
 
 
 def _supports_anchored_no_follow() -> bool:

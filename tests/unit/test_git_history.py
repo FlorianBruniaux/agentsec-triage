@@ -3,6 +3,8 @@ import os
 import shutil
 import subprocess
 import sys
+import threading
+import time
 from pathlib import Path
 
 import pytest
@@ -137,6 +139,55 @@ def test_relative_path_cannot_select_repository_git(
     assert indicators == ()
     assert len(diagnostics) == 1
     assert diagnostics[0].kind is DiagnosticKind.ERROR
+
+
+def test_absolute_git_inside_scan_root_is_never_started(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    (tmp_path / ".git").mkdir()
+    candidate = tmp_path / "bin" / "git"
+    candidate.parent.mkdir()
+    candidate.write_text("untrusted executable", encoding="utf-8")
+    candidate.chmod(0o755)
+    started = False
+
+    def fake_popen(*args: object, **kwargs: object) -> _FakeProcess:
+        nonlocal started
+        started = True
+        return _FakeProcess(b"", b"", 0)
+
+    monkeypatch.setattr(shutil, "which", lambda *args, **kwargs: str(candidate))
+    monkeypatch.setattr(git_history.subprocess, "Popen", fake_popen)
+
+    indicators, diagnostics = inspect_git_history(tmp_path, max_commits=10)
+
+    assert started is False
+    assert indicators == ()
+    assert len(diagnostics) == 1
+    assert diagnostics[0].kind is DiagnosticKind.ERROR
+
+
+def test_symlinked_git_executable_is_never_started(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
+    candidate = tmp_path / "git-link"
+    try:
+        candidate.symlink_to(sys.executable)
+    except OSError as exc:
+        pytest.skip(f"executable symlinks unavailable: {exc}")
+    started = False
+
+    def fake_popen(*args: object, **kwargs: object) -> _FakeProcess:
+        nonlocal started
+        started = True
+        return _FakeProcess(b"", b"", 0)
+
+    monkeypatch.setattr(shutil, "which", lambda *args, **kwargs: str(candidate))
+    monkeypatch.setattr(git_history.subprocess, "Popen", fake_popen)
+
+    indicators, diagnostics = inspect_git_history(tmp_path, max_commits=10)
+
+    assert started is False
+    assert indicators == ()
+    assert len(diagnostics) == 1
 
 
 def test_ignores_git_dir_environment_redirection(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
@@ -296,6 +347,73 @@ def test_git_timeout_in_repository_returns_error(tmp_path: Path, monkeypatch: py
     assert diagnostics[0].kind is DiagnosticKind.ERROR
 
 
+@pytest.mark.skipif(os.name != "posix", reason="POSIX process-group regression")
+def test_descendant_holding_git_pipes_is_killed_within_bound(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    monkeypatch.setattr(git_history, "_READER_JOIN_SECONDS", 0.1, raising=False)
+    child_code = (
+        "import subprocess, sys; "
+        "subprocess.Popen([sys.executable, '-c', 'import time; time.sleep(3)'], "
+        "stdout=sys.stdout, stderr=sys.stderr)"
+    )
+    argv = [sys.executable, "-c", child_code]
+    started = time.monotonic()
+
+    with pytest.raises(git_history._GitExecutionError):
+        git_history._run_git_bounded(argv, tmp_path, os.environ.copy())
+
+    assert time.monotonic() - started < 1.0
+
+
+def test_thread_start_failure_cleans_process_and_pipes(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    process = _FakeProcess(b"", b"", 0)
+    monkeypatch.setattr(
+        git_history.subprocess,
+        "Popen",
+        lambda *args, **kwargs: process,
+    )
+    original_start = git_history.threading.Thread.start
+    calls = 0
+
+    def fail_second_start(thread: threading.Thread) -> None:
+        nonlocal calls
+        calls += 1
+        if calls == 2:
+            raise RuntimeError("thread start failed")
+        original_start(thread)
+
+    monkeypatch.setattr(git_history.threading.Thread, "start", fail_second_start)
+
+    with pytest.raises(git_history._GitExecutionError):
+        git_history._run_git_bounded([sys.executable], tmp_path, {})
+
+    assert process.killed is True
+    assert process.stdout.closed is True
+    assert process.stderr.closed is True
+
+
+def test_missing_pipe_cleans_process_and_remaining_pipe(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    process = _FakeProcess(b"", b"", 0)
+    process.stdout = None  # type: ignore[assignment]
+    monkeypatch.setattr(
+        git_history.subprocess,
+        "Popen",
+        lambda *args, **kwargs: process,
+    )
+
+    with pytest.raises(git_history._GitExecutionError):
+        git_history._run_git_bounded([sys.executable], tmp_path, {})
+
+    assert process.killed is True
+    assert process.waited is True
+    assert process.stderr.closed is True
+
+
 def test_rejects_negative_commit_limit_without_running_git(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ):
@@ -394,7 +512,8 @@ def _mock_git(
             captured["kwargs"] = kwargs
         return process
 
-    monkeypatch.setattr(shutil, "which", lambda *args, **kwargs: sys.executable)
+    trusted_executable = str(Path(sys.executable).resolve())
+    monkeypatch.setattr(shutil, "which", lambda *args, **kwargs: trusted_executable)
     monkeypatch.setattr(git_history.subprocess, "run", fake_run)
     monkeypatch.setattr(git_history.subprocess, "Popen", fake_popen)
     return process
@@ -410,8 +529,11 @@ class _FakeProcess:
         self.times_out = times_out
         self.started = False
         self.killed = False
+        self.pid = 42_424
+        self.waited = False
 
     def wait(self, timeout: float | None = None) -> int:
+        self.waited = True
         if self.times_out and not self.killed:
             raise subprocess.TimeoutExpired(cmd="git", timeout=timeout)
         return self.returncode
