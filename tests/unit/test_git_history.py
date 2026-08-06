@@ -211,6 +211,101 @@ def test_posix_system_git_is_accepted_outside_scan_root(
     assert selected == [str(system_git.resolve())]
 
 
+def test_posix_uid_zero_trusts_root_owned_owner_writable_system_chain(
+    monkeypatch: pytest.MonkeyPatch,
+):
+    system_git = Path("/usr/bin/git")
+    if not system_git.is_file() or system_git.is_symlink():
+        pytest.skip("trusted /usr/bin/git unavailable")
+    monkeypatch.setattr(git_history.os, "geteuid", lambda: 0)
+    monkeypatch.setattr(git_history.os, "getegid", lambda: 0)
+    monkeypatch.setattr(git_history.os, "getgroups", lambda: [0])
+
+    assert git_history._posix_path_is_uncontrolled(system_git) is True
+
+
+def test_posix_uid_zero_rejects_non_root_owned_candidate(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    candidate = tmp_path / "git"
+    candidate.write_bytes(b"untrusted")
+    candidate.chmod(0o755)
+    monkeypatch.setattr(git_history.os, "geteuid", lambda: 0)
+    monkeypatch.setattr(git_history.os, "getegid", lambda: 0)
+    monkeypatch.setattr(git_history.os, "getgroups", lambda: [0])
+
+    assert git_history._posix_path_is_uncontrolled(candidate) is False
+
+
+def test_windows_git_roots_ignore_tainted_environment(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    tainted_system = tmp_path / "tainted-windows"
+    tainted_programs = tmp_path / "tainted-programs"
+    tainted_git = tainted_programs / "Git" / "cmd" / "git.exe"
+    tainted_git.parent.mkdir(parents=True)
+    tainted_git.write_bytes(b"untrusted")
+    monkeypatch.setenv("SYSTEMROOT", str(tainted_system))
+    monkeypatch.setenv("PROGRAMFILES", str(tainted_programs))
+    monkeypatch.setattr(git_history, "_platform_is_windows", lambda: True, raising=False)
+    monkeypatch.setattr(git_history, "_windows_system_directory", lambda: None, raising=False)
+    monkeypatch.setattr(
+        git_history, "_windows_program_files_directory", lambda: None, raising=False
+    )
+    selected: list[str] = []
+
+    def fake_popen(argv: list[str], **kwargs: object) -> _FakeProcess:
+        selected.append(argv[0])
+        return _FakeProcess(b"", b"", 0)
+
+    monkeypatch.setattr(git_history.subprocess, "Popen", fake_popen)
+
+    indicators, diagnostics = inspect_git_history(tmp_path, max_commits=10)
+
+    assert selected == []
+    assert indicators == ()
+    assert len(diagnostics) == 1
+
+
+def test_windows_mocked_system_api_git_is_selected(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
+    scan_root = tmp_path / "repository"
+    scan_root.mkdir()
+    system_directory = tmp_path / "trusted-windows" / "System32"
+    program_files = tmp_path / "trusted-program-files"
+    trusted_git = program_files / "Git" / "cmd" / "git.exe"
+    system_directory.mkdir(parents=True)
+    trusted_git.parent.mkdir(parents=True)
+    trusted_git.write_bytes(b"trusted")
+    monkeypatch.setenv("SYSTEMROOT", str(tmp_path / "tainted-windows"))
+    monkeypatch.setenv("PROGRAMFILES", str(tmp_path / "tainted-programs"))
+    monkeypatch.setattr(git_history, "_platform_is_windows", lambda: True, raising=False)
+    monkeypatch.setattr(
+        git_history,
+        "_windows_system_directory",
+        lambda: system_directory,
+        raising=False,
+    )
+    monkeypatch.setattr(
+        git_history,
+        "_windows_program_files_directory",
+        lambda: program_files,
+        raising=False,
+    )
+    selected: list[str] = []
+
+    def fake_popen(argv: list[str], **kwargs: object) -> _FakeProcess:
+        selected.append(argv[0])
+        return _FakeProcess(b"", b"", 0)
+
+    monkeypatch.setattr(git_history.subprocess, "Popen", fake_popen)
+
+    indicators, diagnostics = inspect_git_history(scan_root, max_commits=10)
+
+    assert indicators == ()
+    assert diagnostics == ()
+    assert selected == [str(trusted_git.resolve())]
+
+
 def test_ignores_git_dir_environment_redirection(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
     root = _repository(
         tmp_path,
@@ -443,6 +538,7 @@ def test_taskkill_nonzero_reports_failure_and_direct_kill_remains_available(
     helper.parent.mkdir(parents=True)
     helper.write_bytes(b"trusted helper")
     monkeypatch.setenv("SYSTEMROOT", str(system_root))
+    monkeypatch.setattr(git_history, "_windows_system_directory", lambda: helper.parent)
     monkeypatch.setattr(
         git_history.subprocess,
         "run",

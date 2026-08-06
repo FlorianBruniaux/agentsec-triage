@@ -1,14 +1,16 @@
 from __future__ import annotations
 
+import ctypes
 import os
 import signal
 import stat
 import subprocess
 import threading
+import uuid
 from contextlib import suppress
 from dataclasses import dataclass
 from pathlib import Path
-from typing import IO
+from typing import IO, Any
 
 from agentsec.models import Diagnostic, DiagnosticKind
 from agentsec.threat_db import load_bundled_database
@@ -21,6 +23,15 @@ _PIPE_CHUNK_SIZE = 64 * 1024
 _GIT_TIMEOUT_SECONDS = 10
 _READER_JOIN_SECONDS = 0.25
 _REAL_POPEN_TYPE = subprocess.Popen
+
+
+class _Guid(ctypes.Structure):
+    _fields_ = [
+        ("data1", ctypes.c_uint32),
+        ("data2", ctypes.c_uint16),
+        ("data3", ctypes.c_uint16),
+        ("data4", ctypes.c_uint8 * 8),
+    ]
 
 
 @dataclass(frozen=True, slots=True)
@@ -134,25 +145,95 @@ def _resolve_git_executable(root: Path) -> str | None:
 
 
 def _system_git_candidates() -> tuple[tuple[Path, Path], ...]:
-    if os.name == "nt":
+    if _platform_is_windows():
         candidates: list[tuple[Path, Path]] = []
-        system_root = os.environ.get("SYSTEMROOT")
-        if system_root:
-            root = Path(system_root)
-            candidates.append((root, root / "System32" / "git.exe"))
-        program_files = os.environ.get("PROGRAMFILES")
+        system_directory = _windows_system_directory()
+        if system_directory is not None:
+            candidates.append((system_directory, system_directory / "git.exe"))
+        program_files = _windows_program_files_directory()
         if program_files:
-            root = Path(program_files)
             candidates.extend(
                 (
-                    (root, root / "Git" / "cmd" / "git.exe"),
-                    (root, root / "Git" / "bin" / "git.exe"),
+                    (program_files, program_files / "Git" / "cmd" / "git.exe"),
+                    (program_files, program_files / "Git" / "bin" / "git.exe"),
                 )
             )
         return tuple(candidates)
     return (
         (Path("/usr/bin"), Path("/usr/bin/git")),
         (Path("/bin"), Path("/bin/git")),
+    )
+
+
+def _platform_is_windows() -> bool:
+    return os.name == "nt"
+
+
+def _windows_system_directory() -> Path | None:
+    loader = getattr(ctypes, "WinDLL", None)
+    if loader is None:
+        return None
+    try:
+        kernel32: Any = loader("kernel32", use_last_error=True)
+        get_system_directory: Any = kernel32.GetSystemDirectoryW
+        get_system_directory.argtypes = [ctypes.c_wchar_p, ctypes.c_uint32]
+        get_system_directory.restype = ctypes.c_uint32
+        buffer = ctypes.create_unicode_buffer(32_768)
+        length = int(get_system_directory(buffer, len(buffer)))
+    except (AttributeError, OSError, TypeError, ValueError):
+        return None
+    if length <= 0 or length >= len(buffer):
+        return None
+    return Path(buffer.value)
+
+
+def _windows_program_files_directory() -> Path | None:
+    loader = getattr(ctypes, "WinDLL", None)
+    if loader is None:
+        return None
+    folder_id = _guid_from_uuid(uuid.UUID("905e63b6-c1bf-494e-b29c-65b732d3d21a"))
+    path_pointer = ctypes.c_wchar_p()
+    free_memory: Any | None = None
+    try:
+        shell32: Any = loader("shell32", use_last_error=True)
+        ole32: Any = loader("ole32", use_last_error=True)
+        get_known_folder: Any = shell32.SHGetKnownFolderPath
+        get_known_folder.argtypes = [
+            ctypes.POINTER(_Guid),
+            ctypes.c_uint32,
+            ctypes.c_void_p,
+            ctypes.POINTER(ctypes.c_wchar_p),
+        ]
+        get_known_folder.restype = ctypes.c_long
+        free_memory = ole32.CoTaskMemFree
+        free_memory.argtypes = [ctypes.c_void_p]
+        free_memory.restype = None
+        result = int(
+            get_known_folder(
+                ctypes.byref(folder_id),
+                0,
+                None,
+                ctypes.byref(path_pointer),
+            )
+        )
+        if result != 0 or not path_pointer.value:
+            return None
+        return Path(path_pointer.value)
+    except (AttributeError, OSError, TypeError, ValueError):
+        return None
+    finally:
+        if path_pointer and free_memory is not None:
+            with suppress(OSError):
+                free_memory(path_pointer)
+
+
+def _guid_from_uuid(value: uuid.UUID) -> _Guid:
+    data = value.bytes_le
+    return _Guid(
+        int.from_bytes(data[0:4], "little"),
+        int.from_bytes(data[4:6], "little"),
+        int.from_bytes(data[6:8], "little"),
+        (ctypes.c_uint8 * 8).from_buffer_copy(data[8:]),
     )
 
 
@@ -174,16 +255,15 @@ def _validate_system_executable(
         or resolved.is_relative_to(scan_root)
     ):
         return None
-    if os.name == "posix" and not _posix_path_is_uncontrolled(candidate):
+    if not _platform_is_windows() and not _posix_path_is_uncontrolled(candidate):
         return None
-    if os.name == "nt" and not _windows_path_has_no_reparse_components(candidate):
+    if _platform_is_windows() and not _windows_path_has_no_reparse_components(candidate):
         return None
     return resolved
 
 
 def _posix_path_is_uncontrolled(path: Path) -> bool:
     current_uid = os.geteuid()
-    current_groups = {os.getegid(), *os.getgroups()}
     for component in (*reversed(path.parents), path):
         try:
             component_stat = component.lstat()
@@ -196,11 +276,11 @@ def _posix_path_is_uncontrolled(path: Path) -> bool:
             return False
         if component == path and not stat.S_ISREG(mode):
             return False
-        if mode & stat.S_IWOTH:
+        if component_stat.st_uid != 0:
             return False
-        if component_stat.st_gid in current_groups and mode & stat.S_IWGRP:
+        if mode & (stat.S_IWGRP | stat.S_IWOTH):
             return False
-        if component_stat.st_uid == current_uid and mode & stat.S_IWUSR:
+        if current_uid != 0 and component_stat.st_uid == current_uid and mode & stat.S_IWUSR:
             return False
     return True
 
@@ -221,8 +301,8 @@ def _windows_path_has_no_reparse_components(path: Path) -> bool:
 
 def _trusted_helper_path(executable: str) -> str:
     entries = [str(Path(executable).parent)]
-    if os.name == "nt" and (system_root := os.environ.get("SYSTEMROOT")):
-        entries.append(str(Path(system_root) / "System32"))
+    if _platform_is_windows() and (system_directory := _windows_system_directory()):
+        entries.append(str(system_directory))
     return os.pathsep.join(entries)
 
 
@@ -397,10 +477,10 @@ def _terminate_process_tree(process: subprocess.Popen[bytes]) -> None:
 
 
 def _taskkill_process_tree(pid: int) -> bool:
-    system_root = os.environ.get("SYSTEMROOT")
-    if not system_root:
+    system_directory = _windows_system_directory()
+    if system_directory is None:
         return False
-    helper = Path(system_root) / "System32" / "taskkill.exe"
+    helper = system_directory / "taskkill.exe"
     try:
         helper_stat = helper.lstat()
         resolved = helper.resolve(strict=True)
@@ -417,7 +497,7 @@ def _taskkill_process_tree(pid: int) -> bool:
             stderr=subprocess.DEVNULL,
             timeout=2,
             check=False,
-            env={"SYSTEMROOT": system_root},
+            env={"PATH": str(system_directory)},
         )
     except (OSError, subprocess.SubprocessError, ValueError):
         return False
