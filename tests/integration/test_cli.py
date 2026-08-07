@@ -161,12 +161,44 @@ def test_doctor_invalid_schema_returns_concise_error_without_traceback(
         def joinpath(self, *names: str) -> InvalidSchemaResource:
             return self
 
-        def read_text(self, *, encoding: str) -> str:
-            return content
+        def read_bytes(self) -> bytes:
+            return content.encode("utf-8")
 
     database = load_bundled_database()
     monkeypatch.setattr(cli, "_load_database", lambda: database)
     monkeypatch.setattr(cli.resources, "files", lambda package: InvalidSchemaResource())
+
+    assert cli.main(["doctor"]) == 2
+
+    captured = capsys.readouterr()
+    assert captured.out == ""
+    assert captured.err.startswith("agentsec: local schema validation failed:")
+    assert "Traceback" not in captured.err
+
+
+@pytest.mark.parametrize("mutation", ("invalid_type", "unexpected_but_valid_field"))
+def test_doctor_rejects_schema_that_is_not_the_prevalidated_artifact(
+    mutation: str, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    class MutatedSchemaResource:
+        def joinpath(self, *names: str) -> MutatedSchemaResource:
+            return self
+
+        def read_bytes(self) -> bytes:
+            schema = json.loads(
+                (PROJECT_ROOT / "schemas" / "scan-result-v1.schema.json").read_text(
+                    encoding="utf-8"
+                )
+            )
+            if mutation == "invalid_type":
+                schema["properties"]["root"]["type"] = "not-a-json-schema-type"
+            else:
+                schema["description"] = "valid-looking but not prevalidated"
+            return json.dumps(schema).encode("utf-8")
+
+    database = load_bundled_database()
+    monkeypatch.setattr(cli, "_load_database", lambda: database)
+    monkeypatch.setattr(cli.resources, "files", lambda package: MutatedSchemaResource())
 
     assert cli.main(["doctor"]) == 2
 

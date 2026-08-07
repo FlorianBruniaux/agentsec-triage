@@ -4,6 +4,7 @@ import argparse
 import json
 import sys
 from collections.abc import Sequence
+from hashlib import sha256
 from importlib import resources
 from pathlib import Path
 from typing import NoReturn
@@ -22,6 +23,7 @@ _DEFAULT_MAX_FILE_BYTES = 4_000_000
 _DEFAULT_MAX_FILES = 1_000_000
 _DEFAULT_MAX_GIT_COMMITS = 10_000
 _DEFAULT_MAX_DIAGNOSTICS = 100
+_SCAN_RESULT_SCHEMA_SHA256 = "86fc1a24eeeb90d8b11a4c3ffc06b2b750852a77b584623b0d77ac2685365ea5"
 
 
 class _ArgumentParser(argparse.ArgumentParser):
@@ -148,7 +150,10 @@ def _doctor() -> int:
     if database is None:
         return 2
     try:
-        schema = json.loads(_read_schema_text())
+        raw_schema = _read_schema_bytes()
+        if sha256(raw_schema).hexdigest() != _SCAN_RESULT_SCHEMA_SHA256:
+            raise ValueError("schema integrity digest mismatch")
+        schema = json.loads(raw_schema)
         _validate_schema_contract(schema)
     except (
         ModuleNotFoundError,
@@ -173,15 +178,15 @@ def _doctor() -> int:
     return 0
 
 
-def _read_schema_text() -> str:
+def _read_schema_bytes() -> bytes:
     schema = resources.files("agentsec.resources").joinpath("scan-result-v1.schema.json")
     try:
-        return schema.read_text(encoding="utf-8")
+        return schema.read_bytes()
     except FileNotFoundError:
         source_schema = (
             Path(__file__).resolve().parents[2] / "schemas" / "scan-result-v1.schema.json"
         )
-        return source_schema.read_text(encoding="utf-8")
+        return source_schema.read_bytes()
 
 
 def _validate_schema_contract(schema: object) -> None:

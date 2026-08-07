@@ -1,8 +1,11 @@
 import json
+from hashlib import sha256
 from pathlib import Path
 
 from jsonschema import validate
+from jsonschema.validators import Draft202012Validator
 
+from agentsec.cli import _SCAN_RESULT_SCHEMA_SHA256
 from agentsec.models import ScanResult
 from agentsec.output.json_output import render_json
 from agentsec.redaction import redact_result
@@ -90,3 +93,12 @@ def test_json_matches_public_schema(empty_scan_result: ScanResult):
     schema = json.loads(Path("schemas/scan-result-v1.schema.json").read_text())
 
     validate(instance=payload, schema=schema)
+
+
+def test_public_schema_is_meta_valid_and_matches_runtime_digest() -> None:
+    raw_schema = Path("schemas/scan-result-v1.schema.json").read_bytes()
+    schema = json.loads(raw_schema)
+
+    Draft202012Validator.check_schema(schema)
+
+    assert sha256(raw_schema).hexdigest() == _SCAN_RESULT_SCHEMA_SHA256
