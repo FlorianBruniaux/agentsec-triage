@@ -34,7 +34,6 @@
 - `docs/SECURITY-TIMELINE.md`: generated reverse-chronological event ledger.
 - `src/agentsec/resources/security-intelligence.json`: generated machine-readable artifact.
 - `tests/unit/test_intelligence_docs.py`: generator and validation regression tests.
-- `tests/unit/test_documentation.py`: root-document responsibilities and links.
 - `tests/unit/test_package.py`: wheel resource inclusion.
 - `.github/workflows/tests.yml`: generated-artifact drift gate.
 - `README.md`, `CHANGELOG.md`, `CONTRIBUTING.md`: user and contributor integration.
@@ -49,40 +48,12 @@
 - Create: `ROADMAP.md`
 - Modify: `README.md`
 - Modify: `CHANGELOG.md`
-- Modify: `tests/unit/test_documentation.py`
 
 **Interfaces:**
 - Consumes: existing CLI, release-gate, licensing, and threat-source documentation.
 - Produces: stable root entry points referenced by contributors and later tasks.
 
-- [ ] **Step 1: Write failing root-document tests**
-
-Add tests that require all five root files, require `CLAUDE.md` to contain
-`@AGENTS.md`, reject duplicated release-gate prose in `CLAUDE.md`, and require
-README links to `ROADMAP.md`, `docs/SECURITY-INTELLIGENCE.md`, and
-`docs/SECURITY-TIMELINE.md`.
-
-```python
-@pytest.mark.parametrize(
-    "name", ["AGENTS.md", "CLAUDE.md", "README.md", "CHANGELOG.md", "ROADMAP.md"]
-)
-def test_required_root_documents_exist(project_root: Path, name: str) -> None:
-    assert (project_root / name).is_file()
-
-
-def test_claude_imports_canonical_agent_guidance(project_root: Path) -> None:
-    text = (project_root / "CLAUDE.md").read_text(encoding="utf-8")
-    assert "@AGENTS.md" in text
-    assert "Public release is blocked" not in text
-```
-
-- [ ] **Step 2: Run the targeted tests and observe failure**
-
-Run: `.venv/bin/pytest tests/unit/test_documentation.py -q`
-
-Expected: failures for missing `AGENTS.md`, `CLAUDE.md`, and `ROADMAP.md`.
-
-- [ ] **Step 3: Add focused root documents**
+- [ ] **Step 1: Add focused root documents**
 
 `AGENTS.md` must include repository purpose, map, commands, TDD rules, scan safety
 invariants, intelligence-data rules, generated-file rules, and the licensing/tag
@@ -90,22 +61,23 @@ gate. `CLAUDE.md` contains `@AGENTS.md` plus only Claude-specific navigation.
 `ROADMAP.md` separates shipped alpha functionality, pre-release blockers, V0.2
 detector work, distribution integrations, and explicit non-goals.
 
-- [ ] **Step 4: Link the documents and record the change**
+- [ ] **Step 2: Link the documents and record the change**
 
 Add a “Project documentation” section to `README.md`. Add an `[Unreleased] / Added`
 entry to `CHANGELOG.md` describing the three new root documents without claiming
 publication.
 
-- [ ] **Step 5: Run documentation tests**
+- [ ] **Step 3: Inspect document boundaries and resolved links**
 
-Run: `.venv/bin/pytest tests/unit/test_documentation.py -q`
+Confirm all five root files exist, `CLAUDE.md` imports `@AGENTS.md` without
+duplicating the release rules, and every new relative Markdown link resolves to
+an existing target. Run `git diff --check` to reject whitespace errors. Human
+prose is reviewed directly rather than protected by source-text assertions.
 
-Expected: PASS.
-
-- [ ] **Step 6: Commit Task 1**
+- [ ] **Step 4: Commit Task 1**
 
 ```bash
-git add AGENTS.md CLAUDE.md ROADMAP.md README.md CHANGELOG.md tests/unit/test_documentation.py
+git add AGENTS.md CLAUDE.md ROADMAP.md README.md CHANGELOG.md
 git commit -m "docs(repo): add canonical guidance and roadmap"
 ```
 
@@ -303,16 +275,14 @@ git commit -m "feat(intel): generate bibliography and security timeline"
 - Consumes: Task 3 generator and generated resource.
 - Produces: CI drift gate and wheel containing `security-intelligence.json`.
 
-- [ ] **Step 1: Write failing packaging and documentation assertions**
+- [ ] **Step 1: Write a failing packaging assertion**
 
 Require the wheel to contain
-`agentsec/resources/security-intelligence.json`. Require contributor docs to run
-the intelligence generator and require README to explain that the timeline is
-tracked coverage, not a complete vulnerability database.
+`agentsec/resources/security-intelligence.json`.
 
 - [ ] **Step 2: Run targeted tests and observe failure**
 
-Run: `.venv/bin/pytest tests/unit/test_package.py tests/unit/test_documentation.py -q`
+Run: `.venv/bin/pytest tests/unit/test_package.py -q`
 
 Expected: failure until package and docs integration is complete.
 
@@ -337,10 +307,10 @@ under `[Unreleased]` without claiming a release.
 
 - [ ] **Step 5: Run targeted tests and package build**
 
-Run:
+Inspect README and CONTRIBUTING links directly, then run:
 
 ```bash
-.venv/bin/pytest tests/unit/test_package.py tests/unit/test_documentation.py -q
+.venv/bin/pytest tests/unit/test_package.py -q
 PIP_NO_INDEX=1 .venv/bin/python -m build --no-isolation
 ```
 
@@ -416,4 +386,3 @@ test from `/Users/florianbruniaux/Sites/perso/agentsec-triage`.
 The intended tag is `v0.1.0-alpha`, matching package version `0.1.0a0`. Do not
 create it until `LICENSE-DECISION.md` is resolved and its full release checklist
 passes.
-
