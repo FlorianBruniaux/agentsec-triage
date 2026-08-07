@@ -5,6 +5,15 @@ authorized public release while the licensing decision remains unresolved.
 
 ## [Unreleased]
 
+### Added
+
+- Added canonical `AGENTS.md` repository instructions, a minimal Claude Code
+  adapter in `CLAUDE.md`, and a prioritized `ROADMAP.md` with explicit release
+  gates and non-goals.
+- Added README entry points for the generated security-source catalogue and
+  dated event timeline. Their structured data and generator are delivered in
+  the same unreleased workstream.
+
 ### Fixed
 
 - Removed the safe reader's one-byte sentinel read. POSIX and Windows reads now

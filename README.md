@@ -15,6 +15,21 @@ inputs, and limits reported by that run.
 Public distribution is blocked by the unresolved [license decision](LICENSE-DECISION.md).
 The commands below are for review from this source tree, not a published package.
 
+## Project documentation
+
+- [Roadmap](ROADMAP.md) — priorities, release gates, and explicit non-goals.
+- [Security intelligence](docs/SECURITY-INTELLIGENCE.md) — generated catalogue
+  of reviewed articles, advisories, reports, and source scope.
+- [Security timeline](docs/SECURITY-TIMELINE.md) — generated chronology of
+  security events tracked by AgentSec, including contested and corrected claims.
+- [Contributing](CONTRIBUTING.md) — TDD, threat-source, and local release rules.
+- [Security policy](SECURITY.md) — scanner vulnerabilities, false positives,
+  false negatives, and IOC corrections.
+
+The intelligence documents are generated from structured YAML. They track the
+events and sources reviewed by this project; they are not a complete history of
+all security vulnerabilities.
+
 ## Quick start from source
 
 Python 3.11 through 3.13 is the supported alpha target.
