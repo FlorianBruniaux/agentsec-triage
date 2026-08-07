@@ -1,0 +1,37 @@
+tests/integration/test_cli.py
+  s_0df90997879182::t_a319714d0283aa 156,158,165
+  s_0df90997879182::t_b4c320e9ed7589 120
+  s_0df90997879182::t_8d9e2fe1ee5b1b 167-168
+  s_0df90997879182::t_91713b634f4098 14
+  s_0df90997879182::t_63a05d083f5045 8,11-13,115-119,121-155,157,159-164,166,169-188
+  s_0df90997879182::t_ab7be8404b4db5 15
+src/agentsec/redaction.py
+  s_0df90997879182::t_9656327f7ddcaf 24-26,39
+  s_0df90997879182::t_752dc014be9711 21-23,27-28
+tests/integration/test_shai_hulud_detector.py
+  s_0df90997879182::t_ab7be8404b4db5 162-164
+  s_0df90997879182::t_63a05d083f5045 147-161,165-166
+src/agentsec/cli.py
+  s_0df90997879182::t_752dc014be9711 18,88,152,187-216,220-221
+  s_0df90997879182::t_9656327f7ddcaf 151,176-180,184
+  s_0df90997879182::t_ab7be8404b4db5 153-160,181-183
+  s_0df90997879182::t_3fec6ac9b6fe1c 185-186
+pyproject.toml
+  s_0df90997879182::t_752dc014be9711 32-34
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "aae0007e2fbef23fa056b134cb50c1fa813ccbd1",
+  "prompts": {},
+  "sessions": {
+    "s_0df90997879182": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019fd73a-588d-7f03-ab50-494ca0e95848",
+        "model": "gpt-5.6-terra"
+      },
+      "human_author": "Florian BRUNIAUX <florian@bruniaux.com>"
+    }
+  }
+}
