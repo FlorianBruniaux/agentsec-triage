@@ -45,6 +45,9 @@ _LOCKFILE_NAMES = frozenset(
 _CAMPAIGN_FILENAMES = frozenset({"setup.mjs", "math_symbol.js", "math_init.js"})
 _SCRIPT_INTERPRETERS = frozenset({"node", "node.exe", "bun", "bun.exe", "deno", "deno.exe"})
 _VALID_KEYV_PACKAGE_SEGMENT = re.compile(r"^[a-z0-9_~-][a-z0-9._~-]*$")
+_SHELL_ENVIRONMENT_ASSIGNMENT = re.compile(
+    r"^[A-Za-z_][A-Za-z0-9_]*(?:\[[^\]\x00]+\])?\+?=[^\x00]*$"
+)
 _MAX_NPM_PACKAGE_NAME_LENGTH = 214
 _MAX_COMMAND_LENGTH = 1024 * 1024
 _MAX_ENV_SPLIT_DEPTH = 4
@@ -546,14 +549,7 @@ def _is_environment_assignment(token: str) -> bool:
 
 
 def _is_shell_environment_assignment(token: str) -> bool:
-    separator = token.find("=")
-    return (
-        separator > 0
-        and token[0] != "-"
-        and ord(token[0]) >= 32
-        and ord(token[0]) != 127
-        and "\0" not in token
-    )
+    return _SHELL_ENVIRONMENT_ASSIGNMENT.fullmatch(token) is not None
 
 
 def _is_valid_environment_name(name: str) -> bool:

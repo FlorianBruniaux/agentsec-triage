@@ -511,8 +511,8 @@ def test_payload_only_known_hash_is_detected(tmp_path: Path) -> None:
         "env --unset=1A node setup.mjs",
         "A+=value node setup.mjs",
         "A[0]=value node setup.mjs",
-        "1A=value node setup.mjs",
-        "A-B=value node setup.mjs",
+        "A[name]=value node setup.mjs",
+        "A[0]+=value node setup.mjs",
         "echo harmless\nnode setup.mjs",
         r"node .\setup.mjs",
     ],
@@ -555,6 +555,9 @@ def test_campaign_invocation_recognizes_executed_script(command: str) -> None:
         "echo safe A+=node setup.mjs",
         "-A=value node setup.mjs",
         "\x01A=value node setup.mjs",
+        "1A=value node setup.mjs",
+        "A-B=value node setup.mjs",
+        "./tool=value node setup.mjs",
     ],
 )
 def test_campaign_invocation_rejects_mentions_and_non_entrypoint_arguments(
