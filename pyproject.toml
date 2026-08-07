@@ -32,9 +32,26 @@ packages = ["src/agentsec"]
 [tool.hatch.build.targets.wheel.force-include]
 "schemas/scan-result-v1.schema.json" = "agentsec/resources/scan-result-v1.schema.json"
 
+[tool.hatch.build.targets.sdist]
+exclude = [
+  "/.coverage",
+  "/.mypy_cache",
+  "/.pytest_cache",
+  "/.ruff_cache",
+  "/.superpowers",
+  "/.venv",
+  "/build",
+  "/dist",
+  "/docs/superpowers",
+]
+
 [tool.pytest.ini_options]
 addopts = "-ra --strict-markers"
 testpaths = ["tests"]
+
+[tool.coverage.report]
+fail_under = 85
+show_missing = true
 
 [tool.ruff]
 target-version = "py311"

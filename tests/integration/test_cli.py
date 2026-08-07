@@ -120,11 +120,12 @@ def test_doctor_from_wheel_without_dependencies_validates_packaged_schema(tmp_pa
     _checked([sys.executable, "-m", "build", "--wheel", "--outdir", str(dist)])
     wheel = next(dist.glob("*.whl"))
     venv.create(environment, with_pip=True)
-    python = environment / "bin" / "python"
+    scripts = environment / ("Scripts" if os.name == "nt" else "bin")
+    python = scripts / ("python.exe" if os.name == "nt" else "python")
     _checked([str(python), "-m", "pip", "install", "--no-deps", str(wheel)])
 
     completed = subprocess.run(
-        [str(environment / "bin" / "agentsec"), "doctor"],
+        [str(scripts / ("agentsec.exe" if os.name == "nt" else "agentsec")), "doctor"],
         check=False,
         shell=False,
         text=True,
