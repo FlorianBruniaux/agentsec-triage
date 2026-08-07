@@ -1,0 +1,64 @@
+tests/unit/test_runner.py
+  s_0df90997879182::t_2d3bff67d16a5a 77
+  s_0df90997879182::t_a74c45eeebff09 7,24-33,45,75-76,78-85
+tests/integration/test_shai_hulud_detector.py
+  s_0df90997879182::t_be697227d7cda1 800-803
+  s_0df90997879182::t_a74c45eeebff09 755-759,761-765,767-771,773-777,779-799
+  s_0df90997879182::t_9e6d58b36be518 760,766,772,778
+src/agentsec/analyzers/safe_io.py
+  s_0df90997879182::t_4e6589db1f97e6 14
+CHANGELOG.md
+  s_0df90997879182::t_57c566a2545b0a 10-22
+src/agentsec/detectors/shai_hulud.py
+  s_0df90997879182::t_4e6589db1f97e6 19,57-63,87-120,137,139-147,151,866
+  s_0df90997879182::t_dc4adf5db64f25 64-72,138,865
+tests/golden/finding.json
+  s_0df90997879182::t_dc4adf5db64f25 1-99
+tests/unit/test_discovery.py
+  s_0df90997879182::t_a74c45eeebff09 14-17
+docs/superpowers/specs/2026-08-06-agentsec-triage-design.md
+  s_0df90997879182::t_57c566a2545b0a 166,176-182,205-209
+  s_0df90997879182::t_ca2f24a539d733 210
+src/agentsec/engine/discovery.py
+  s_0df90997879182::t_4e6589db1f97e6 20,31
+src/agentsec/cli.py
+  s_0df90997879182::t_4e6589db1f97e6 23,46,91-97,111,134-150
+  s_0df90997879182::t_be697227d7cda1 47
+  s_0df90997879182::t_edd718b11d8acd 27
+src/agentsec/models.py
+  s_0df90997879182::t_2d3bff67d16a5a 199-200
+  s_0df90997879182::t_4e6589db1f97e6 166
+tests/golden/clean.txt
+  s_0df90997879182::t_dc4adf5db64f25 12-21
+tests/integration/test_cli.py
+  s_0df90997879182::t_a74c45eeebff09 14,96-100,155-188
+  s_0df90997879182::t_d698ce2ef3376f 189-190
+docs/superpowers/plans/2026-08-06-v0.1-alpha-implementation.md
+  s_0df90997879182::t_57c566a2545b0a 1277-1289
+README.md
+  s_0df90997879182::t_57c566a2545b0a 48-50,79-81,117-124,177-187,198,200
+src/agentsec/engine/runner.py
+  s_0df90997879182::t_4e6589db1f97e6 30-39,114-116,118,146
+  s_0df90997879182::t_2d3bff67d16a5a 117
+schemas/scan-result-v1.schema.json
+  s_0df90997879182::t_f43ca115fc4041 37-41,82-86,90-94,97
+src/agentsec/detectors/base.py
+  s_0df90997879182::t_4e6589db1f97e6 14-26,42
+  s_0df90997879182::t_51c5c06c7079e2 13
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "82137aa36f7061ba368333fd0a0652c5e410ed29",
+  "prompts": {},
+  "sessions": {
+    "s_0df90997879182": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019fd73a-588d-7f03-ab50-494ca0e95848",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Florian BRUNIAUX <florian@bruniaux.com>"
+    }
+  }
+}
