@@ -45,10 +45,8 @@ _LOCKFILE_NAMES = frozenset(
 _CAMPAIGN_FILENAMES = frozenset({"setup.mjs", "math_symbol.js", "math_init.js"})
 _SCRIPT_INTERPRETERS = frozenset({"node", "node.exe", "bun", "bun.exe", "deno", "deno.exe"})
 _VALID_KEYV_PACKAGE_SEGMENT = re.compile(r"^[a-z0-9_~-][a-z0-9._~-]*$")
-_SHELL_ENVIRONMENT_ASSIGNMENT = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*=.*$")
 _MAX_NPM_PACKAGE_NAME_LENGTH = 214
 _MAX_COMMAND_LENGTH = 1024 * 1024
-_MAX_COMMAND_TOKENS = 16 * 1024
 _MAX_ENV_SPLIT_DEPTH = 4
 _MAX_GIT_COMMITS = 100_000
 
@@ -289,19 +287,13 @@ def _tokenize_command_segments(command: str) -> tuple[tuple[str, ...], ...]:
     tokens: list[str] = []
     token: list[str] = []
     token_started = False
-    token_count = 0
-    token_limit_exceeded = False
     quote: str | None = None
     index = 0
 
     def finish_token() -> None:
-        nonlocal token_count, token_limit_exceeded, token_started
+        nonlocal token_started
         if token_started:
-            if token_count >= _MAX_COMMAND_TOKENS:
-                token_limit_exceeded = True
-                return
             tokens.append("".join(token))
-            token_count += 1
             token.clear()
             token_started = False
 
@@ -345,15 +337,11 @@ def _tokenize_command_segments(command: str) -> tuple[tuple[str, ...], ...]:
         else:
             token.append(character)
             token_started = True
-        if token_limit_exceeded:
-            return ()
         index += 1
 
-    if quote is not None or token_limit_exceeded:
+    if quote is not None:
         return ()
     finish_segment()
-    if token_limit_exceeded:
-        return ()
     return tuple(segments)
 
 
@@ -363,7 +351,7 @@ def _segment_invokes_campaign_file(
     if not tokens:
         return False
     index = 0
-    while index < len(tokens) and _SHELL_ENVIRONMENT_ASSIGNMENT.fullmatch(tokens[index]):
+    while index < len(tokens) and _is_shell_environment_assignment(tokens[index]):
         index += 1
     return _argv_invokes_campaign_file(tokens, start=index, split_depth=split_depth)
 
@@ -412,8 +400,6 @@ def _unwrap_environment_argv(
 def _parse_environment_arguments(
     arguments: tuple[str, ...], *, start: int, split_depth: int
 ) -> tuple[tuple[str, ...], int, int] | None:
-    if len(arguments) > _MAX_COMMAND_TOKENS:
-        return None
     index = start
     options_allowed = True
 
@@ -544,8 +530,7 @@ def _expand_environment_split_string(
     ):
         return None
     expanded = _parse_environment_split_string(value)
-    combined_length = len(expanded or ()) + len(arguments) - next_index
-    if expanded is None or combined_length > _MAX_COMMAND_TOKENS:
+    if expanded is None:
         return None
     combined = tuple(chain(expanded, islice(arguments, next_index, None)))
     return _parse_environment_arguments(
@@ -560,6 +545,17 @@ def _is_environment_assignment(token: str) -> bool:
     return separator > 0 and "\0" not in token
 
 
+def _is_shell_environment_assignment(token: str) -> bool:
+    separator = token.find("=")
+    return (
+        separator > 0
+        and token[0] != "-"
+        and ord(token[0]) >= 32
+        and ord(token[0]) != 127
+        and "\0" not in token
+    )
+
+
 def _is_valid_environment_name(name: str) -> bool:
     return bool(name) and "=" not in name and "\0" not in name
 
@@ -568,16 +564,12 @@ def _parse_environment_split_string(value: str) -> tuple[str, ...] | None:
     arguments: list[str] = []
     argument: list[str] = []
     argument_started = False
-    token_limit_exceeded = False
     quote: str | None = None
     index = 0
 
     def finish_argument() -> None:
-        nonlocal argument_started, token_limit_exceeded
+        nonlocal argument_started
         if argument_started:
-            if len(arguments) >= _MAX_COMMAND_TOKENS:
-                token_limit_exceeded = True
-                return
             arguments.append("".join(argument))
             argument.clear()
             argument_started = False
@@ -616,15 +608,13 @@ def _parse_environment_split_string(value: str) -> tuple[str, ...] | None:
                 if quote == '"':
                     return None
                 finish_argument()
-                return None if token_limit_exceeded else tuple(arguments)
+                return tuple(arguments)
             if escaped == "_":
                 if quote == '"':
                     argument.append(" ")
                     argument_started = True
                 else:
                     finish_argument()
-                    if token_limit_exceeded:
-                        return None
                 index += 2
                 continue
             escape_values = {
@@ -649,8 +639,6 @@ def _parse_environment_split_string(value: str) -> tuple[str, ...] | None:
             continue
         if quote is None and character in " \t":
             finish_argument()
-            if token_limit_exceeded:
-                return None
             index += 1
             continue
         if quote is None and character == "#" and not argument:
@@ -662,7 +650,7 @@ def _parse_environment_split_string(value: str) -> tuple[str, ...] | None:
     if quote is not None:
         return None
     finish_argument()
-    return None if token_limit_exceeded else tuple(arguments)
+    return tuple(arguments)
 
 
 def _runtime_entrypoint_is_campaign(

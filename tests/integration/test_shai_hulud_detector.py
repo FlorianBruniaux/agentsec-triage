@@ -13,8 +13,6 @@ from agentsec.detectors.registry import get_detectors
 from agentsec.detectors.shai_hulud import (
     ShaiHuludDetector,
     _is_campaign_invocation,
-    _parse_environment_split_string,
-    _tokenize_command_segments,
 )
 from agentsec.engine.discovery import DiscoveredFile, DiscoveryLimits
 from agentsec.engine.runner import run_scan
@@ -511,6 +509,10 @@ def test_payload_only_known_hash_is_detected(tmp_path: Path) -> None:
         "env A-B=value node setup.mjs",
         "env -u A-B node setup.mjs",
         "env --unset=1A node setup.mjs",
+        "A+=value node setup.mjs",
+        "A[0]=value node setup.mjs",
+        "1A=value node setup.mjs",
+        "A-B=value node setup.mjs",
         "echo harmless\nnode setup.mjs",
         r"node .\setup.mjs",
     ],
@@ -540,8 +542,6 @@ def test_campaign_invocation_recognizes_executed_script(command: str) -> None:
         "env -S 'echo safe && node setup.mjs'",
         r"env -S 'echo safe\c node setup.mjs'",
         "env -S 'echo safe # node setup.mjs'",
-        "1A=value node setup.mjs",
-        "A-B=value node setup.mjs",
         "env 1A=value -S 'node setup.mjs'",
         "env -u '' node setup.mjs",
         "env -u A=B node setup.mjs",
@@ -552,6 +552,9 @@ def test_campaign_invocation_recognizes_executed_script(command: str) -> None:
         "env -0 node setup.mjs",
         "env --null node setup.mjs",
         "env -iv0 node setup.mjs",
+        "echo safe A+=node setup.mjs",
+        "-A=value node setup.mjs",
+        "\x01A=value node setup.mjs",
     ],
 )
 def test_campaign_invocation_rejects_mentions_and_non_entrypoint_arguments(
@@ -575,22 +578,18 @@ def _nested_env_split_command(command: str, depth: int) -> str:
     return command
 
 
-def test_command_tokenization_stops_at_token_cap() -> None:
-    command = _CountingCommand("env " + "-i " * 250_000 + "node setup.mjs")
+@pytest.mark.parametrize("argument_count", [16_385, 250_000])
+def test_campaign_correlation_has_no_token_count_bypass(argument_count: int) -> None:
+    command = _CountingCommand("node setup.mjs " + "arg " * argument_count)
 
-    tokens = _tokenize_command_segments(command)
-
-    assert tokens == ()
-    assert command.index_reads < 100_000
+    assert _is_campaign_invocation(command) is True
+    assert command.index_reads <= len(command) * 4
 
 
-def test_env_split_string_parsing_stops_at_token_cap() -> None:
-    value = _CountingCommand("-i " * 250_000 + "node setup.mjs")
+def test_env_split_string_has_no_token_count_bypass() -> None:
+    command = "env -S 'node setup.mjs " + "arg " * 16_385 + "'"
 
-    arguments = _parse_environment_split_string(value)
-
-    assert arguments is None
-    assert value.index_reads < 100_000
+    assert _is_campaign_invocation(command) is True
 
 
 class _CountingCommand(str):
