@@ -5,6 +5,7 @@ from __future__ import annotations
 import hashlib
 import re
 import stat
+from itertools import chain, islice
 from pathlib import Path
 
 from agentsec.analyzers.git_history import GitIndicator, inspect_git_history
@@ -44,9 +45,10 @@ _LOCKFILE_NAMES = frozenset(
 _CAMPAIGN_FILENAMES = frozenset({"setup.mjs", "math_symbol.js", "math_init.js"})
 _SCRIPT_INTERPRETERS = frozenset({"node", "node.exe", "bun", "bun.exe", "deno", "deno.exe"})
 _VALID_KEYV_PACKAGE_SEGMENT = re.compile(r"^[a-z0-9_~-][a-z0-9._~-]*$")
-_ENVIRONMENT_ASSIGNMENT = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*=.*$")
+_SHELL_ENVIRONMENT_ASSIGNMENT = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*=.*$")
 _MAX_NPM_PACKAGE_NAME_LENGTH = 214
 _MAX_COMMAND_LENGTH = 1024 * 1024
+_MAX_COMMAND_TOKENS = 16 * 1024
 _MAX_ENV_SPLIT_DEPTH = 4
 _MAX_GIT_COMMITS = 100_000
 
@@ -287,13 +289,19 @@ def _tokenize_command_segments(command: str) -> tuple[tuple[str, ...], ...]:
     tokens: list[str] = []
     token: list[str] = []
     token_started = False
+    token_count = 0
+    token_limit_exceeded = False
     quote: str | None = None
     index = 0
 
     def finish_token() -> None:
-        nonlocal token_started
+        nonlocal token_count, token_limit_exceeded, token_started
         if token_started:
+            if token_count >= _MAX_COMMAND_TOKENS:
+                token_limit_exceeded = True
+                return
             tokens.append("".join(token))
+            token_count += 1
             token.clear()
             token_started = False
 
@@ -337,11 +345,15 @@ def _tokenize_command_segments(command: str) -> tuple[tuple[str, ...], ...]:
         else:
             token.append(character)
             token_started = True
+        if token_limit_exceeded:
+            return ()
         index += 1
 
-    if quote is not None:
+    if quote is not None or token_limit_exceeded:
         return ()
     finish_segment()
+    if token_limit_exceeded:
+        return ()
     return tuple(segments)
 
 
@@ -351,60 +363,67 @@ def _segment_invokes_campaign_file(
     if not tokens:
         return False
     index = 0
-    while index < len(tokens) and _ENVIRONMENT_ASSIGNMENT.fullmatch(tokens[index]):
+    while index < len(tokens) and _SHELL_ENVIRONMENT_ASSIGNMENT.fullmatch(tokens[index]):
         index += 1
-    return _argv_invokes_campaign_file(tokens[index:], split_depth=split_depth)
+    return _argv_invokes_campaign_file(tokens, start=index, split_depth=split_depth)
 
 
 def _argv_invokes_campaign_file(
-    tokens: tuple[str, ...], *, split_depth: int
+    tokens: tuple[str, ...], *, start: int, split_depth: int
 ) -> bool:
-    resolved = _unwrap_environment_argv(tokens, split_depth=split_depth)
+    resolved = _unwrap_environment_argv(tokens, start=start, split_depth=split_depth)
     if resolved is None:
         return False
-    command_tokens, _ = resolved
-    if not command_tokens:
+    command_tokens, command_start, _ = resolved
+    if command_start >= len(command_tokens):
         return False
-    executable = _command_basename(command_tokens[0])
+    executable = _command_basename(command_tokens[command_start])
     if executable in _CAMPAIGN_FILENAMES:
         return True
     if executable not in _SCRIPT_INTERPRETERS:
         return False
-    return _runtime_entrypoint_is_campaign(executable, command_tokens[1:])
+    return _runtime_entrypoint_is_campaign(
+        executable,
+        command_tokens,
+        start=command_start + 1,
+    )
 
 
 def _unwrap_environment_argv(
-    tokens: tuple[str, ...], *, split_depth: int
-) -> tuple[tuple[str, ...], int] | None:
+    tokens: tuple[str, ...], *, start: int, split_depth: int
+) -> tuple[tuple[str, ...], int, int] | None:
     command_tokens = tokens
+    command_start = start
     current_depth = split_depth
-    while command_tokens and _command_basename(command_tokens[0]) == "env":
+    while command_start < len(command_tokens) and _command_basename(
+        command_tokens[command_start]
+    ) == "env":
         resolved = _parse_environment_arguments(
-            command_tokens[1:],
+            command_tokens,
+            start=command_start + 1,
             split_depth=current_depth,
         )
         if resolved is None:
             return None
-        command_tokens, current_depth = resolved
-    return command_tokens, current_depth
+        command_tokens, command_start, current_depth = resolved
+    return command_tokens, command_start, current_depth
 
 
 def _parse_environment_arguments(
-    arguments: tuple[str, ...], *, split_depth: int
-) -> tuple[tuple[str, ...], int] | None:
-    pending = list(arguments)
-    index = 0
+    arguments: tuple[str, ...], *, start: int, split_depth: int
+) -> tuple[tuple[str, ...], int, int] | None:
+    if len(arguments) > _MAX_COMMAND_TOKENS:
+        return None
+    index = start
     options_allowed = True
-    current_depth = split_depth
 
-    while index < len(pending):
-        token = pending[index]
-        if _ENVIRONMENT_ASSIGNMENT.fullmatch(token):
-            options_allowed = False
-            index += 1
-            continue
+    while index < len(arguments):
+        token = arguments[index]
         if not options_allowed:
-            return tuple(pending[index:]), current_depth
+            if _is_environment_assignment(token):
+                index += 1
+                continue
+            return arguments, index, split_depth
         if token == "--":
             options_allowed = False
             index += 1
@@ -414,128 +433,151 @@ def _parse_environment_arguments(
             continue
         if token.startswith("--"):
             parsed = _parse_long_environment_option(
-                pending,
+                arguments,
                 index,
-                split_depth=current_depth,
             )
         elif token.startswith("-"):
             parsed = _parse_short_environment_options(
-                pending,
+                arguments,
                 index,
-                split_depth=current_depth,
             )
+        elif _is_environment_assignment(token):
+            options_allowed = False
+            index += 1
+            continue
         else:
-            return tuple(pending[index:]), current_depth
+            return arguments, index, split_depth
         if parsed is None:
             return None
-        pending, index, current_depth = parsed
+        consumed, split_value = parsed
+        if split_value is None:
+            index += consumed
+            continue
+        return _expand_environment_split_string(
+            arguments,
+            next_index=index + consumed,
+            value=split_value,
+            split_depth=split_depth,
+        )
 
-    return (), current_depth
+    return arguments, len(arguments), split_depth
 
 
 def _parse_long_environment_option(
-    pending: list[str], index: int, *, split_depth: int
-) -> tuple[list[str], int, int] | None:
-    token = pending[index]
-    if token in {"--ignore-environment", "--null", "--debug"}:
-        del pending[index]
-        return pending, index, split_depth
+    arguments: tuple[str, ...], index: int
+) -> tuple[int, str | None] | None:
+    token = arguments[index]
+    if token in {"--ignore-environment", "--debug"}:
+        return 1, None
+    if token == "--null":
+        return None
     if token in {"--help", "--version"}:
         return None
-    for option in ("--unset", "--chdir"):
-        if token == option:
-            if index + 1 >= len(pending):
-                return None
-            del pending[index : index + 2]
-            return pending, index, split_depth
-        if token.startswith(f"{option}="):
-            del pending[index]
-            return pending, index, split_depth
-    if token == "--split-string":
-        if index + 1 >= len(pending):
+    if token == "--unset":
+        if index + 1 >= len(arguments) or not _is_valid_environment_name(
+            arguments[index + 1]
+        ):
             return None
-        return _expand_environment_split_string(
-            pending,
-            index,
-            pending[index + 1],
-            consumed=2,
-            split_depth=split_depth,
-        )
+        return 2, None
+    if token.startswith("--unset="):
+        return (1, None) if _is_valid_environment_name(token.partition("=")[2]) else None
+    if token == "--chdir":
+        if index + 1 >= len(arguments) or "\0" in arguments[index + 1]:
+            return None
+        return 2, None
+    if token.startswith("--chdir="):
+        return (1, None) if "\0" not in token.partition("=")[2] else None
+    if token == "--split-string":
+        if index + 1 >= len(arguments):
+            return None
+        return 2, arguments[index + 1]
     if token.startswith("--split-string="):
-        return _expand_environment_split_string(
-            pending,
-            index,
-            token.partition("=")[2],
-            consumed=1,
-            split_depth=split_depth,
-        )
+        return 1, token.partition("=")[2]
     return None
 
 
 def _parse_short_environment_options(
-    pending: list[str], index: int, *, split_depth: int
-) -> tuple[list[str], int, int] | None:
-    token = pending[index]
+    arguments: tuple[str, ...], index: int
+) -> tuple[int, str | None] | None:
+    token = arguments[index]
     position = 1
     while position < len(token):
         option = token[position]
-        if option in "0iv":
+        if option in "iv":
             position += 1
             continue
-        if option in "uCP":
+        if option == "0":
+            return None
+        if option in "CPu":
             consumed = 1 if position + 1 < len(token) else 2
-            if consumed == 2 and index + 1 >= len(pending):
+            if consumed == 2 and index + 1 >= len(arguments):
                 return None
-            del pending[index : index + consumed]
-            return pending, index, split_depth
+            value = token[position + 1 :] if consumed == 1 else arguments[index + 1]
+            if "\0" in value or (option == "u" and not _is_valid_environment_name(value)):
+                return None
+            return consumed, None
         if option == "S":
             attached = token[position + 1 :]
             consumed = 1 if attached else 2
             if consumed == 2:
-                if index + 1 >= len(pending):
+                if index + 1 >= len(arguments):
                     return None
-                value = pending[index + 1]
+                value = arguments[index + 1]
             else:
                 value = attached
-            return _expand_environment_split_string(
-                pending,
-                index,
-                value,
-                consumed=consumed,
-                split_depth=split_depth,
-            )
+            return consumed, value
         return None
-    del pending[index]
-    return pending, index, split_depth
+    return 1, None
 
 
 def _expand_environment_split_string(
-    pending: list[str],
-    index: int,
+    arguments: tuple[str, ...],
+    next_index: int,
     value: str,
     *,
-    consumed: int,
     split_depth: int,
-) -> tuple[list[str], int, int] | None:
-    if split_depth >= _MAX_ENV_SPLIT_DEPTH or len(value) > _MAX_COMMAND_LENGTH:
+) -> tuple[tuple[str, ...], int, int] | None:
+    if (
+        split_depth >= _MAX_ENV_SPLIT_DEPTH
+        or len(value) > _MAX_COMMAND_LENGTH
+        or "\0" in value
+    ):
         return None
     expanded = _parse_environment_split_string(value)
-    if expanded is None:
+    combined_length = len(expanded or ()) + len(arguments) - next_index
+    if expanded is None or combined_length > _MAX_COMMAND_TOKENS:
         return None
-    pending[index : index + consumed] = expanded
-    return pending, index, split_depth + 1
+    combined = tuple(chain(expanded, islice(arguments, next_index, None)))
+    return _parse_environment_arguments(
+        combined,
+        start=0,
+        split_depth=split_depth + 1,
+    )
+
+
+def _is_environment_assignment(token: str) -> bool:
+    separator = token.find("=")
+    return separator > 0 and "\0" not in token
+
+
+def _is_valid_environment_name(name: str) -> bool:
+    return bool(name) and "=" not in name and "\0" not in name
 
 
 def _parse_environment_split_string(value: str) -> tuple[str, ...] | None:
     arguments: list[str] = []
     argument: list[str] = []
     argument_started = False
+    token_limit_exceeded = False
     quote: str | None = None
     index = 0
 
     def finish_argument() -> None:
-        nonlocal argument_started
+        nonlocal argument_started, token_limit_exceeded
         if argument_started:
+            if len(arguments) >= _MAX_COMMAND_TOKENS:
+                token_limit_exceeded = True
+                return
             arguments.append("".join(argument))
             argument.clear()
             argument_started = False
@@ -574,13 +616,15 @@ def _parse_environment_split_string(value: str) -> tuple[str, ...] | None:
                 if quote == '"':
                     return None
                 finish_argument()
-                return tuple(arguments)
+                return None if token_limit_exceeded else tuple(arguments)
             if escaped == "_":
                 if quote == '"':
                     argument.append(" ")
                     argument_started = True
                 else:
                     finish_argument()
+                    if token_limit_exceeded:
+                        return None
                 index += 2
                 continue
             escape_values = {
@@ -605,6 +649,8 @@ def _parse_environment_split_string(value: str) -> tuple[str, ...] | None:
             continue
         if quote is None and character in " \t":
             finish_argument()
+            if token_limit_exceeded:
+                return None
             index += 1
             continue
         if quote is None and character == "#" and not argument:
@@ -616,12 +662,15 @@ def _parse_environment_split_string(value: str) -> tuple[str, ...] | None:
     if quote is not None:
         return None
     finish_argument()
-    return tuple(arguments)
+    return None if token_limit_exceeded else tuple(arguments)
 
 
-def _runtime_entrypoint_is_campaign(executable: str, arguments: tuple[str, ...]) -> bool:
+def _runtime_entrypoint_is_campaign(
+    executable: str, arguments: tuple[str, ...], *, start: int
+) -> bool:
     deno_run_pending = executable in {"deno", "deno.exe"}
-    for token in arguments:
+    for index in range(start, len(arguments)):
+        token = arguments[index]
         lowered = token.lower()
         if lowered in {"-e", "--eval", "-p", "--print"} or lowered.startswith(
             ("--eval=", "--print=")

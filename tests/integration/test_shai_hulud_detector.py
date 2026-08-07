@@ -10,7 +10,12 @@ import pytest
 
 from agentsec.detectors.base import ScanContext
 from agentsec.detectors.registry import get_detectors
-from agentsec.detectors.shai_hulud import ShaiHuludDetector, _is_campaign_invocation
+from agentsec.detectors.shai_hulud import (
+    ShaiHuludDetector,
+    _is_campaign_invocation,
+    _parse_environment_split_string,
+    _tokenize_command_segments,
+)
 from agentsec.engine.discovery import DiscoveredFile, DiscoveryLimits
 from agentsec.engine.runner import run_scan
 from agentsec.models import (
@@ -502,6 +507,10 @@ def test_payload_only_known_hash_is_detected(tmp_path: Path) -> None:
         r"env -S 'node\_setup.mjs'",
         r"env -S 'node setup.mjs\c ignored'",
         "env -S 'INNER=2 node setup.mjs'",
+        "env 1A=value node setup.mjs",
+        "env A-B=value node setup.mjs",
+        "env -u A-B node setup.mjs",
+        "env --unset=1A node setup.mjs",
         "echo harmless\nnode setup.mjs",
         r"node .\setup.mjs",
     ],
@@ -531,6 +540,18 @@ def test_campaign_invocation_recognizes_executed_script(command: str) -> None:
         "env -S 'echo safe && node setup.mjs'",
         r"env -S 'echo safe\c node setup.mjs'",
         "env -S 'echo safe # node setup.mjs'",
+        "1A=value node setup.mjs",
+        "A-B=value node setup.mjs",
+        "env 1A=value -S 'node setup.mjs'",
+        "env -u '' node setup.mjs",
+        "env -u A=B node setup.mjs",
+        "env --unset= node setup.mjs",
+        "env --unset=A=B node setup.mjs",
+        "env -u 'A\0B' node setup.mjs",
+        "env A=value\0with-nul node setup.mjs",
+        "env -0 node setup.mjs",
+        "env --null node setup.mjs",
+        "env -iv0 node setup.mjs",
     ],
 )
 def test_campaign_invocation_rejects_mentions_and_non_entrypoint_arguments(
@@ -552,6 +573,38 @@ def _nested_env_split_command(command: str, depth: int) -> str:
         escaped = command.replace("\\", "\\\\").replace(" ", "\\ ")
         command = f"env -S {escaped}"
     return command
+
+
+def test_command_tokenization_stops_at_token_cap() -> None:
+    command = _CountingCommand("env " + "-i " * 250_000 + "node setup.mjs")
+
+    tokens = _tokenize_command_segments(command)
+
+    assert tokens == ()
+    assert command.index_reads < 100_000
+
+
+def test_env_split_string_parsing_stops_at_token_cap() -> None:
+    value = _CountingCommand("-i " * 250_000 + "node setup.mjs")
+
+    arguments = _parse_environment_split_string(value)
+
+    assert arguments is None
+    assert value.index_reads < 100_000
+
+
+class _CountingCommand(str):
+    index_reads: int
+
+    def __new__(cls, value: str):
+        instance = super().__new__(cls, value)
+        instance.index_reads = 0
+        return instance
+
+    def __getitem__(self, key: int | slice) -> str:
+        if isinstance(key, int):
+            self.index_reads += 1
+        return super().__getitem__(key)
 
 
 def test_structured_file_between_parser_and_hash_caps_is_hashed_then_rejected(
