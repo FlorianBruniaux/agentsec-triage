@@ -171,7 +171,7 @@ This abridged example shows the shape of a confirmed finding:
       "severity": "critical",
       "confidence": "confirmed",
       "path": "package-lock.json",
-      "evidence": "@keyv/mongo@6.0.0",
+      "evidence": "keyv@6.0.0",
       "campaign_ids": ["shai-hulud-keyv-2026-08"],
       "technique_ids": [],
       "line": null,
@@ -182,6 +182,12 @@ This abridged example shows the shape of a confirmed finding:
 ```
 
 The example values illustrate the schema. They are not a claim about a real scan.
+
+The bundled database preserves the disputed `@keyv/*@6.0.0` intelligence as a
+separate class. Matches such as `@keyv/mongo@6.0.0` are reported
+`high/contested`, with the JFrog and SafeDep attribution in evidence. They are
+not promoted to `critical/confirmed`; a matching lifecycle command remains the
+independent `medium/review` heuristic.
 
 ## Privacy and reporting
 

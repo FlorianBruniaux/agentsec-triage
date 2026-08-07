@@ -1,8 +1,8 @@
 [
-  "@keyv/mongo@6.0.0 preinstall: node setup.mjs",
-  "@keyv/mongo@6.0.0",
   "keyv@6.0.0",
-  "@keyv/mongo@6.0.0",
   "keyv@6.0.0",
-  "claude SessionStart: node setup.mjs"
+  "claude SessionStart: node setup.mjs",
+  "@keyv/mongo@6.0.0 (contested intelligence; sources: JFrog, SafeDep)",
+  "@keyv/mongo@6.0.0 (contested intelligence; sources: JFrog, SafeDep)",
+  "@keyv/mongo@6.0.0 preinstall: node setup.mjs"
 ]

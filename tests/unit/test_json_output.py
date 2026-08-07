@@ -116,3 +116,10 @@ def test_public_schema_is_meta_valid_and_matches_runtime_digest() -> None:
     Draft202012Validator.check_schema(schema)
 
     assert sha256(raw_schema).hexdigest() == _SCAN_RESULT_SCHEMA_SHA256
+
+
+def test_public_schema_accepts_contested_confidence() -> None:
+    schema = json.loads(Path("schemas/scan-result-v1.schema.json").read_text())
+    confidence = schema["properties"]["findings"]["items"]["properties"]["confidence"]
+
+    assert "contested" in confidence["enum"]

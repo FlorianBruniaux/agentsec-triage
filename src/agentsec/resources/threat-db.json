@@ -7,6 +7,12 @@
     }
   ],
   "complete": true,
+  "contested_package_versions": {},
+  "contested_wildcard_package_versions": {
+    "@keyv/": [
+      "6.0.0"
+    ]
+  },
   "domains": [
     "app-clawbot[.]org",
     "git-service.com",
@@ -20,6 +26,108 @@
     "54dc7ea54a1317cca0e890a2770630cf7fa6c97813e0cb9d2caa93012b350668": "setup.mjs (stage 1 dropper, original)",
     "9fc2570b7cef51c1b8df116d144d11ff4096357be7d2c4c6367cfc2509cf1bcc": "Math_Symbol.js / math_init.js (stage 2 Bun payload, 727,680 bytes)",
     "fd3ca4007b225fdf8de7af4345a19179d5efa8c4bb9205f88cda806e5684b1eb": "setup.mjs (stage 1 dropper, worm-propagation variant)"
+  },
+  "package_version_sources": {
+    "@cacheable/memory": {
+      "2.2.1": [
+        "Aikido",
+        "ArmorCode"
+      ]
+    },
+    "@cacheable/net": {
+      "2.1.1": [
+        "Aikido",
+        "Socket"
+      ]
+    },
+    "@cacheable/node-cache": {
+      "3.1.2": [
+        "Aikido",
+        "ArmorCode"
+      ]
+    },
+    "@cacheable/utils": {
+      "2.5.1": [
+        "Aikido",
+        "ArmorCode"
+      ]
+    },
+    "@deliveroo/reevent": {
+      "1.0.1": [
+        "Aikido"
+      ]
+    },
+    "@keyv/": {
+      "6.0.0": [
+        "JFrog",
+        "SafeDep"
+      ]
+    },
+    "@or-sdk/invitations": {
+      "1.4.9": [
+        "Aikido"
+      ]
+    },
+    "@picsart/ai-sdk": {
+      "3.32.2": [
+        "Aikido"
+      ]
+    },
+    "@qlik/embed-runtime": {
+      "1.6.4": [
+        "Aikido"
+      ]
+    },
+    "cache-manager": {
+      "7.2.10": [
+        "Aikido",
+        "ArmorCode",
+        "Socket"
+      ]
+    },
+    "cacheable": {
+      "2.5.1": [
+        "Aikido",
+        "ArmorCode"
+      ]
+    },
+    "cacheable-request": {
+      "13.0.20": [
+        "Aikido",
+        "ArmorCode",
+        "Chainguard"
+      ]
+    },
+    "ecto": {
+      "5.0.1": [
+        "Aikido"
+      ]
+    },
+    "file-entry-cache": {
+      "11.1.6": [
+        "Aikido",
+        "ArmorCode"
+      ]
+    },
+    "flat-cache": {
+      "6.1.24": [
+        "Aikido",
+        "ArmorCode"
+      ]
+    },
+    "keyv": {
+      "6.0.0": [
+        "Aikido",
+        "Chainguard",
+        "Snyk (SNYK-JS-KEYV-18515941)",
+        "Socket"
+      ]
+    },
+    "picasso.js": {
+      "2.11.6": [
+        "Aikido"
+      ]
+    }
   },
   "package_versions": {
     "@cacheable/memory": [
@@ -73,9 +181,5 @@
   },
   "updated": "2026-08-06",
   "version": "2.26.0",
-  "wildcard_package_versions": {
-    "@keyv/": [
-      "6.0.0"
-    ]
-  }
+  "wildcard_package_versions": {}
 }

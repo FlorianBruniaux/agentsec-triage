@@ -63,6 +63,11 @@ def test_findings_return_one_and_serialize_in_stable_order():
 def test_threat_database_copies_and_freezes_nested_mappings():
     package_versions = {"keyv": {"6.0.0"}}
     wildcard_package_versions = {"keyv": {"6.*"}}
+    contested_package_versions = {"disputed": {"1.0.0"}}
+    contested_wildcard_package_versions = {"@keyv/": {"6.0.0"}}
+    package_version_sources = {
+        "@keyv/": {"6.0.0": ["JFrog", "SafeDep"]},
+    }
     hashes = {"package-lock.json": "abc"}
     commit_indicators = [{"repository": "owner/repository"}]
     database = ThreatDatabase(
@@ -70,6 +75,9 @@ def test_threat_database_copies_and_freezes_nested_mappings():
         updated="2026-08-06",
         package_versions=package_versions,
         wildcard_package_versions=wildcard_package_versions,
+        contested_package_versions=contested_package_versions,
+        contested_wildcard_package_versions=contested_wildcard_package_versions,
+        package_version_sources=package_version_sources,
         hashes=hashes,
         domains=frozenset({"example.test"}),
         commit_indicators=tuple(commit_indicators),
@@ -77,15 +85,26 @@ def test_threat_database_copies_and_freezes_nested_mappings():
 
     package_versions["keyv"].add("6.0.1")
     wildcard_package_versions["keyv"].add("7.*")
+    contested_package_versions["disputed"].add("1.0.1")
+    contested_wildcard_package_versions["@keyv/"].add("6.0.1")
+    package_version_sources["@keyv/"]["6.0.0"].append("mutated")
     hashes["package-lock.json"] = "changed"
     commit_indicators[0]["repository"] = "changed/repository"
 
     assert database.package_versions["keyv"] == frozenset({"6.0.0"})
     assert database.wildcard_package_versions["keyv"] == frozenset({"6.*"})
+    assert database.contested_package_versions["disputed"] == frozenset({"1.0.0"})
+    assert database.contested_wildcard_package_versions["@keyv/"] == frozenset({"6.0.0"})
+    assert database.package_version_sources["@keyv/"]["6.0.0"] == (
+        "JFrog",
+        "SafeDep",
+    )
     assert database.hashes["package-lock.json"] == "abc"
     assert database.commit_indicators[0]["repository"] == "owner/repository"
     with pytest.raises(TypeError):
         database.commit_indicators[0]["repository"] = "mutated/repository"
+    with pytest.raises(TypeError):
+        database.package_version_sources["@keyv/"]["6.0.0"] = ("mutated",)
 
 
 def test_serialization_aggregates_and_sorts_mixed_detector_results():

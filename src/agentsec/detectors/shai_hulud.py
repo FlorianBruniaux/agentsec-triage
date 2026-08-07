@@ -5,6 +5,7 @@ from __future__ import annotations
 import hashlib
 import re
 import stat
+from dataclasses import dataclass
 from itertools import chain, islice
 from pathlib import Path
 
@@ -55,6 +56,13 @@ _GIT_HISTORY_NOT_SCANNED = (
 )
 
 
+@dataclass(frozen=True, slots=True)
+class PackageIntelligence:
+    severity: Severity
+    confidence: Confidence
+    sources: tuple[str, ...]
+
+
 class ShaiHuludDetector:
     """Compose bounded analyzers into deterministic campaign findings."""
 
@@ -103,12 +111,19 @@ class ShaiHuludDetector:
                 packages, analyzer_diagnostics = parse_lockfile_content(content, item.absolute_path)
                 diagnostics.extend(analyzer_diagnostics)
                 for resolved_package in packages:
-                    if _is_compromised(
+                    intelligence = _match_package_intelligence(
                         resolved_package.name,
                         resolved_package.version,
                         context.database,
-                    ):
-                        findings.append(_lockfile_finding(resolved_package, item.relative_path))
+                    )
+                    if intelligence is not None:
+                        findings.append(
+                            _lockfile_finding(
+                                resolved_package,
+                                item.relative_path,
+                                intelligence,
+                            )
+                        )
                 continue
 
             if category == "manifest":
@@ -192,15 +207,58 @@ def _file_safety_error(item: DiscoveredFile, context: ScanContext) -> Diagnostic
     return None
 
 
-def _is_compromised(name: str, version: str, database: ThreatDatabase) -> bool:
+def _match_package_intelligence(
+    name: str, version: str, database: ThreatDatabase
+) -> PackageIntelligence | None:
     if version in database.package_versions.get(name, frozenset()):
-        return True
-    return any(
-        prefix == "@keyv/"
-        and _is_valid_keyv_wildcard_package(name)
-        and version in versions
-        for prefix, versions in database.wildcard_package_versions.items()
-    )
+        return _package_intelligence(
+            database,
+            package_key=name,
+            version=version,
+            severity=Severity.CRITICAL,
+            confidence=Confidence.CONFIRMED,
+        )
+    if version in database.contested_package_versions.get(name, frozenset()):
+        return _package_intelligence(
+            database,
+            package_key=name,
+            version=version,
+            severity=Severity.HIGH,
+            confidence=Confidence.CONTESTED,
+        )
+    if not _is_valid_keyv_wildcard_package(name):
+        return None
+    for package_key, versions, confidence, severity in (
+        *(
+            (prefix, versions, Confidence.CONFIRMED, Severity.CRITICAL)
+            for prefix, versions in database.wildcard_package_versions.items()
+        ),
+        *(
+            (prefix, versions, Confidence.CONTESTED, Severity.HIGH)
+            for prefix, versions in database.contested_wildcard_package_versions.items()
+        ),
+    ):
+        if package_key == "@keyv/" and version in versions:
+            return _package_intelligence(
+                database,
+                package_key=package_key,
+                version=version,
+                severity=severity,
+                confidence=confidence,
+            )
+    return None
+
+
+def _package_intelligence(
+    database: ThreatDatabase,
+    *,
+    package_key: str,
+    version: str,
+    severity: Severity,
+    confidence: Confidence,
+) -> PackageIntelligence:
+    sources = database.package_version_sources.get(package_key, {}).get(version, ())
+    return PackageIntelligence(severity, confidence, sources)
 
 
 def _is_valid_keyv_wildcard_package(name: str) -> bool:
@@ -214,13 +272,25 @@ def _is_valid_keyv_wildcard_package(name: str) -> bool:
     )
 
 
-def _lockfile_finding(package: ResolvedPackage, path: Path) -> Finding:
+def _package_evidence(
+    name: str, version: str, intelligence: PackageIntelligence
+) -> str:
+    evidence = f"{name}@{version}"
+    if intelligence.confidence is not Confidence.CONTESTED:
+        return evidence
+    sources = ", ".join(intelligence.sources) or "unattributed"
+    return f"{evidence} (contested intelligence; sources: {sources})"
+
+
+def _lockfile_finding(
+    package: ResolvedPackage, path: Path, intelligence: PackageIntelligence
+) -> Finding:
     return _finding(
         rule_id="compromised-lockfile-version",
-        severity=Severity.CRITICAL,
-        confidence=Confidence.CONFIRMED,
+        severity=intelligence.severity,
+        confidence=intelligence.confidence,
         path=path,
-        evidence=f"{package.name}@{package.version}",
+        evidence=_package_evidence(package.name, package.version, intelligence),
     )
 
 
@@ -229,27 +299,37 @@ def _installed_package_findings(
     path: Path,
     database: ThreatDatabase,
 ) -> tuple[Finding, ...]:
-    compromised = _is_compromised(package.name, package.version, database)
+    intelligence = _match_package_intelligence(package.name, package.version, database)
     package_evidence = f"{package.name}@{package.version}"
     findings: list[Finding] = []
-    if compromised:
+    if intelligence is not None:
         findings.append(
             _finding(
                 rule_id="compromised-installed-version",
-                severity=Severity.CRITICAL,
-                confidence=Confidence.CONFIRMED,
+                severity=intelligence.severity,
+                confidence=intelligence.confidence,
                 path=path,
-                evidence=package_evidence,
+                evidence=_package_evidence(
+                    package.name,
+                    package.version,
+                    intelligence,
+                ),
             )
         )
     if package.preinstall is not None and _is_campaign_invocation(package.preinstall):
+        campaign_correlated = (
+            intelligence is not None
+            and intelligence.confidence is not Confidence.CONTESTED
+        )
         findings.append(
             _finding(
                 rule_id=(
-                    "campaign-lifecycle-script" if compromised else "suspicious-lifecycle-script"
+                    "campaign-lifecycle-script"
+                    if campaign_correlated
+                    else "suspicious-lifecycle-script"
                 ),
-                severity=Severity.CRITICAL if compromised else Severity.MEDIUM,
-                confidence=Confidence.HIGH if compromised else Confidence.REVIEW,
+                severity=Severity.CRITICAL if campaign_correlated else Severity.MEDIUM,
+                confidence=Confidence.HIGH if campaign_correlated else Confidence.REVIEW,
                 path=path,
                 evidence=f"{package_evidence} preinstall: {package.preinstall}",
             )

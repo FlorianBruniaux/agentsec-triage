@@ -1167,6 +1167,7 @@ malicious_skills:
     type: "supply-chain"
     platform: "npm"
     version: "6.0.0"
+    status: "contested"
     source: "JFrog / SafeDep"
     risk: "critical"
     notes: "Storage adapters compromised at 6.0.0: @keyv/dynamo, @keyv/mongo, @keyv/memcache, @keyv/valkey, @keyv/test-suite, plus Redis/Postgres/SQLite/MySQL/Etcd/compression drivers. CONTESTED: The Hacker News reported the @keyv/* adapters stayed clean; JFrog's affected-package table and SafeDep's CSV both list them at 6.0.0. Treat as compromised."

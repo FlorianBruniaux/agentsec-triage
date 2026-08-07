@@ -213,6 +213,8 @@ Repository-focused coverage for the August 2026 Keyv/cacheable npm campaign:
 - exact compromised package/version pairs in supported lockfiles;
 - npm aliases and historical/current npm, pnpm, and Yarn formats;
 - exact compromised package/version pairs in installed package metadata;
+- separately modeled contested package/version pairs, reported with source
+  attribution and never upgraded to confirmed compromise;
 - lifecycle scripts correlated with compromised packages;
 - complete SHA-256 payload matches regardless of filename or extension;
 - Claude Code startup hooks and VS Code `folderOpen` tasks;
@@ -299,7 +301,8 @@ Mandatory Shai-Hulud regression coverage includes:
 - npm package aliases;
 - pnpm v5, v6, and v9 syntax, including quoted scoped keys;
 - Yarn Classic and Berry aliases/resolutions;
-- `@keyv/*@6.0.0` wildcard-scope packages;
+- `@keyv/*@6.0.0` wildcard-scope packages as `high/contested`, preserving JFrog
+  and SafeDep attribution while lifecycle-only evidence remains `medium/review`;
 - known hashes in `.js`, `.mjs`, extensionless, renamed, and `dist/` files;
 - legitimate `setup.mjs` and esbuild lifecycle-script controls;
 - nonexistent roots and malformed JSON;

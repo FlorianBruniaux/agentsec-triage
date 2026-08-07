@@ -106,9 +106,12 @@ def _reject_duplicate_json_keys(pairs: list[tuple[str, object]]) -> dict[str, ob
 class NormalizedPayload(TypedDict):
     commit_indicators: list[dict[str, str]]
     complete: bool
+    contested_package_versions: dict[str, list[str]]
+    contested_wildcard_package_versions: dict[str, list[str]]
     domains: list[str]
     hashes: dict[str, str]
     package_versions: dict[str, list[str]]
+    package_version_sources: dict[str, dict[str, list[str]]]
     updated: str
     version: str
     wildcard_package_versions: dict[str, list[str]]
@@ -195,9 +198,19 @@ def _string(value: object, label: str) -> str:
 
 def _extract_packages(
     document: Mapping[str, object],
-) -> tuple[dict[str, list[str]], dict[str, list[str]]]:
+) -> tuple[
+    dict[str, list[str]],
+    dict[str, list[str]],
+    dict[str, list[str]],
+    dict[str, list[str]],
+    dict[str, dict[str, list[str]]],
+]:
     exact: dict[str, set[str]] = {}
     wildcard: dict[str, set[str]] = {}
+    contested_exact: dict[str, set[str]] = {}
+    contested_wildcard: dict[str, set[str]] = {}
+    sources: dict[str, dict[str, set[str]]] = {}
+    statuses: dict[tuple[str, str], str] = {}
     skills = _array(document.get("malicious_skills"), "malicious_skills")
     for index, value in enumerate(skills):
         skill = _mapping(value, f"malicious_skills[{index}]")
@@ -205,15 +218,45 @@ def _extract_packages(
             continue
         name = _string(skill.get("name"), f"malicious_skills[{index}].name")
         version = _string(skill.get("version"), f"malicious_skills[{index}].version")
+        status = _string(
+            skill.get("status", "confirmed"), f"malicious_skills[{index}].status"
+        )
+        source = _string(skill.get("source"), f"malicious_skills[{index}].source")
+        package_key = name[:-1] if name.endswith("/*") else name
+        pair = (package_key, version)
+        previous_status = statuses.setdefault(pair, status)
+        if previous_status != status:
+            raise ThreatDatabaseBuildError(
+                f"extraction failed: conflicting status for npm package {package_key}@{version}"
+            )
+        source_names = {
+            source_name.strip()
+            for source_name in source.split(" / ")
+            if source_name.strip()
+        }
+        sources.setdefault(package_key, {}).setdefault(version, set()).update(source_names)
         if name.endswith("/*"):
-            wildcard.setdefault(name[:-1], set()).add(version)
+            target = contested_wildcard if status == "contested" else wildcard
         else:
-            exact.setdefault(name, set()).add(version)
+            target = contested_exact if status == "contested" else exact
+        target.setdefault(package_key, set()).add(version)
     if not exact:
         raise ThreatDatabaseBuildError("extraction failed: no exact npm package versions found")
     return (
         {name: sorted(versions) for name, versions in sorted(exact.items())},
         {name: sorted(versions) for name, versions in sorted(wildcard.items())},
+        {name: sorted(versions) for name, versions in sorted(contested_exact.items())},
+        {
+            name: sorted(versions)
+            for name, versions in sorted(contested_wildcard.items())
+        },
+        {
+            name: {
+                version: sorted(version_sources)
+                for version, version_sources in sorted(package_sources.items())
+            }
+            for name, package_sources in sorted(sources.items())
+        },
     )
 
 
@@ -288,13 +331,22 @@ def _extract_commit_indicators(document: Mapping[str, object]) -> list[dict[str,
 
 
 def _normalize(document: Mapping[str, object]) -> NormalizedPayload:
-    package_versions, wildcard_package_versions = _extract_packages(document)
+    (
+        package_versions,
+        wildcard_package_versions,
+        contested_package_versions,
+        contested_wildcard_package_versions,
+        package_version_sources,
+    ) = _extract_packages(document)
     return {
         "commit_indicators": _extract_commit_indicators(document),
         "complete": True,
+        "contested_package_versions": contested_package_versions,
+        "contested_wildcard_package_versions": contested_wildcard_package_versions,
         "domains": _extract_domains(document),
         "hashes": _extract_hashes(document),
         "package_versions": package_versions,
+        "package_version_sources": package_version_sources,
         "updated": _string(document.get("updated"), "updated"),
         "version": _string(document.get("version"), "version"),
         "wildcard_package_versions": wildcard_package_versions,
@@ -336,9 +388,17 @@ def main(argv: Sequence[str] | None = None) -> int:
     wildcard_count = sum(
         len(versions) for versions in payload["wildcard_package_versions"].values()
     )
+    contested_count = sum(
+        len(versions) for versions in payload["contested_package_versions"].values()
+    )
+    contested_wildcard_count = sum(
+        len(versions)
+        for versions in payload["contested_wildcard_package_versions"].values()
+    )
     print(
         f"built threat database version={payload['version']} "
         f"packages={package_count} wildcards={wildcard_count} "
+        f"contested={contested_count} contested_wildcards={contested_wildcard_count} "
         f"hashes={len(payload['hashes'])} domains={len(payload['domains'])} "
         f"commit_indicators={len(payload['commit_indicators'])} output={args.output}"
     )

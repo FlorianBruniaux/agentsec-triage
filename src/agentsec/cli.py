@@ -136,6 +136,11 @@ def _db_info() -> int:
                 f"updated: {database.updated}",
                 f"package_versions={len(database.package_versions)}",
                 f"wildcard_package_versions={len(database.wildcard_package_versions)}",
+                f"contested_package_versions={len(database.contested_package_versions)}",
+                "contested_wildcard_package_versions="
+                f"{len(database.contested_wildcard_package_versions)}",
+                "package_version_sources="
+                f"{sum(len(versions) for versions in database.package_version_sources.values())}",
                 f"hashes={len(database.hashes)}",
                 f"domains={len(database.domains)}",
                 f"commit_indicators={len(database.commit_indicators)}",

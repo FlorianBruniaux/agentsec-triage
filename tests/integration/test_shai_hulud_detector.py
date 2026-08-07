@@ -39,6 +39,9 @@ def _database(*, payload: Path | None = None) -> ThreatDatabase:
         updated=base.updated,
         package_versions=base.package_versions,
         wildcard_package_versions=base.wildcard_package_versions,
+        contested_package_versions=base.contested_package_versions,
+        contested_wildcard_package_versions=base.contested_wildcard_package_versions,
+        package_version_sources=base.package_version_sources,
         hashes=hashes,
         domains=base.domains,
         commit_indicators=base.commit_indicators,
@@ -76,6 +79,9 @@ def _database_with_external_git_marker(subject: str) -> ThreatDatabase:
         updated=base.updated,
         package_versions=base.package_versions,
         wildcard_package_versions=base.wildcard_package_versions,
+        contested_package_versions=base.contested_package_versions,
+        contested_wildcard_package_versions=base.contested_wildcard_package_versions,
+        package_version_sources=base.package_version_sources,
         hashes=base.hashes,
         domains=base.domains,
         commit_indicators=(
@@ -170,26 +176,32 @@ def test_positive_fixture_emits_exact_and_correlated_findings(tmp_path: Path) ->
         for finding in result.findings
     }
     assert findings == {
-        ("compromised-lockfile-version", "@keyv/mongo@6.0.0"): (
-            Severity.CRITICAL,
-            Confidence.CONFIRMED,
+        (
+            "compromised-lockfile-version",
+            "@keyv/mongo@6.0.0 (contested intelligence; sources: JFrog, SafeDep)",
+        ): (
+            Severity.HIGH,
+            Confidence.CONTESTED,
         ),
         ("compromised-lockfile-version", "keyv@6.0.0"): (
             Severity.CRITICAL,
             Confidence.CONFIRMED,
         ),
-        ("compromised-installed-version", "@keyv/mongo@6.0.0"): (
-            Severity.CRITICAL,
-            Confidence.CONFIRMED,
+        (
+            "compromised-installed-version",
+            "@keyv/mongo@6.0.0 (contested intelligence; sources: JFrog, SafeDep)",
+        ): (
+            Severity.HIGH,
+            Confidence.CONTESTED,
         ),
         ("compromised-installed-version", "keyv@6.0.0"): (
             Severity.CRITICAL,
             Confidence.CONFIRMED,
         ),
         (
-            "campaign-lifecycle-script",
+            "suspicious-lifecycle-script",
             "@keyv/mongo@6.0.0 preinstall: node setup.mjs",
-        ): (Severity.CRITICAL, Confidence.HIGH),
+        ): (Severity.MEDIUM, Confidence.REVIEW),
         ("known-payload-hash", f"sha256:{payload_digest} (test payload)"): (
             Severity.CRITICAL,
             Confidence.CONFIRMED,
@@ -479,6 +491,9 @@ def test_structured_file_is_hashed_and_parsed_from_one_safe_read(
         updated=base.updated,
         package_versions=base.package_versions,
         wildcard_package_versions=base.wildcard_package_versions,
+        contested_package_versions=base.contested_package_versions,
+        contested_wildcard_package_versions=base.contested_wildcard_package_versions,
+        package_version_sources=base.package_version_sources,
         hashes={**base.hashes, digest: "structured fixture"},
         domains=base.domains,
         commit_indicators=base.commit_indicators,

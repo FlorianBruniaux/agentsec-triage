@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import StrEnum
 from pathlib import PurePath
 from types import MappingProxyType
@@ -79,6 +79,15 @@ class ThreatDatabase:
     hashes: Mapping[str, str]
     domains: frozenset[str]
     commit_indicators: tuple[Mapping[str, str], ...]
+    contested_package_versions: Mapping[str, frozenset[str]] = field(
+        default_factory=dict
+    )
+    contested_wildcard_package_versions: Mapping[str, frozenset[str]] = field(
+        default_factory=dict
+    )
+    package_version_sources: Mapping[str, Mapping[str, tuple[str, ...]]] = field(
+        default_factory=dict
+    )
     complete: bool = True
 
     def __post_init__(self) -> None:
@@ -99,6 +108,41 @@ class ThreatDatabase:
                 {
                     package: frozenset(versions)
                     for package, versions in self.wildcard_package_versions.items()
+                }
+            ),
+        )
+        object.__setattr__(
+            self,
+            "contested_package_versions",
+            MappingProxyType(
+                {
+                    package: frozenset(versions)
+                    for package, versions in self.contested_package_versions.items()
+                }
+            ),
+        )
+        object.__setattr__(
+            self,
+            "contested_wildcard_package_versions",
+            MappingProxyType(
+                {
+                    package: frozenset(versions)
+                    for package, versions in self.contested_wildcard_package_versions.items()
+                }
+            ),
+        )
+        object.__setattr__(
+            self,
+            "package_version_sources",
+            MappingProxyType(
+                {
+                    package: MappingProxyType(
+                        {
+                            version: tuple(sources)
+                            for version, sources in versions.items()
+                        }
+                    )
+                    for package, versions in self.package_version_sources.items()
                 }
             ),
         )

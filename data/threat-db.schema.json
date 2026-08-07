@@ -44,6 +44,7 @@
           "type": {"type": "string", "minLength": 1},
           "platform": {"type": "string", "minLength": 1},
           "version": {"type": "string", "minLength": 1},
+          "status": {"enum": ["confirmed", "contested"]},
           "source": {"type": "string", "minLength": 1},
           "risk": {"type": "string", "minLength": 1}
         },

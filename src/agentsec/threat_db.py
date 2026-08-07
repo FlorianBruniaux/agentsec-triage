@@ -31,6 +31,9 @@ _REQUIRED_KEYS = (
     "updated",
     "package_versions",
     "wildcard_package_versions",
+    "contested_package_versions",
+    "contested_wildcard_package_versions",
+    "package_version_sources",
     "hashes",
     "domains",
     "commit_indicators",
@@ -75,6 +78,56 @@ def _version_mapping(
             _sorted_unique_strings(versions, f"{label}.{package}")
         )
     return result
+
+
+def _package_version_sources(
+    value: object,
+) -> dict[str, dict[str, tuple[str, ...]]]:
+    mapping = _object(value, "package_version_sources")
+    if not mapping:
+        raise ThreatDatabaseError("package_version_sources must not be empty")
+    result: dict[str, dict[str, tuple[str, ...]]] = {}
+    for package, raw_versions in mapping.items():
+        if not package:
+            raise ThreatDatabaseError(
+                "package_version_sources contains an empty package name"
+            )
+        versions = _object(raw_versions, f"package_version_sources.{package}")
+        if not versions:
+            raise ThreatDatabaseError(
+                f"package_version_sources.{package} must not be empty"
+            )
+        result[package] = {
+            version: tuple(
+                _sorted_unique_strings(
+                    raw_sources,
+                    f"package_version_sources.{package}.{version}",
+                )
+            )
+            for version, raw_sources in versions.items()
+        }
+    return result
+
+
+def _validate_source_coverage(
+    sources: Mapping[str, Mapping[str, tuple[str, ...]]],
+    *version_mappings: Mapping[str, frozenset[str]],
+) -> None:
+    expected = {
+        (package, version)
+        for mapping in version_mappings
+        for package, versions in mapping.items()
+        for version in versions
+    }
+    actual = {
+        (package, version)
+        for package, versions in sources.items()
+        for version in versions
+    }
+    if actual != expected:
+        raise ThreatDatabaseError(
+            "package_version_sources must exactly cover every package/version record"
+        )
 
 
 def _hash_mapping(value: object) -> dict[str, str]:
@@ -148,15 +201,40 @@ def load_bundled_database() -> ThreatDatabase:
     complete = payload["complete"]
     if complete is not True:
         raise ThreatDatabaseError("complete must be true for a bundled runtime database")
+    package_versions = _version_mapping(payload["package_versions"], "package_versions")
+    wildcard_package_versions = _version_mapping(
+        payload["wildcard_package_versions"],
+        "wildcard_package_versions",
+        allow_empty=True,
+    )
+    contested_package_versions = _version_mapping(
+        payload["contested_package_versions"],
+        "contested_package_versions",
+        allow_empty=True,
+    )
+    contested_wildcard_package_versions = _version_mapping(
+        payload["contested_wildcard_package_versions"],
+        "contested_wildcard_package_versions",
+        allow_empty=True,
+    )
+    package_version_sources = _package_version_sources(
+        payload["package_version_sources"]
+    )
+    _validate_source_coverage(
+        package_version_sources,
+        package_versions,
+        wildcard_package_versions,
+        contested_package_versions,
+        contested_wildcard_package_versions,
+    )
     return ThreatDatabase(
         version=_string(payload["version"], "version"),
         updated=_string(payload["updated"], "updated"),
-        package_versions=_version_mapping(payload["package_versions"], "package_versions"),
-        wildcard_package_versions=_version_mapping(
-            payload["wildcard_package_versions"],
-            "wildcard_package_versions",
-            allow_empty=True,
-        ),
+        package_versions=package_versions,
+        wildcard_package_versions=wildcard_package_versions,
+        contested_package_versions=contested_package_versions,
+        contested_wildcard_package_versions=contested_wildcard_package_versions,
+        package_version_sources=package_version_sources,
         hashes=_hash_mapping(payload["hashes"]),
         domains=frozenset(_sorted_unique_strings(payload["domains"], "domains")),
         commit_indicators=_commit_indicators(payload["commit_indicators"]),

@@ -79,7 +79,19 @@ def test_scan_positive_fixture_exits_one_and_names_exact_package_version(tmp_pat
 
     assert completed.returncode == 1
     payload = json.loads(completed.stdout)
-    assert any(finding["evidence"] == "@keyv/mongo@6.0.0" for finding in payload["findings"])
+    assert any(
+        finding["evidence"]
+        == "@keyv/mongo@6.0.0 (contested intelligence; sources: JFrog, SafeDep)"
+        and finding["severity"] == "high"
+        and finding["confidence"] == "contested"
+        for finding in payload["findings"]
+    )
+    assert any(
+        finding["evidence"] == "keyv@6.0.0"
+        and finding["severity"] == "critical"
+        and finding["confidence"] == "confirmed"
+        for finding in payload["findings"]
+    )
     assert [finding["evidence"] for finding in payload["findings"]] == json.loads(
         (GOLDEN / "finding.json").read_text(encoding="utf-8")
     )
@@ -153,6 +165,9 @@ def test_db_info_reports_generated_database_version_and_ioc_counts() -> None:
     assert completed.stderr == ""
     assert "2.26.0" in completed.stdout
     assert "package_versions=" in completed.stdout
+    assert "contested_package_versions=0" in completed.stdout
+    assert "contested_wildcard_package_versions=1" in completed.stdout
+    assert "package_version_sources=" in completed.stdout
     assert "hashes=" in completed.stdout
     assert "domains=" in completed.stdout
     assert "commit_indicators=" in completed.stdout

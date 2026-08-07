@@ -25,7 +25,18 @@ def test_bundled_database_contains_keyv_campaign_iocs():
     database = load_bundled_database()
     assert database.version == "2.26.0"
     assert "6.0.0" in database.package_versions["keyv"]
-    assert "6.0.0" in database.wildcard_package_versions["@keyv/"]
+    assert "@keyv/" not in database.wildcard_package_versions
+    assert "6.0.0" in database.contested_wildcard_package_versions["@keyv/"]
+    assert database.package_version_sources["keyv"]["6.0.0"] == (
+        "Aikido",
+        "Chainguard",
+        "Snyk (SNYK-JS-KEYV-18515941)",
+        "Socket",
+    )
+    assert database.package_version_sources["@keyv/"]["6.0.0"] == (
+        "JFrog",
+        "SafeDep",
+    )
     assert len(database.hashes) >= 3
 
 
@@ -239,7 +250,19 @@ def test_builder_normalizes_canonical_source_deterministically(tmp_path: Path):
 
     payload = json.loads(first_output.read_text(encoding="utf-8"))
     assert payload["package_versions"]["keyv"] == ["6.0.0"]
-    assert payload["wildcard_package_versions"]["@keyv/"] == ["6.0.0"]
+    assert "@keyv/" not in payload["wildcard_package_versions"]
+    assert payload["contested_package_versions"] == {}
+    assert payload["contested_wildcard_package_versions"]["@keyv/"] == ["6.0.0"]
+    assert payload["package_version_sources"]["keyv"]["6.0.0"] == [
+        "Aikido",
+        "Chainguard",
+        "Snyk (SNYK-JS-KEYV-18515941)",
+        "Socket",
+    ]
+    assert payload["package_version_sources"]["@keyv/"]["6.0.0"] == [
+        "JFrog",
+        "SafeDep",
+    ]
     assert len(payload["hashes"]) == 3
     assert all(
         len(value) == 64 and value == value.lower()

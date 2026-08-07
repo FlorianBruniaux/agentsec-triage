@@ -7,6 +7,11 @@ authorized public release while the licensing decision remains unresolved.
 
 ### Fixed
 
+- Preserved contested npm intelligence and package/version source attribution in
+  the generated database and immutable runtime model. `@keyv/*@6.0.0` now emits
+  `high/contested` findings attributed to JFrog and SafeDep, while exact
+  `keyv@6.0.0` remains `critical/confirmed` and lifecycle-only evidence remains
+  `medium/review`.
 - Disabled local Git-history subprocess execution for untrusted repositories until
   strict metadata confinement is available. Repositories with `.git` now fail
   closed with an incomplete result instead of allowing Git to follow object
