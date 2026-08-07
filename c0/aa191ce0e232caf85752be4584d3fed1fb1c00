@@ -1,0 +1,37 @@
+pyproject.toml
+  s_0df90997879182::t_d6a15d1d3dafe2 12,22
+CONTRIBUTING.md
+  s_0df90997879182::t_d6a15d1d3dafe2 73-74,78-84,87-91
+  s_0df90997879182::t_a346e01c9640d4 92
+tests/unit/test_documentation.py
+  s_0df90997879182::t_7294009d6de55e 28-41,62-63,80,97,100-101,104,115-118,121
+  s_0df90997879182::t_e143300c94eee2 119-120
+  s_0df90997879182::t_29b22f6b64bcb3 122-123
+tests/integration/test_cli.py
+  s_0df90997879182::t_7294009d6de55e 9-10,71-106,158-170,172-176,180-183,270,278
+README.md
+  s_0df90997879182::t_d6a15d1d3dafe2 58-63,119-142
+LICENSE-DECISION.md
+  s_0df90997879182::t_d6a15d1d3dafe2 50-60
+CHANGELOG.md
+  s_0df90997879182::t_d6a15d1d3dafe2 8-19
+.github/workflows/tests.yml
+  s_0df90997879182::t_ca1fab51c21950 99
+  s_0df90997879182::t_d6a15d1d3dafe2 48-50,53-86
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "c0aa191ce0e232caf85752be4584d3fed1fb1c00",
+  "prompts": {},
+  "sessions": {
+    "s_0df90997879182": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019fd73a-588d-7f03-ab50-494ca0e95848",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Florian BRUNIAUX <florian@bruniaux.com>"
+    }
+  }
+}
