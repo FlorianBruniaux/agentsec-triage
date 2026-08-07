@@ -5,6 +5,18 @@ authorized public release while the licensing decision remains unresolved.
 
 ## [Unreleased]
 
+### Fixed
+
+- Made package builds and the packaging integration test run with
+  `PIP_NO_INDEX=1` and `python -m build --no-isolation` after installing the full
+  development dependency set, including Hatchling.
+- Prevented the blocking `LICENSE-DECISION.md` record from being emitted as a
+  wheel `License-File` metadata field.
+- Replaced the contradictory clean self-scan expectation with an explicit exit
+  `2` gate that preserves positive fixtures and the unsupported `bun.lockb`
+  diagnostic; a separate negative-fixture scan proves completed applicable
+  behavior.
+
 ### Blocked
 
 - Public tagging and publication are blocked pending the code and threat-data
@@ -29,4 +41,3 @@ authorized public release while the licensing decision remains unresolved.
   documentation.
 - Cross-platform CI targets for Linux, macOS, and Windows on Python 3.11, 3.12,
   and 3.13. Passing status is not claimed until those jobs run.
-

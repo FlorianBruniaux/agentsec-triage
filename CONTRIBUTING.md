@@ -70,15 +70,25 @@ Run every gate before requesting review:
 git diff --exit-code -- src/agentsec/resources/threat-db.json
 .venv/bin/ruff check src tests scripts
 .venv/bin/mypy src scripts
-.venv/bin/pytest --cov=agentsec --cov-report=term-missing
-.venv/bin/python -m build
+PIP_NO_INDEX=1 .venv/bin/pytest --cov=agentsec --cov-report=term-missing
+PIP_NO_INDEX=1 .venv/bin/python -m build --no-isolation
 .venv/bin/agentsec doctor
 ```
 
-The CI workflow also installs the built wheel with `--no-deps` in a fresh virtual
-environment and runs `doctor` from that environment. This checks that the wheel
-contains the threat database and result schema without relying on development
+Install `.[dev]` before setting `PIP_NO_INDEX=1`; it includes Hatchling so the
+build needs neither an isolated environment nor a package-index request. The full
+test suite inherits `PIP_NO_INDEX=1`, including its package build and wheel install.
+
+The CI workflow installs the built wheel with `--no-index --no-deps` in a fresh
+virtual environment and runs `doctor` from that environment. This checks that the
+wheel contains the threat database and result schema without relying on runtime
 dependencies.
+
+The release gate also runs two repository-shaped scans. `agentsec scan .` must
+exit `2`, retain findings from positive fixtures, and report the tracked binary
+`bun.lockb` fixture as unsupported. The negative fixture scan must complete with
+no critical finding. There is no V0.1 exclusion flag and `.gitignore` is not a
+scanner boundary.
 
 ## Pull request content
 

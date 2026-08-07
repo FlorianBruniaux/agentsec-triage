@@ -55,6 +55,12 @@ symlinks or Windows reparse points outside the resolved scan root. Git inspectio
 uses a bounded command with repository hooks, external protocols, prompts, and
 lazy fetching disabled.
 
+Traversal is exhaustive by design. AgentSec visits every directory entry under
+the scan root except `.git`, does not honor `.gitignore` or other ignore files,
+and has no exclusion option in V0.1. Ignored, generated, dependency, fixture, and
+virtual-environment content remains in scope. This avoids letting a hostile
+repository hide evidence behind developer-tool ignore rules.
+
 ## Verdicts and exit codes
 
 | Exit code | Meaning |
@@ -110,6 +116,30 @@ of compromise.
   a trusted Git executable can be resolved from a system or Program Files
   location; otherwise the scan reports incomplete coverage with exit code `2`.
 
+## Self-scan release expectation
+
+A self-scan of this repository is intentionally not a clean or complete scan:
+
+```bash
+agentsec scan . --format json --redact
+```
+
+The expected exit code is `2`. The tracked positive fixtures must remain visible
+as findings, while `tests/fixtures/lockfiles/bun.lockb` must produce the documented
+unsupported-format diagnostic. Local `.venv` symlinks and generated build
+artifacts may add further incomplete-coverage diagnostics. The release gate
+checks this exact shape and never treats self-scan output as a clean-machine claim.
+
+The supported negative fixture provides a completed applicable scan without
+hiding files:
+
+```bash
+agentsec scan tests/fixtures/shai_hulud/negative --format json
+```
+
+It currently exits `1` because its benign startup hooks are `review` findings. It
+must report `complete: true`, no diagnostic, and no critical finding.
+
 ## JSON output
 
 JSON follows [`schemas/scan-result-v1.schema.json`](schemas/scan-result-v1.schema.json).
@@ -164,4 +194,3 @@ false negatives, and IOC corrections. The related educational page is
 Contributions must follow the test-first and threat-source requirements in
 [CONTRIBUTING.md](CONTRIBUTING.md). Public redistribution and release remain
 blocked until [LICENSE-DECISION.md](LICENSE-DECISION.md) is resolved.
-

@@ -45,11 +45,45 @@ jobs:
       - name: Mypy, including release scripts
         run: mypy src scripts
 
-      - name: Tests and coverage threshold
+      - name: Tests and coverage threshold without package index
+        env:
+          PIP_NO_INDEX: "1"
         run: pytest --cov=agentsec --cov-report=term-missing
 
-      - name: Build wheel and source distribution
-        run: python -m build
+      - name: Build wheel and source distribution without package index
+        env:
+          PIP_NO_INDEX: "1"
+        run: python -m build --no-isolation
+
+      - name: Verify honest self-scan and completed negative scan
+        shell: bash
+        run: |
+          set +e
+          agentsec scan . --format json --redact > self-scan.json
+          self_scan_status=$?
+          agentsec scan tests/fixtures/shai_hulud/negative --format json > negative-scan.json
+          negative_scan_status=$?
+          set -e
+          test "${self_scan_status}" -eq 2
+          test "${negative_scan_status}" -eq 1
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          self_scan = json.loads(Path("self-scan.json").read_text(encoding="utf-8"))
+          assert self_scan["complete"] is False
+          assert self_scan["findings"]
+          assert any(
+              item["path"].endswith("tests/fixtures/lockfiles/bun.lockb")
+              and item["message"] == "Unsupported binary Bun lockfile format"
+              for item in self_scan["diagnostics"]
+          )
+
+          negative = json.loads(Path("negative-scan.json").read_text(encoding="utf-8"))
+          assert negative["complete"] is True
+          assert negative["diagnostics"] == []
+          assert all(item["severity"] != "critical" for item in negative["findings"])
+          PY
 
       - name: Install wheel without dependencies and run doctor
         shell: bash
@@ -62,6 +96,5 @@ jobs:
           fi
           wheel="$(find dist -name '*.whl' -print -quit)"
           test -n "${wheel}"
-          python -m pip install --no-deps "${wheel}"
+          PIP_NO_INDEX=1 python -m pip install --no-deps --no-index "${wheel}"
           agentsec doctor
-

@@ -6,6 +6,8 @@ import shutil
 import subprocess
 import sys
 import venv
+import zipfile
+from email.parser import BytesParser
 from pathlib import Path
 
 import pytest
@@ -66,6 +68,42 @@ def test_scan_positive_fixture_exits_one_and_names_exact_package_version(tmp_pat
     )
 
 
+def test_scan_negative_fixture_completes_with_review_findings_and_no_critical(
+    tmp_path: Path,
+) -> None:
+    root = tmp_path / "negative"
+    shutil.copytree(FIXTURES / "negative", root)
+
+    completed = _run("scan", str(root), "--format", "json")
+
+    assert completed.returncode == 1
+    payload = json.loads(completed.stdout)
+    assert payload["complete"] is True
+    assert payload["diagnostics"] == []
+    assert payload["findings"]
+    assert all(finding["severity"] != "critical" for finding in payload["findings"])
+
+
+def test_self_scan_shape_keeps_findings_when_unsupported_fixture_makes_it_incomplete(
+    tmp_path: Path,
+) -> None:
+    root = tmp_path / "self-scan"
+    shutil.copytree(FIXTURES / "positive", root)
+    shutil.copy2(PROJECT_ROOT / "tests" / "fixtures" / "lockfiles" / "bun.lockb", root)
+
+    completed = _run("scan", str(root), "--format", "json")
+
+    assert completed.returncode == 2
+    payload = json.loads(completed.stdout)
+    assert payload["complete"] is False
+    assert any(finding["confidence"] == "confirmed" for finding in payload["findings"])
+    assert any(
+        diagnostic["path"].endswith("bun.lockb")
+        and diagnostic["message"] == "Unsupported binary Bun lockfile format"
+        for diagnostic in payload["diagnostics"]
+    )
+
+
 def test_scan_redaction_removes_temporary_absolute_root(tmp_path: Path) -> None:
     completed = _run("scan", str(tmp_path), "--format", "json", "--redact")
 
@@ -117,12 +155,32 @@ def test_doctor_validates_local_resources_and_schema_without_network() -> None:
 def test_doctor_from_wheel_without_dependencies_validates_packaged_schema(tmp_path: Path) -> None:
     dist = tmp_path / "dist"
     environment = tmp_path / "no-deps"
-    _checked([sys.executable, "-m", "build", "--wheel", "--outdir", str(dist)])
+    offline = {**os.environ, "PIP_NO_INDEX": "1"}
+    _checked(
+        [
+            sys.executable,
+            "-m",
+            "build",
+            "--no-isolation",
+            "--wheel",
+            "--outdir",
+            str(dist),
+        ],
+        env=offline,
+    )
     wheel = next(dist.glob("*.whl"))
+    with zipfile.ZipFile(wheel) as archive:
+        metadata_name = next(name for name in archive.namelist() if name.endswith("METADATA"))
+        metadata = BytesParser().parsebytes(archive.read(metadata_name))
+    assert metadata.get_all("License-File", []) == []
+
     venv.create(environment, with_pip=True)
     scripts = environment / ("Scripts" if os.name == "nt" else "bin")
     python = scripts / ("python.exe" if os.name == "nt" else "python")
-    _checked([str(python), "-m", "pip", "install", "--no-deps", str(wheel)])
+    _checked(
+        [str(python), "-m", "pip", "install", "--no-index", "--no-deps", str(wheel)],
+        env=offline,
+    )
 
     completed = subprocess.run(
         [str(scripts / ("agentsec.exe" if os.name == "nt" else "agentsec")), "doctor"],
@@ -209,7 +267,7 @@ def test_doctor_rejects_schema_that_is_not_the_prevalidated_artifact(
     assert "Traceback" not in captured.err
 
 
-def _checked(arguments: list[str]) -> None:
+def _checked(arguments: list[str], *, env: dict[str, str] | None = None) -> None:
     completed = subprocess.run(
         arguments,
         cwd=PROJECT_ROOT,
@@ -217,5 +275,6 @@ def _checked(arguments: list[str]) -> None:
         shell=False,
         text=True,
         capture_output=True,
+        env=env,
     )
     assert completed.returncode == 0, completed.stderr

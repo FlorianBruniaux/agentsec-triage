@@ -47,3 +47,14 @@ Before public distribution or tagging:
 Until these steps are completed, local review in the authorized working copy
 does not establish a right to publish or redistribute it.
 
+## Packaging metadata guard
+
+`LICENSE-DECISION.md` is a blocking decision record, not a granted license. Its
+filename must not produce a `License-File` field in wheel metadata. The project
+therefore sets `license-files = []`, and the offline packaging test parses the
+built wheel's `METADATA` and requires no `License-File` header.
+
+When the licensing review is resolved, replace the placeholder license text,
+select explicit license files and SPDX expressions, update this guard, and rerun
+the complete release gate. Until then, absence of a `License-File` header prevents
+a false grant; it does not authorize publication.
