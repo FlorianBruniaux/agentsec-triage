@@ -15,6 +15,7 @@ from agentsec.engine.runner import run_scan
 from agentsec.models import ThreatDatabase
 from agentsec.output.human import render_human
 from agentsec.output.json_output import render_json
+from agentsec.redaction import redact_text
 from agentsec.threat_db import ThreatDatabaseError, load_bundled_database
 
 _DEFAULT_MAX_FILE_BYTES = 4_000_000
@@ -84,7 +85,7 @@ def _non_negative(value: str) -> int:
 
 
 def _scan(arguments: argparse.Namespace) -> int:
-    database = _load_database()
+    database = _load_database(redact=arguments.redact, root=arguments.root)
     if database is None:
         return 2
     try:
@@ -147,15 +148,16 @@ def _doctor() -> int:
     if database is None:
         return 2
     try:
-        schema = json.loads(
-            resources.files("agentsec").joinpath("../../schemas/scan-result-v1.schema.json").read_text(
-                encoding="utf-8"
-            )
-        )
-        from jsonschema.validators import Draft202012Validator  # type: ignore[import-untyped]
-
-        Draft202012Validator.check_schema(schema)
-    except (ImportError, OSError, UnicodeError, json.JSONDecodeError) as error:
+        schema = json.loads(_read_schema_text())
+        _validate_schema_contract(schema)
+    except (
+        ModuleNotFoundError,
+        OSError,
+        TypeError,
+        UnicodeError,
+        ValueError,
+        json.JSONDecodeError,
+    ) as error:
         print(f"agentsec: local schema validation failed: {error}", file=sys.stderr)
         return 2
     print(
@@ -171,11 +173,52 @@ def _doctor() -> int:
     return 0
 
 
-def _load_database() -> ThreatDatabase | None:
+def _read_schema_text() -> str:
+    schema = resources.files("agentsec.resources").joinpath("scan-result-v1.schema.json")
+    try:
+        return schema.read_text(encoding="utf-8")
+    except FileNotFoundError:
+        source_schema = (
+            Path(__file__).resolve().parents[2] / "schemas" / "scan-result-v1.schema.json"
+        )
+        return source_schema.read_text(encoding="utf-8")
+
+
+def _validate_schema_contract(schema: object) -> None:
+    if not isinstance(schema, dict):
+        raise ValueError("schema root must be an object")
+    if schema.get("$schema") != "https://json-schema.org/draft/2020-12/schema":
+        raise ValueError("schema has an invalid $schema")
+    if schema.get("$id") != "https://agentsec.dev/schemas/scan-result-v1.schema.json":
+        raise ValueError("schema has an invalid $id")
+    if schema.get("type") != "object":
+        raise ValueError("schema root type must be object")
+    required = schema.get("required")
+    expected_fields = {
+        "schema_version",
+        "tool_version",
+        "database_version",
+        "root",
+        "complete",
+        "elapsed_ms",
+        "coverage",
+        "not_scanned",
+        "diagnostics",
+        "findings",
+    }
+    if not isinstance(required, list) or set(required) != expected_fields:
+        raise ValueError("schema has invalid required fields")
+    properties = schema.get("properties")
+    if not isinstance(properties, dict) or not expected_fields.issubset(properties):
+        raise ValueError("schema has invalid properties")
+
+
+def _load_database(*, redact: bool = False, root: Path | None = None) -> ThreatDatabase | None:
     try:
         return load_bundled_database()
     except ThreatDatabaseError as error:
-        print(f"agentsec: cannot load bundled threat database: {error}", file=sys.stderr)
+        message = redact_text(str(error), root) if redact else str(error)
+        print(f"agentsec: cannot load bundled threat database: {message}", file=sys.stderr)
         return None
 
 

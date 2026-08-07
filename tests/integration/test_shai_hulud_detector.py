@@ -144,6 +144,26 @@ def test_matching_local_git_identity_is_high_confidence(tmp_path: Path) -> None:
     )
 
 
+def test_empty_git_subject_does_not_make_scan_incomplete(tmp_path: Path) -> None:
+    subprocess.run(["git", "init", "-q", str(tmp_path)], check=True)
+    subprocess.run(["git", "config", "user.name", "empty subject"], cwd=tmp_path, check=True)
+    subprocess.run(
+        ["git", "config", "user.email", "empty-subject@example.test"], cwd=tmp_path, check=True
+    )
+    subprocess.run(
+        ["git", "commit", "--quiet", "--allow-empty", "--allow-empty-message", "-m", ""],
+        cwd=tmp_path,
+        check=True,
+    )
+
+    result = _scan(tmp_path)
+
+    assert result.complete is True
+    assert not any(
+        "Unable to parse local Git history" in item.message for item in result.diagnostics
+    )
+
+
 @pytest.mark.parametrize(
     ("name", "content"),
     [

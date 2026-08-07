@@ -522,7 +522,6 @@ def _parse_record(record: bytes) -> GitIndicator:
         or any(char not in "0123456789abcdef" for char in commit)
         or not author
         or not email
-        or not subject
     ):
         raise ValueError("invalid Git record")
     return GitIndicator(commit, author, email, subject, refs)

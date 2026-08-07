@@ -5,7 +5,13 @@ import os
 import shutil
 import subprocess
 import sys
+import venv
 from pathlib import Path
+
+import pytest
+
+import agentsec.cli as cli
+from agentsec.threat_db import ThreatDatabaseError, load_bundled_database
 
 PROJECT_ROOT = Path(__file__).parents[2]
 FIXTURES = PROJECT_ROOT / "tests" / "fixtures" / "shai_hulud"
@@ -106,3 +112,77 @@ def test_doctor_validates_local_resources_and_schema_without_network() -> None:
     assert "database: 2.26.0" in completed.stdout
     assert "resource: available" in completed.stdout
     assert "schema: valid" in completed.stdout
+
+
+def test_doctor_from_wheel_without_dependencies_validates_packaged_schema(tmp_path: Path) -> None:
+    dist = tmp_path / "dist"
+    environment = tmp_path / "no-deps"
+    _checked([sys.executable, "-m", "build", "--wheel", "--outdir", str(dist)])
+    wheel = next(dist.glob("*.whl"))
+    venv.create(environment, with_pip=True)
+    python = environment / "bin" / "python"
+    _checked([str(python), "-m", "pip", "install", "--no-deps", str(wheel)])
+
+    completed = subprocess.run(
+        [str(environment / "bin" / "agentsec"), "doctor"],
+        check=False,
+        shell=False,
+        text=True,
+        capture_output=True,
+    )
+
+    assert completed.returncode == 0
+    assert completed.stderr == ""
+    assert "schema: valid" in completed.stdout
+
+
+def test_redacted_scan_database_load_error_does_not_leak_root_or_secret(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    root = tmp_path / "repository"
+    secret = "ghp_abcdefghijklmnopqrstuvwxyz0123456789"
+    failure = ThreatDatabaseError(f"cannot read {root}/private-token: {secret}")
+    monkeypatch.setattr(cli, "load_bundled_database", lambda: (_ for _ in ()).throw(failure))
+
+    assert cli.main(["scan", str(root), "--format", "json", "--redact"]) == 2
+
+    captured = capsys.readouterr()
+    assert captured.out == ""
+    assert str(root) not in captured.err
+    assert secret not in captured.err
+    assert "<REDACTED_SECRET>" in captured.err
+
+
+@pytest.mark.parametrize("content", ("{", '{"$schema": 1}'))
+def test_doctor_invalid_schema_returns_concise_error_without_traceback(
+    content: str, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    class InvalidSchemaResource:
+        def joinpath(self, *names: str) -> InvalidSchemaResource:
+            return self
+
+        def read_text(self, *, encoding: str) -> str:
+            return content
+
+    database = load_bundled_database()
+    monkeypatch.setattr(cli, "_load_database", lambda: database)
+    monkeypatch.setattr(cli.resources, "files", lambda package: InvalidSchemaResource())
+
+    assert cli.main(["doctor"]) == 2
+
+    captured = capsys.readouterr()
+    assert captured.out == ""
+    assert captured.err.startswith("agentsec: local schema validation failed:")
+    assert "Traceback" not in captured.err
+
+
+def _checked(arguments: list[str]) -> None:
+    completed = subprocess.run(
+        arguments,
+        cwd=PROJECT_ROOT,
+        check=False,
+        shell=False,
+        text=True,
+        capture_output=True,
+    )
+    assert completed.returncode == 0, completed.stderr
