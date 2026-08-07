@@ -1,0 +1,30 @@
+docs/superpowers/plans/2026-08-07-repository-guidance-intelligence-implementation.md
+  s_0df90997879182::t_aa2575e4cb5895 37,272,285,313,322
+  s_0df90997879182::t_298d8ce728aad5 56,64,70,77,99,118,124,145,152,160,167,192,212,218,226,234,246,256,278,283,289,301,308,319
+CONTRIBUTING.md
+  s_0df90997879182::t_affbde7f3dcbc1 64-99,106,108,121-124
+tests/integration/test_cli.py
+  s_0df90997879182::t_217dcb5e2e3861 244
+.github/workflows/tests.yml
+  s_0df90997879182::t_affbde7f3dcbc1 42-47
+README.md
+  s_0df90997879182::t_affbde7f3dcbc1 33-44
+CHANGELOG.md
+  s_0df90997879182::t_affbde7f3dcbc1 13-18
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "c44926c3ade5a4c04e55f46d5d39c72a8545e61a",
+  "prompts": {},
+  "sessions": {
+    "s_0df90997879182": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019fd73a-588d-7f03-ab50-494ca0e95848",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Florian BRUNIAUX <florian@bruniaux.com>"
+    }
+  }
+}
