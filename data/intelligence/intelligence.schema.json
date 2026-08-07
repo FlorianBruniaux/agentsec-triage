@@ -1,0 +1,314 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agentsec.dev/schemas/intelligence-authoring-v1.schema.json",
+  "title": "AgentSec security intelligence authoring documents",
+  "oneOf": [
+    {
+      "$ref": "#/$defs/sourceDocument"
+    },
+    {
+      "$ref": "#/$defs/eventDocument"
+    }
+  ],
+  "$defs": {
+    "stableId": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9._-]*$"
+    },
+    "date": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    },
+    "nonEmptyStrings": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "title",
+        "publisher",
+        "url",
+        "source_type",
+        "topics",
+        "supports",
+        "reviewed_date",
+        "status"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/stableId"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "publisher": {
+          "type": "string",
+          "minLength": 1
+        },
+        "url": {
+          "type": "string",
+          "format": "uri",
+          "pattern": "^https://"
+        },
+        "source_type": {
+          "enum": [
+            "advisory",
+            "research",
+            "news",
+            "social",
+            "maintainer",
+            "database"
+          ]
+        },
+        "published_date": {
+          "$ref": "#/$defs/date"
+        },
+        "topics": {
+          "$ref": "#/$defs/nonEmptyStrings"
+        },
+        "supports": {
+          "$ref": "#/$defs/nonEmptyStrings"
+        },
+        "reviewed_date": {
+          "$ref": "#/$defs/date"
+        },
+        "status": {
+          "enum": [
+            "active",
+            "superseded",
+            "retracted"
+          ]
+        }
+      }
+    },
+    "sourceDocument": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "kind",
+        "updated",
+        "sources"
+      ],
+      "properties": {
+        "schema_version": {
+          "const": "1"
+        },
+        "kind": {
+          "const": "sources"
+        },
+        "updated": {
+          "$ref": "#/$defs/date"
+        },
+        "sources": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/source"
+          },
+          "minItems": 1
+        }
+      }
+    },
+    "relatedIds": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "campaign_ids",
+        "cve_ids",
+        "technique_ids"
+      ],
+      "properties": {
+        "campaign_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/stableId"
+          },
+          "uniqueItems": true
+        },
+        "cve_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^CVE-[0-9]{4}-[0-9]{4,}$"
+          },
+          "uniqueItems": true
+        },
+        "technique_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/stableId"
+          },
+          "uniqueItems": true
+        }
+      }
+    },
+    "detectorCoverage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "detector_ids",
+        "notes"
+      ],
+      "properties": {
+        "status": {
+          "enum": [
+            "detected",
+            "partial",
+            "not_detected",
+            "not_applicable"
+          ]
+        },
+        "detector_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/stableId"
+          },
+          "uniqueItems": true
+        },
+        "notes": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "event": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "event_type",
+        "title",
+        "summary",
+        "ecosystems",
+        "status",
+        "confidence",
+        "source_ids",
+        "related",
+        "detector_coverage"
+      ],
+      "oneOf": [
+        {
+          "required": [
+            "occurred_date"
+          ]
+        },
+        {
+          "required": [
+            "disclosed_date"
+          ]
+        },
+        {
+          "required": [
+            "updated_date"
+          ]
+        }
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/stableId"
+        },
+        "event_type": {
+          "enum": [
+            "incident",
+            "disclosure",
+            "vulnerability",
+            "campaign",
+            "correction",
+            "retraction",
+            "remediation",
+            "intelligence_update"
+          ]
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "summary": {
+          "type": "string",
+          "minLength": 1
+        },
+        "ecosystems": {
+          "$ref": "#/$defs/nonEmptyStrings"
+        },
+        "occurred_date": {
+          "$ref": "#/$defs/date"
+        },
+        "disclosed_date": {
+          "$ref": "#/$defs/date"
+        },
+        "updated_date": {
+          "$ref": "#/$defs/date"
+        },
+        "status": {
+          "enum": [
+            "confirmed",
+            "contested",
+            "corrected",
+            "retracted",
+            "monitoring"
+          ]
+        },
+        "confidence": {
+          "enum": [
+            "confirmed",
+            "high",
+            "review",
+            "contested"
+          ]
+        },
+        "source_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/stableId"
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "related": {
+          "$ref": "#/$defs/relatedIds"
+        },
+        "detector_coverage": {
+          "$ref": "#/$defs/detectorCoverage"
+        }
+      }
+    },
+    "eventDocument": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "kind",
+        "updated",
+        "events"
+      ],
+      "properties": {
+        "schema_version": {
+          "const": "1"
+        },
+        "kind": {
+          "const": "events"
+        },
+        "updated": {
+          "$ref": "#/$defs/date"
+        },
+        "events": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/event"
+          },
+          "minItems": 1
+        }
+      }
+    }
+  }
+}

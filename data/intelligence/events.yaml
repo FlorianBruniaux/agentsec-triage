@@ -1,0 +1,54 @@
+schema_version: "1"
+kind: events
+updated: "2026-08-07"
+events:
+  - id: evt-2026-08-keyv-campaign-disclosure
+    event_type: campaign
+    title: Keyv and cacheable npm supply-chain campaign disclosed
+    summary: >-
+      Security researchers reported malicious npm package versions associated
+      with the August 2026 Shai-Hulud campaign. AgentSec treats exact confirmed
+      package/version and payload-hash matches as incident-response evidence.
+    ecosystems: [npm, developer-tools]
+    disclosed_date: "2026-08-06"
+    status: confirmed
+    confidence: confirmed
+    source_ids:
+      - aikido-keyv-2026
+      - hackernews-keyv-2026
+      - socket-keyv-2026
+    related:
+      campaign_ids: [shai-hulud-keyv-2026-08]
+      cve_ids: []
+      technique_ids: [npm.compromised-version, npm.lifecycle-script, payload.sha256]
+    detector_coverage:
+      status: partial
+      detector_ids: [shai-hulud-keyv]
+      notes: >-
+        Repository lockfiles, installed packages, payload hashes, and startup
+        configuration are covered; Git history and host-level evidence are not.
+
+  - id: evt-2026-08-keyv-contested-scope
+    event_type: intelligence_update
+    title: Scope of @keyv/* version 6.0.0 remains contested
+    summary: >-
+      AgentSec preserves JFrog and SafeDep reporting for @keyv/*@6.0.0 as
+      contested intelligence instead of promoting the wildcard package scope to
+      critical and confirmed.
+    ecosystems: [npm, developer-tools]
+    updated_date: "2026-08-06"
+    status: contested
+    confidence: contested
+    source_ids:
+      - jfrog-shai-hulud-2026
+      - safedep-keyv-2026
+    related:
+      campaign_ids: [shai-hulud-keyv-2026-08]
+      cve_ids: []
+      technique_ids: [npm.compromised-version]
+    detector_coverage:
+      status: detected
+      detector_ids: [shai-hulud-keyv]
+      notes: >-
+        Matching scoped packages are reported high/contested with source
+        attribution; lifecycle-only evidence remains a separate review finding.

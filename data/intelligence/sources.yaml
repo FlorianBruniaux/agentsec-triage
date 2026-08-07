@@ -1,0 +1,75 @@
+schema_version: "1"
+kind: sources
+updated: "2026-08-07"
+sources:
+  - id: aikido-keyv-2026
+    title: Keyv and Friends Compromised in npm Supply Chain Attack
+    publisher: Aikido Security
+    url: https://www.aikido.dev/blog/keyv-and-friends-compromised-in-npm-supply-chain-attack
+    source_type: research
+    published_date: "2026-08-06"
+    topics: [keyv, npm, shai-hulud, supply-chain]
+    supports:
+      - Compromise reporting for Keyv and related npm packages in August 2026.
+      - Indicators and package-version context used for repository triage.
+    reviewed_date: "2026-08-07"
+    status: active
+
+  - id: safedep-keyv-2026
+    title: Keyv npm Supply Chain Compromise
+    publisher: SafeDep
+    url: https://safedep.io/keyv-npm-supply-chain-compromise/
+    source_type: research
+    published_date: "2026-08-06"
+    topics: [keyv, npm, shai-hulud, supply-chain]
+    supports:
+      - Package-scope reporting considered when classifying disputed @keyv version intelligence.
+    reviewed_date: "2026-08-07"
+    status: active
+
+  - id: jfrog-shai-hulud-2026
+    title: Shai-Hulud Is Back — August 2026
+    publisher: JFrog Security Research
+    url: https://research.jfrog.com/post/shai-hulud-is-back-august/
+    source_type: research
+    published_date: "2026-08-06"
+    topics: [keyv, npm, shai-hulud, supply-chain]
+    supports:
+      - Campaign and package-scope reporting retained as attributed intelligence.
+    reviewed_date: "2026-08-07"
+    status: active
+
+  - id: socket-keyv-2026
+    title: Popular npm Packages Keyv and Cacheable Compromised
+    publisher: Socket
+    url: https://socket.dev/blog/popular-npm-packages-keyv-and-cacheable-compromised
+    source_type: research
+    published_date: "2026-08-06"
+    topics: [keyv, npm, shai-hulud, supply-chain]
+    supports:
+      - Confirmation and technical context for compromised npm package versions.
+    reviewed_date: "2026-08-07"
+    status: active
+
+  - id: hackernews-keyv-2026
+    title: Keyv-Linked npm Worm Poisons Hundreds of Packages
+    publisher: The Hacker News
+    url: https://thehackernews.com/2026/08/keyv-linked-npm-worm-poisons-hundreds.html
+    source_type: news
+    published_date: "2026-08-06"
+    topics: [keyv, npm, shai-hulud, supply-chain]
+    supports:
+      - Secondary reporting on the scope and public disclosure of the campaign.
+    reviewed_date: "2026-08-07"
+    status: active
+
+  - id: turnbull-shai-hulud-2026
+    title: Shai-Hulud npm exploit warning
+    publisher: Alex Turnbull on LinkedIn
+    url: https://www.linkedin.com/posts/alex-turnbull-1ab9992_warning-the-shai-hulud-npm-exploit-has-nfected-share-7490508767600627714-LkNb
+    source_type: social
+    topics: [keyv, npm, shai-hulud, supply-chain]
+    supports:
+      - Community warning and discussion context; not an independent IOC authority.
+    reviewed_date: "2026-08-07"
+    status: active
