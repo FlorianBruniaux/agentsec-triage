@@ -207,8 +207,9 @@ cap per file and a 1,000,000,000-byte default aggregate budget. Before each
 read, the detector compares the discovered size with the remaining aggregate
 budget. A file that exactly fills the remaining budget is accepted. A later
 file, or one larger than the remaining budget, stops the detector with one
-deterministic error. The shared reader never consumes a sentinel byte beyond
-its budget; post-read identity, size, and timestamp checks reject concurrent
+deterministic error. A zero aggregate budget still permits empty files; a
+nonempty file is rejected before reading. The shared reader never consumes a
+sentinel byte beyond its budget; post-read identity, size, and timestamp checks reject concurrent
 growth. A failed safe read stops the detector because consumed bytes cannot be
 recovered reliably from a rejected content result. Parser-specific limits
 remain stricter where applicable.

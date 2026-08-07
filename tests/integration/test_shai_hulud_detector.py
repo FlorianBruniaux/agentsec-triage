@@ -798,6 +798,50 @@ def test_aggregate_byte_budget_accepts_one_exact_size_file(tmp_path: Path) -> No
     assert result.coverage.bytes_inspected == 4
 
 
+def test_zero_aggregate_budget_accepts_empty_file(tmp_path: Path) -> None:
+    (tmp_path / "empty.bin").write_bytes(b"")
+    limits = DiscoveryLimits(
+        max_file_bytes=100,
+        max_files=100,
+        max_diagnostics=100,
+        max_total_bytes=0,
+    )
+
+    result = _scan(tmp_path, limits=limits)
+
+    assert result.complete is True
+    assert result.coverage.files_inspected == 1
+    assert result.coverage.bytes_inspected == 0
+
+
+def test_zero_aggregate_budget_rejects_nonempty_file_without_reading(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    (tmp_path / "payload.bin").write_bytes(b"x")
+    read_calls = 0
+    real_read = safe_io.os.read
+
+    def recording_read(descriptor: int, size: int) -> bytes:
+        nonlocal read_calls
+        read_calls += 1
+        return real_read(descriptor, size)
+
+    monkeypatch.setattr(safe_io.os, "read", recording_read)
+    limits = DiscoveryLimits(
+        max_file_bytes=100,
+        max_files=100,
+        max_diagnostics=100,
+        max_total_bytes=0,
+    )
+
+    result = _scan(tmp_path, limits=limits)
+
+    assert result.exit_code() == 2
+    assert result.coverage.files_inspected == 0
+    assert result.coverage.bytes_inspected == 0
+    assert read_calls == 0
+
+
 def test_aggregate_budget_stops_after_failed_physical_read(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:

@@ -9,7 +9,8 @@ authorized public release while the licensing decision remains unresolved.
 
 - Removed the safe reader's one-byte sentinel read. POSIX and Windows reads now
   consume at most the exact remaining physical byte budget, accept exact-size
-  and zero-byte files, and use post-read identity and metadata checks to reject
+  and zero-byte files, including empty files at a zero aggregate budget, and use
+  post-read identity and metadata checks to reject
   concurrent growth. A failed safe read stops the detector so unreturned bytes
   cannot be spent again on a later file. The public schema again permits `null`
   remediation URLs for protocol-compatible external detectors while the

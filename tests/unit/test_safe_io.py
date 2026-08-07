@@ -63,6 +63,34 @@ def test_zero_budget_accepts_only_empty_file(tmp_path: Path) -> None:
     assert diagnostics[0].kind is DiagnosticKind.ERROR
 
 
+def test_zero_budget_detects_empty_file_growth_without_physical_read(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    path = tmp_path / "empty"
+    path.write_bytes(b"")
+    real_read_bounded = safe_io._read_bounded
+    read_calls = 0
+    real_read = safe_io.os.read
+
+    def grow_before_read(descriptor: int, max_bytes: int) -> bytes:
+        path.write_bytes(b"x")
+        return real_read_bounded(descriptor, max_bytes)
+
+    def recording_read(descriptor: int, size: int) -> bytes:
+        nonlocal read_calls
+        read_calls += 1
+        return real_read(descriptor, size)
+
+    monkeypatch.setattr(safe_io, "_read_bounded", grow_before_read)
+    monkeypatch.setattr(safe_io.os, "read", recording_read)
+
+    content, diagnostics = safe_read_regular_file(path, max_bytes=0)
+
+    assert content is None
+    assert diagnostics[0].kind is DiagnosticKind.ERROR
+    assert read_calls == 0
+
+
 def test_rejects_oversized_file_without_partial_content(tmp_path: Path) -> None:
     path = tmp_path / "payload"
     path.write_bytes(b"12345")

@@ -115,7 +115,9 @@ of compromise.
   A file that exactly fills the remaining byte budget is accepted. A later file
   or a file that exceeds the remaining budget makes the result incomplete
   rather than silently clean. A failed safe read stops further file reads so
-  bytes consumed before a concurrent-change error cannot be spent twice.
+  bytes consumed before a concurrent-change error cannot be spent twice. At a
+  zero aggregate budget, empty files are inspected normally while any nonempty
+  file is rejected before a physical read.
 - The safe reader accepts at most 4,000,000 bytes per file. The aggregate read
   budget defaults to 1,000,000,000 bytes and can be lowered with
   `--max-total-bytes`. Package manifests and repository startup configuration
