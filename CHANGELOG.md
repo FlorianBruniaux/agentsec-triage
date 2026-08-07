@@ -19,6 +19,9 @@ authorized public release while the licensing decision remains unresolved.
 
 ### Fixed
 
+- Allowed intelligence events to retain multiple distinct lifecycle dates, such
+  as occurrence and disclosure, instead of incorrectly requiring exactly one
+  date field.
 - Removed the safe reader's one-byte sentinel read. POSIX and Windows reads now
   consume at most the exact remaining physical byte budget, accept exact-size
   and zero-byte files, including empty files at a zero aggregate budget, and use

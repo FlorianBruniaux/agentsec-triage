@@ -184,3 +184,19 @@ def test_timeline_orders_events_by_best_available_date_descending(tmp_path: Path
     assert timeline.index("evt-2026-08-keyv-contested-scope") < timeline.index(
         "evt-2026-08-keyv-campaign-disclosure"
     )
+
+
+def test_loader_accepts_distinct_occurrence_and_disclosure_dates(tmp_path: Path) -> None:
+    sources = deepcopy(_load_yaml("sources.yaml"))
+    events = deepcopy(_load_yaml("events.yaml"))
+    event_records = cast(list[dict[str, object]], events["events"])
+    event_records[0]["occurred_date"] = "2026-08-04"
+    source_path, event_path = _write_documents(tmp_path, sources, events)
+
+    corpus = load_intelligence(
+        source_path,
+        event_path,
+        INTELLIGENCE_ROOT / "intelligence.schema.json",
+    )
+
+    assert corpus is not None

@@ -196,7 +196,7 @@
         "related",
         "detector_coverage"
       ],
-      "oneOf": [
+      "anyOf": [
         {
           "required": [
             "occurred_date"
