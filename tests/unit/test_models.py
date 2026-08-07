@@ -1,4 +1,4 @@
-from pathlib import Path
+from pathlib import Path, PureWindowsPath
 
 import pytest
 
@@ -14,6 +14,7 @@ from agentsec.models import (
     Severity,
     ThreatDatabase,
 )
+from agentsec.output.human import render_human
 
 
 def test_incomplete_scan_cannot_return_clean_exit_code():
@@ -155,3 +156,57 @@ def test_serialization_aggregates_and_sorts_mixed_detector_results():
         "bytes_inspected": 40,
     }
     assert payload["not_scanned"] == ["container", "git", "network"]
+
+
+def test_serialization_and_human_output_use_forward_slashes_for_windows_paths():
+    detector = DetectorResult(
+        detector_id="detector",
+        applicability=Applicability.APPLICABLE,
+        findings=(
+            Finding(
+                "detector",
+                "rule",
+                Severity.HIGH,
+                Confidence.HIGH,
+                PureWindowsPath(r"nested\z.lock"),
+                "z",
+            ),
+            Finding(
+                "detector",
+                "rule",
+                Severity.HIGH,
+                Confidence.HIGH,
+                PureWindowsPath(r"nested\a.lock"),
+                "a",
+            ),
+        ),
+        diagnostics=(
+            Diagnostic(
+                DiagnosticKind.WARNING,
+                PureWindowsPath(r"C:\repo\nested\warning.txt"),
+                "warning",
+            ),
+        ),
+        coverage=Coverage(files_seen=2, files_inspected=2, bytes_inspected=20),
+    )
+    result = ScanResult(
+        tool_version="0.1.0a0",
+        database_version="2.26.0",
+        root=PureWindowsPath(r"C:\repo"),
+        detector_results=(detector,),
+        diagnostics=(),
+        elapsed_ms=2,
+    )
+
+    payload = result.to_dict()
+
+    assert payload["root"] == "C:/repo"
+    assert [finding["path"] for finding in payload["findings"]] == [
+        "nested/a.lock",
+        "nested/z.lock",
+    ]
+    assert payload["diagnostics"][0]["path"] == "C:/repo/nested/warning.txt"
+    human = render_human(result, redact=False)
+    assert r"nested\a.lock" not in human
+    assert "nested/a.lock" in human
+    assert "C:/repo/nested/warning.txt" in human

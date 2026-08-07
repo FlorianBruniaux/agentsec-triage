@@ -74,7 +74,9 @@ jobs:
           assert self_scan["complete"] is False
           assert self_scan["findings"]
           assert any(
-              item["path"].endswith("tests/fixtures/lockfiles/bun.lockb")
+              item["path"].replace("\\", "/").endswith(
+                  "tests/fixtures/lockfiles/bun.lockb"
+              )
               and item["message"] == "Unsupported binary Bun lockfile format"
               for item in self_scan["diagnostics"]
           )

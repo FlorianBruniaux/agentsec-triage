@@ -7,6 +7,9 @@ authorized public release while the licensing decision remains unresolved.
 
 ### Fixed
 
+- Canonicalized scan root, diagnostic, and finding paths to forward-slash form in
+  deterministic JSON and human output, including Windows paths, and made the CI
+  self-scan assertion tolerate native separators defensively.
 - Made package builds and the packaging integration test run with
   `PIP_NO_INDEX=1` and `python -m build --no-isolation` after installing the full
   development dependency set, including Hatchling.

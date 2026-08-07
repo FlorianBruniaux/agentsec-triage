@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections.abc import Mapping
 from dataclasses import dataclass
 from enum import StrEnum
-from pathlib import Path
+from pathlib import PurePath
 from types import MappingProxyType
 
 
@@ -35,7 +35,7 @@ class Applicability(StrEnum):
 @dataclass(frozen=True, slots=True)
 class Diagnostic:
     kind: DiagnosticKind
-    path: Path
+    path: PurePath
     message: str
 
 
@@ -45,7 +45,7 @@ class Finding:
     rule_id: str
     severity: Severity
     confidence: Confidence
-    path: Path
+    path: PurePath
     evidence: str
     campaign_ids: tuple[str, ...] = ()
     technique_ids: tuple[str, ...] = ()
@@ -115,7 +115,7 @@ class ThreatDatabase:
 class ScanResult:
     tool_version: str
     database_version: str
-    root: Path
+    root: PurePath
     detector_results: tuple[DetectorResult, ...]
     diagnostics: tuple[Diagnostic, ...]
     elapsed_ms: int
@@ -174,7 +174,7 @@ class ScanResult:
                 finding.severity,
                 finding.detector_id,
                 finding.rule_id,
-                str(finding.path),
+                finding.path.as_posix(),
                 finding.evidence,
             ),
         )
@@ -183,12 +183,16 @@ class ScanResult:
                 *self.diagnostics,
                 *(diagnostic for result in detector_results for diagnostic in result.diagnostics),
             ),
-            key=lambda diagnostic: (diagnostic.kind, str(diagnostic.path), diagnostic.message),
+            key=lambda diagnostic: (
+                diagnostic.kind,
+                diagnostic.path.as_posix(),
+                diagnostic.message,
+            ),
         )
         return {
             "tool_version": self.tool_version,
             "database_version": self.database_version,
-            "root": str(self.root),
+            "root": self.root.as_posix(),
             "complete": self.complete,
             "elapsed_ms": self.elapsed_ms,
             "coverage": self._coverage_to_dict(),
@@ -220,7 +224,7 @@ class ScanResult:
     def _diagnostic_to_dict(diagnostic: Diagnostic) -> dict[str, object]:
         return {
             "kind": diagnostic.kind.value,
-            "path": str(diagnostic.path),
+            "path": diagnostic.path.as_posix(),
             "message": diagnostic.message,
         }
 
@@ -231,7 +235,7 @@ class ScanResult:
             "rule_id": finding.rule_id,
             "severity": finding.severity.value,
             "confidence": finding.confidence.value,
-            "path": str(finding.path),
+            "path": finding.path.as_posix(),
             "evidence": finding.evidence,
             "campaign_ids": list(finding.campaign_ids),
             "technique_ids": list(finding.technique_ids),

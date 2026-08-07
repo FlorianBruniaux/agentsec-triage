@@ -1,6 +1,6 @@
 import json
 from hashlib import sha256
-from pathlib import Path
+from pathlib import Path, PureWindowsPath
 
 from jsonschema import validate
 from jsonschema.validators import Draft202012Validator
@@ -85,6 +85,20 @@ def test_redaction_hides_user_home_paths_with_spaces_without_swallowing_context(
         "windows": 'Evidence: "<REDACTED_PATH>".',
         "at_end": "Evidence: <REDACTED_PATH>",
         "unchanged": "Repository metadata at /etc/agentsec/config",
+    }
+
+
+def test_redaction_matches_serialized_and_native_windows_root_forms() -> None:
+    payload = {
+        "root": "C:/repo",
+        "diagnostic": r"C:\repo\nested\warning.txt",
+    }
+
+    redacted = redact_result(payload, PureWindowsPath(r"C:\repo"))
+
+    assert redacted == {
+        "root": "<SCAN_ROOT>",
+        "diagnostic": r"<SCAN_ROOT>\nested\warning.txt",
     }
 
 

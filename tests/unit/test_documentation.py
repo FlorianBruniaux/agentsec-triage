@@ -102,6 +102,7 @@ def test_ci_is_cross_platform_and_runs_every_alpha_gate() -> None:
     ):
         assert command in workflow
     assert 'PIP_NO_INDEX: "1"' in workflow
+    assert 'item["path"].replace("\\\\", "/").endswith(' in workflow
 
 
 def test_project_config_enforces_coverage_threshold() -> None:
