@@ -30,6 +30,18 @@ The intelligence documents are generated from structured YAML. They track the
 events and sources reviewed by this project; they are not a complete history of
 all security vulnerabilities.
 
+Authoring lives in `data/intelligence/sources.yaml` and
+`data/intelligence/events.yaml`. The build validates both files, resolves source
+references, and emits the two Markdown pages plus the packaged
+`security-intelligence.json` artifact:
+
+```bash
+.venv/bin/python scripts/build_intelligence_docs.py
+```
+
+IOC payloads remain in `data/threat-db.yaml`; the event ledger references threat
+campaigns and techniques instead of duplicating detector data.
+
 ## Quick start from source
 
 Python 3.11 through 3.13 is the supported alpha target.

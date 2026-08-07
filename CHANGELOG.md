@@ -10,9 +10,12 @@ authorized public release while the licensing decision remains unresolved.
 - Added canonical `AGENTS.md` repository instructions, a minimal Claude Code
   adapter in `CLAUDE.md`, and a prioritized `ROADMAP.md` with explicit release
   gates and non-goals.
-- Added README entry points for the generated security-source catalogue and
-  dated event timeline. Their structured data and generator are delivered in
-  the same unreleased workstream.
+- Added schema-validated YAML authoring for security sources and dated events,
+  seeded with six reviewed Keyv/Shai-Hulud sources, a confirmed campaign event,
+  and a separately attributed contested-scope event.
+- Added deterministic generation of `docs/SECURITY-INTELLIGENCE.md`,
+  `docs/SECURITY-TIMELINE.md`, and the packaged
+  `security-intelligence.json` resource, with CI drift and wheel-content gates.
 
 ### Fixed
 

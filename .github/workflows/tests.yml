@@ -39,6 +39,12 @@ jobs:
       - name: Require deterministic generated threat data
         run: git diff --exit-code -- src/agentsec/resources/threat-db.json
 
+      - name: Rebuild security intelligence documents
+        run: python scripts/build_intelligence_docs.py
+
+      - name: Require deterministic generated intelligence
+        run: git diff --exit-code -- docs/SECURITY-INTELLIGENCE.md docs/SECURITY-TIMELINE.md src/agentsec/resources/security-intelligence.json
+
       - name: Ruff
         run: ruff check src tests scripts
 

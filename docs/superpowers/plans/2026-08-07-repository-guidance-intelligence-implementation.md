@@ -34,7 +34,7 @@
 - `docs/SECURITY-TIMELINE.md`: generated reverse-chronological event ledger.
 - `src/agentsec/resources/security-intelligence.json`: generated machine-readable artifact.
 - `tests/unit/test_intelligence_docs.py`: generator and validation regression tests.
-- `tests/unit/test_package.py`: wheel resource inclusion.
+- `tests/integration/test_cli.py`: wheel resource inclusion and dependency-free doctor.
 - `.github/workflows/tests.yml`: generated-artifact drift gate.
 - `README.md`, `CHANGELOG.md`, `CONTRIBUTING.md`: user and contributor integration.
 
@@ -53,7 +53,7 @@
 - Consumes: existing CLI, release-gate, licensing, and threat-source documentation.
 - Produces: stable root entry points referenced by contributors and later tasks.
 
-- [ ] **Step 1: Add focused root documents**
+- [x] **Step 1: Add focused root documents**
 
 `AGENTS.md` must include repository purpose, map, commands, TDD rules, scan safety
 invariants, intelligence-data rules, generated-file rules, and the licensing/tag
@@ -61,20 +61,20 @@ gate. `CLAUDE.md` contains `@AGENTS.md` plus only Claude-specific navigation.
 `ROADMAP.md` separates shipped alpha functionality, pre-release blockers, V0.2
 detector work, distribution integrations, and explicit non-goals.
 
-- [ ] **Step 2: Link the documents and record the change**
+- [x] **Step 2: Link the documents and record the change**
 
 Add a “Project documentation” section to `README.md`. Add an `[Unreleased] / Added`
 entry to `CHANGELOG.md` describing the three new root documents without claiming
 publication.
 
-- [ ] **Step 3: Inspect document boundaries and resolved links**
+- [x] **Step 3: Inspect document boundaries and resolved links**
 
 Confirm all five root files exist, `CLAUDE.md` imports `@AGENTS.md` without
 duplicating the release rules, and every new relative Markdown link resolves to
 an existing target. Run `git diff --check` to reject whitespace errors. Human
 prose is reviewed directly rather than protected by source-text assertions.
 
-- [ ] **Step 4: Commit Task 1**
+- [x] **Step 4: Commit Task 1**
 
 ```bash
 git add AGENTS.md CLAUDE.md ROADMAP.md README.md CHANGELOG.md
@@ -96,7 +96,7 @@ git commit -m "docs(repo): add canonical guidance and roadmap"
 - Stable IDs: lowercase ASCII `[a-z0-9][a-z0-9._-]*`.
 - Dates: ISO `YYYY-MM-DD`; unknown dates are omitted rather than invented.
 
-- [ ] **Step 1: Write failing schema-fixture tests**
+- [x] **Step 1: Write failing schema-fixture tests**
 
 Test that both real YAML documents exist, load as mappings, use schema version
 `1`, have unique IDs, and include at least one Shai-Hulud/Keyv source and event.
@@ -115,13 +115,13 @@ def test_initial_intelligence_tracks_keyv_campaign(project_root: Path) -> None:
     assert any("keyv" in item["id"] for item in events["events"])
 ```
 
-- [ ] **Step 2: Run the new tests and observe missing-file failure**
+- [x] **Step 2: Run the new tests and observe missing-file failure**
 
 Run: `.venv/bin/pytest tests/unit/test_intelligence_docs.py -q`
 
 Expected: failure because `data/intelligence/` does not exist.
 
-- [ ] **Step 3: Add the combined JSON Schema**
+- [x] **Step 3: Add the combined JSON Schema**
 
 Define `$defs.sourceDocument` and `$defs.eventDocument`. Source records require
 `id`, `title`, `publisher`, `url`, `source_type`, `topics`, `supports`,
@@ -142,14 +142,14 @@ Enumerations:
 }
 ```
 
-- [ ] **Step 4: Add reviewed initial source records**
+- [x] **Step 4: Add reviewed initial source records**
 
 Seed the bibliography with the campaign sources already cited by the detector:
 Aikido, SafeDep, JFrog, Socket, The Hacker News, and the Alex Turnbull LinkedIn
 post supplied during project discovery. Each record states only the claim it
 supports and uses `reviewed_date: "2026-08-07"`.
 
-- [ ] **Step 5: Add initial event records**
+- [x] **Step 5: Add initial event records**
 
 Add one confirmed August 2026 Keyv/cacheable campaign event and one contested
 scope intelligence update for `@keyv/*@6.0.0`. Both reference existing source
@@ -157,14 +157,14 @@ IDs. The confirmed event uses `detector_coverage.status: partial` because Git
 history and host evidence are not scanned. The contested record stays
 `status: contested` and `confidence: contested`.
 
-- [ ] **Step 6: Run the data tests**
+- [x] **Step 6: Run the data tests**
 
 Run: `.venv/bin/pytest tests/unit/test_intelligence_docs.py -q`
 
 Expected: the existence/shape tests pass; generator tests remain skipped until
 Task 3 introduces the module.
 
-- [ ] **Step 7: Commit Task 2**
+- [x] **Step 7: Commit Task 2**
 
 ```bash
 git add data/intelligence tests/unit/test_intelligence_docs.py
@@ -189,7 +189,7 @@ git commit -m "feat(intel): add structured sources and event ledger"
 - Produces: `render_json(corpus: IntelligenceCorpus) -> str`.
 - CLI: `python scripts/build_intelligence_docs.py` writes all three outputs.
 
-- [ ] **Step 1: Write failing loader and renderer tests**
+- [x] **Step 1: Write failing loader and renderer tests**
 
 Require duplicate YAML key rejection, schema validation, duplicate ID rejection,
 unresolved `source_ids` rejection, reverse chronological event ordering,
@@ -209,13 +209,13 @@ def test_machine_output_has_no_wall_clock_timestamp(corpus: IntelligenceCorpus) 
     assert "generated_at" not in payload
 ```
 
-- [ ] **Step 2: Run targeted tests and observe import failure**
+- [x] **Step 2: Run targeted tests and observe import failure**
 
 Run: `.venv/bin/pytest tests/unit/test_intelligence_docs.py -q`
 
 Expected: import failure for `scripts.build_intelligence_docs`.
 
-- [ ] **Step 3: Implement strict loading and cross-reference validation**
+- [x] **Step 3: Implement strict loading and cross-reference validation**
 
 Use a `yaml.SafeLoader` subclass that rejects duplicate mapping keys. Validate
 the source and event documents against their `$defs` using
@@ -223,7 +223,7 @@ the source and event documents against their `$defs` using
 immutable tuples. Raise `IntelligenceBuildError` with stable, path-free messages
 for duplicate IDs and unresolved references.
 
-- [ ] **Step 4: Implement deterministic renderers**
+- [x] **Step 4: Implement deterministic renderers**
 
 Sort sources by `(publisher.casefold(), title.casefold(), id)`. Sort events by
 the best available `updated_date`, `disclosed_date`, or `occurred_date`, newest
@@ -231,7 +231,7 @@ first, then by ID. Escape Markdown table pipes and normalize trailing newlines.
 The JSON artifact contains `schema_version`, `updated`, sorted `sources`, and
 sorted `events` with `sort_keys=True` and two-space indentation.
 
-- [ ] **Step 5: Generate and inspect outputs**
+- [x] **Step 5: Generate and inspect outputs**
 
 Run: `.venv/bin/python scripts/build_intelligence_docs.py`
 
@@ -243,7 +243,7 @@ docs/SECURITY-TIMELINE.md
 src/agentsec/resources/security-intelligence.json
 ```
 
-- [ ] **Step 6: Run generator tests and deterministic diff check**
+- [x] **Step 6: Run generator tests and deterministic diff check**
 
 Run: `.venv/bin/pytest tests/unit/test_intelligence_docs.py -q`
 
@@ -253,7 +253,7 @@ Run the generator a second time, then:
 
 Expected: tests pass and the second generation creates no diff.
 
-- [ ] **Step 7: Commit Task 3**
+- [x] **Step 7: Commit Task 3**
 
 ```bash
 git add scripts/build_intelligence_docs.py tests/unit/test_intelligence_docs.py docs/SECURITY-INTELLIGENCE.md docs/SECURITY-TIMELINE.md src/agentsec/resources/security-intelligence.json
@@ -269,24 +269,24 @@ git commit -m "feat(intel): generate bibliography and security timeline"
 - Modify: `CONTRIBUTING.md`
 - Modify: `README.md`
 - Modify: `CHANGELOG.md`
-- Modify: `tests/unit/test_package.py`
+- Modify: `tests/integration/test_cli.py`
 
 **Interfaces:**
 - Consumes: Task 3 generator and generated resource.
 - Produces: CI drift gate and wheel containing `security-intelligence.json`.
 
-- [ ] **Step 1: Write a failing packaging assertion**
+- [x] **Step 1: Write a failing packaging assertion**
 
 Require the wheel to contain
 `agentsec/resources/security-intelligence.json`.
 
-- [ ] **Step 2: Run targeted tests and observe failure**
+- [x] **Step 2: Run targeted tests and observe failure**
 
-Run: `.venv/bin/pytest tests/unit/test_package.py -q`
+Run: `PIP_NO_INDEX=1 .venv/bin/pytest tests/integration/test_cli.py::test_doctor_from_wheel_without_dependencies_validates_packaged_schema -q`
 
 Expected: failure until package and docs integration is complete.
 
-- [ ] **Step 3: Add CI generated-artifact gate**
+- [x] **Step 3: Add CI generated-artifact gate**
 
 After the threat DB build, run:
 
@@ -298,28 +298,28 @@ After the threat DB build, run:
   run: git diff --exit-code -- docs/SECURITY-INTELLIGENCE.md docs/SECURITY-TIMELINE.md src/agentsec/resources/security-intelligence.json
 ```
 
-- [ ] **Step 4: Update contributor and user documentation**
+- [x] **Step 4: Update contributor and user documentation**
 
 Add the intelligence generator to the local release gate. Document stable IDs,
 source review requirements, corrections/retractions, and the prohibition on
 silently changing contested status. Record the generated intelligence capability
 under `[Unreleased]` without claiming a release.
 
-- [ ] **Step 5: Run targeted tests and package build**
+- [x] **Step 5: Run targeted tests and package build**
 
 Inspect README and CONTRIBUTING links directly, then run:
 
 ```bash
-.venv/bin/pytest tests/unit/test_package.py -q
+PIP_NO_INDEX=1 .venv/bin/pytest tests/integration/test_cli.py::test_doctor_from_wheel_without_dependencies_validates_packaged_schema -q
 PIP_NO_INDEX=1 .venv/bin/python -m build --no-isolation
 ```
 
 Expected: tests pass and both wheel and sdist build offline.
 
-- [ ] **Step 6: Commit Task 4**
+- [x] **Step 6: Commit Task 4**
 
 ```bash
-git add .github/workflows/tests.yml CONTRIBUTING.md README.md CHANGELOG.md tests/unit/test_package.py
+git add .github/workflows/tests.yml CONTRIBUTING.md README.md CHANGELOG.md tests/integration/test_cli.py
 git commit -m "build(intel): enforce generated intelligence artifacts"
 ```
 

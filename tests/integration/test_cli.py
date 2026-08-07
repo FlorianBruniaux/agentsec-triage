@@ -241,6 +241,7 @@ def test_doctor_from_wheel_without_dependencies_validates_packaged_schema(tmp_pa
     )
     wheel = next(dist.glob("*.whl"))
     with zipfile.ZipFile(wheel) as archive:
+        assert "agentsec/resources/security-intelligence.json" in archive.namelist()
         metadata_name = next(name for name in archive.namelist() if name.endswith("METADATA"))
         metadata = BytesParser().parsebytes(archive.read(metadata_name))
     assert metadata.get_all("License-File", []) == []

@@ -61,13 +61,51 @@ Changes to `data/threat-db.yaml` must validate against
 git diff --exit-code -- src/agentsec/resources/threat-db.json
 ```
 
+## Security intelligence publishing
+
+Detector inputs and editorial intelligence have different responsibilities:
+
+- Add exact IOC and detector data to `data/threat-db.yaml`.
+- Add articles, advisories, maintainer notices, research, news, databases, and
+  relevant social context to `data/intelligence/sources.yaml`.
+- Add incidents, disclosures, vulnerabilities, campaigns, corrections,
+  retractions, remediations, and intelligence changes to
+  `data/intelligence/events.yaml`.
+
+Every source and event uses a stable lowercase ID. Every event references at
+least one existing source ID and keeps occurrence, disclosure, and update dates
+separate. Omit an unknown date rather than estimating it. A social post can
+record community context, but it is not an independent authority for an IOC.
+
+Contested events use both `status: contested` and `confidence: contested`.
+Corrections and retractions add explicit events and preserve the earlier record;
+do not silently rewrite the history. The timeline describes “events tracked by
+AgentSec” and must not claim completeness.
+
+After editing either intelligence YAML file, validate and regenerate all public
+views:
+
+```bash
+.venv/bin/python scripts/build_intelligence_docs.py
+git diff --exit-code -- \
+  docs/SECURITY-INTELLIGENCE.md \
+  docs/SECURITY-TIMELINE.md \
+  src/agentsec/resources/security-intelligence.json
+```
+
+The generated Markdown and JSON files are committed release artifacts. Do not
+edit them directly. Historical backfill from the guide must be reviewed record
+by record; aggregate campaign counts are not event records.
+
 ## Local release gate
 
 Run every gate before requesting review:
 
 ```bash
 .venv/bin/python scripts/build_threat_db.py
+.venv/bin/python scripts/build_intelligence_docs.py
 git diff --exit-code -- src/agentsec/resources/threat-db.json
+git diff --exit-code -- docs/SECURITY-INTELLIGENCE.md docs/SECURITY-TIMELINE.md src/agentsec/resources/security-intelligence.json
 .venv/bin/ruff check src tests scripts
 .venv/bin/mypy src scripts
 PIP_NO_INDEX=1 .venv/bin/pytest --cov=agentsec --cov-report=term-missing
@@ -80,9 +118,10 @@ build needs neither an isolated environment nor a package-index request. The ful
 test suite inherits `PIP_NO_INDEX=1`, including its package build and wheel install.
 
 The CI workflow installs the built wheel with `--no-index --no-deps` in a fresh
-virtual environment and runs `doctor` from that environment. This checks that the
-wheel contains the threat database and result schema without relying on runtime
-dependencies.
+virtual environment and runs `doctor` from that environment. The package test
+also checks that the wheel contains the generated intelligence JSON. Together,
+these gates cover the threat database, result schema, and intelligence resource
+without relying on runtime dependencies.
 
 The release gate also runs two repository-shaped scans. `agentsec scan .` must
 exit `2`, retain findings from positive fixtures, and report the tracked binary
