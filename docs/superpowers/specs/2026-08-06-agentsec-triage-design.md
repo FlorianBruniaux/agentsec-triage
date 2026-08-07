@@ -46,7 +46,8 @@ AgentSec Triage is not:
 ## 3. Initial Product Scope
 
 The initial product scope, from the first alpha through `v1.0.0`, scans one local
-repository and its local Git metadata. It must be:
+repository and detects local Git metadata presence without inspecting its history.
+It must be:
 
 - read-only;
 - offline by default;
@@ -56,8 +57,10 @@ repository and its local Git metadata. It must be:
 - safe to run against an untrusted repository.
 
 V1 may inspect repository files, local lockfiles, installed dependency metadata,
-symlinks, startup configuration, and local Git history. It must not execute code
-from the target repository or follow symlinks outside the scan root.
+symlinks, and startup configuration. It must not execute code from the target
+repository or follow symlinks outside the scan root. Local Git history is not
+scanned until its metadata can be confined atomically; `.git` presence makes the
+alpha result explicitly incomplete.
 
 The following remain out of scope until separately designed:
 
@@ -213,7 +216,8 @@ Repository-focused coverage for the August 2026 Keyv/cacheable npm campaign:
 - lifecycle scripts correlated with compromised packages;
 - complete SHA-256 payload matches regardless of filename or extension;
 - Claude Code startup hooks and VS Code `folderOpen` tasks;
-- local Git-history indicators documented for the campaign;
+- explicit incomplete reporting for local Git history, whose bundled indicators
+  are not evaluated by the alpha runtime until strict metadata confinement exists;
 - explicit reporting of unsupported formats and unscanned host-level evidence.
 
 The existing guide script is reference material only. The corrected candidate is

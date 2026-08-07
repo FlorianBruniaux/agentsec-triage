@@ -46,6 +46,23 @@ def test_scan_missing_root_is_incomplete_json_and_exits_two(tmp_path: Path) -> N
     assert "No indicators found in completed checks" not in human.stdout
 
 
+def test_scan_git_repository_reports_unscanned_history_and_exits_two(tmp_path: Path) -> None:
+    (tmp_path / ".git").mkdir()
+
+    completed = _run("scan", str(tmp_path), "--format", "json")
+
+    assert completed.returncode == 2
+    assert completed.stderr == ""
+    payload = json.loads(completed.stdout)
+    assert payload["complete"] is False
+    assert payload["findings"] == []
+    assert any(
+        diagnostic["message"]
+        == "Local Git history not scanned: strict metadata confinement unavailable"
+        for diagnostic in payload["diagnostics"]
+    )
+
+
 def test_scan_non_applicable_repository_is_completed_not_clean(tmp_path: Path) -> None:
     completed = _run("scan", str(tmp_path), "--format", "human")
 

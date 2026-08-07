@@ -49,6 +49,113 @@ def _scan(root: Path, database: ThreatDatabase | None = None, limits: DiscoveryL
     return run_scan(root, [ShaiHuludDetector()], database or _database(), limits)
 
 
+def _git_commit(root: Path, *, subject: str) -> str:
+    subprocess.run(["git", "init", "-q", str(root)], check=True)
+    subprocess.run(["git", "config", "user.name", "external-marker"], cwd=root, check=True)
+    subprocess.run(
+        ["git", "config", "user.email", "external-marker@example.test"],
+        cwd=root,
+        check=True,
+    )
+    subprocess.run(
+        ["git", "commit", "-q", "--allow-empty", "-m", subject], cwd=root, check=True
+    )
+    return subprocess.run(
+        ["git", "rev-parse", "HEAD"],
+        cwd=root,
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout.strip()
+
+
+def _database_with_external_git_marker(subject: str) -> ThreatDatabase:
+    base = _database()
+    return ThreatDatabase(
+        version=base.version,
+        updated=base.updated,
+        package_versions=base.package_versions,
+        wildcard_package_versions=base.wildcard_package_versions,
+        hashes=base.hashes,
+        domains=base.domains,
+        commit_indicators=(
+            {
+                "author": "external-marker",
+                "email": "external-marker@example.test",
+                "subject": subject,
+            },
+        ),
+    )
+
+
+def _external_git_metadata(root: Path, external: Path, mode: str, subject: str) -> None:
+    if mode == "objects-symlink":
+        _git_commit(root, subject=subject)
+        external_objects = external / "objects"
+        external.mkdir()
+        shutil.move(str(root / ".git" / "objects"), external_objects)
+        try:
+            (root / ".git" / "objects").symlink_to(external_objects, target_is_directory=True)
+        except (NotImplementedError, OSError):
+            pytest.skip("directory symlinks are unavailable on this platform")
+        return
+
+    external.mkdir()
+    commit = _git_commit(external, subject=subject)
+    root.mkdir()
+    if mode == "alternates":
+        subprocess.run(["git", "init", "-q", str(root)], check=True)
+        (root / ".git" / "objects" / "info" / "alternates").write_text(
+            str(external / ".git" / "objects") + "\n",
+            encoding="utf-8",
+        )
+        (root / ".git" / "refs" / "heads" / "main").write_text(
+            commit + "\n", encoding="ascii"
+        )
+        (root / ".git" / "HEAD").write_text("ref: refs/heads/main\n", encoding="ascii")
+        return
+
+    assert mode == "gitfile"
+    (root / ".git").write_text(
+        f"gitdir: {(external / '.git').as_posix()}\n",
+        encoding="utf-8",
+    )
+
+
+@pytest.mark.parametrize("metadata_mode", ["objects-symlink", "alternates", "gitfile"])
+def test_untrusted_git_metadata_never_invokes_git_or_reads_external_history(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, metadata_mode: str
+) -> None:
+    root = tmp_path / "scan-root"
+    external = tmp_path / "external-history"
+    subject = f"external marker via {metadata_mode}"
+    _external_git_metadata(root, external, metadata_mode, subject)
+    import agentsec.analyzers.git_history as git_history_module
+
+    real_popen = git_history_module.subprocess.Popen
+    git_calls: list[tuple[object, ...]] = []
+
+    def recording_popen(*args: object, **kwargs: object):
+        git_calls.append(args)
+        return real_popen(*args, **kwargs)
+
+    monkeypatch.setattr(git_history_module.subprocess, "Popen", recording_popen)
+
+    result = _scan(root, _database_with_external_git_marker(subject))
+
+    assert git_calls == []
+    assert not any(item.rule_id == "campaign-git-identity" for item in result.findings)
+    assert result.complete is False
+    assert result.exit_code() == 2
+    assert any(
+        diagnostic.kind is DiagnosticKind.ERROR
+        and diagnostic.path == root / ".git"
+        and diagnostic.message
+        == "Local Git history not scanned: strict metadata confinement unavailable"
+        for diagnostic in result.detector_results[0].diagnostics
+    )
+
+
 def test_positive_fixture_emits_exact_and_correlated_findings(tmp_path: Path) -> None:
     root = tmp_path / "positive"
     shutil.copytree(FIXTURES / "positive", root)
@@ -115,7 +222,7 @@ def test_negative_fixture_only_emits_review_heuristics(tmp_path: Path) -> None:
     }
 
 
-def test_matching_local_git_identity_is_high_confidence(tmp_path: Path) -> None:
+def test_matching_local_git_identity_is_not_scanned_without_confinement(tmp_path: Path) -> None:
     subprocess.run(["git", "init", "-q", str(tmp_path)], check=True)
     subprocess.run(["git", "config", "user.name", "claude"], cwd=tmp_path, check=True)
     subprocess.run(
@@ -133,34 +240,12 @@ def test_matching_local_git_identity_is_high_confidence(tmp_path: Path) -> None:
 
     result = _scan(tmp_path)
 
-    git_findings = [
-        finding for finding in result.findings if finding.rule_id == "campaign-git-identity"
-    ]
-    assert len(git_findings) == 1
-    assert git_findings[0].severity is Severity.HIGH
-    assert git_findings[0].confidence is Confidence.HIGH
-    assert git_findings[0].evidence == (
-        "claude <claude@users.noreply.github.com>: chore: update config"
-    )
-
-
-def test_empty_git_subject_does_not_make_scan_incomplete(tmp_path: Path) -> None:
-    subprocess.run(["git", "init", "-q", str(tmp_path)], check=True)
-    subprocess.run(["git", "config", "user.name", "empty subject"], cwd=tmp_path, check=True)
-    subprocess.run(
-        ["git", "config", "user.email", "empty-subject@example.test"], cwd=tmp_path, check=True
-    )
-    subprocess.run(
-        ["git", "commit", "--quiet", "--allow-empty", "--allow-empty-message", "-m", ""],
-        cwd=tmp_path,
-        check=True,
-    )
-
-    result = _scan(tmp_path)
-
-    assert result.complete is True
-    assert not any(
-        "Unable to parse local Git history" in item.message for item in result.diagnostics
+    assert result.complete is False
+    assert result.exit_code() == 2
+    assert not any(item.rule_id == "campaign-git-identity" for item in result.findings)
+    assert any(
+        item.message == "Local Git history not scanned: strict metadata confinement unavailable"
+        for item in result.detector_results[0].diagnostics
     )
 
 
@@ -652,42 +737,3 @@ def test_structured_file_between_parser_and_hash_caps_is_hashed_then_rejected(
         and "limit" in diagnostic.message.lower()
         for diagnostic in result.detector_results[0].diagnostics
     )
-
-
-def test_git_indicator_uses_injected_database_instead_of_bundled_data(
-    tmp_path: Path,
-) -> None:
-    subprocess.run(["git", "init", "-q", str(tmp_path)], check=True)
-    subprocess.run(["git", "config", "user.name", "injected"], cwd=tmp_path, check=True)
-    subprocess.run(
-        ["git", "config", "user.email", "injected@example.test"],
-        cwd=tmp_path,
-        check=True,
-    )
-    (tmp_path / "evidence.txt").write_text("evidence", encoding="utf-8")
-    subprocess.run(["git", "add", "evidence.txt"], cwd=tmp_path, check=True)
-    subprocess.run(
-        ["git", "commit", "-q", "-m", "injected subject"],
-        cwd=tmp_path,
-        check=True,
-    )
-    base = _database()
-    database = ThreatDatabase(
-        version="injected",
-        updated=base.updated,
-        package_versions=base.package_versions,
-        wildcard_package_versions=base.wildcard_package_versions,
-        hashes=base.hashes,
-        domains=base.domains,
-        commit_indicators=(
-            {
-                "author": "injected",
-                "email": "injected@example.test",
-                "subject": "injected subject",
-            },
-        ),
-    )
-
-    result = _scan(tmp_path, database)
-
-    assert any(item.rule_id == "campaign-git-identity" for item in result.findings)

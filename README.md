@@ -2,8 +2,10 @@
 
 AgentSec Triage is an alpha command-line scanner for evidence associated with
 documented attacks against developers, software supply chains, and coding-agent
-configuration. It scans one local repository and its local Git metadata. Scans
-are deterministic, read-only, and offline by default.
+configuration. It scans files inside one local repository. Scans are
+deterministic, read-only, and offline by default. Local Git history is not scanned
+in this alpha because Git metadata cannot yet be confined atomically to the scan
+root.
 
 This alpha does not certify that a repository, workstation, dependency set, or
 account is clean. It is not an antivirus, EDR, general SAST, dependency scanner,
@@ -51,9 +53,10 @@ agentsec detectors explain shai-hulud-keyv
 ```
 
 AgentSec never executes files from the target repository. It does not follow
-symlinks or Windows reparse points outside the resolved scan root. Git inspection
-uses a bounded command with repository hooks, external protocols, prompts, and
-lazy fetching disabled.
+symlinks or Windows reparse points outside the resolved scan root. It does not
+invoke Git for an untrusted repository. When `.git` exists as a directory or
+gitfile, the scan reports incomplete coverage with exit code `2` instead of
+risking reads through object symlinks, alternates, or an external gitdir.
 
 Traversal is exhaustive by design. AgentSec visits every directory entry under
 the scan root except `.git`, does not honor `.gitignore` or other ignore files,
@@ -87,7 +90,7 @@ threat database version 2.26.0.
 | Installed packages | Checks local `node_modules/**/package.json` metadata and correlated lifecycle commands. |
 | Payloads | Hashes inspected regular files and matches exact SHA-256 indicators from the bundled database. File-size and traversal limits apply. |
 | Startup configuration | Checks repository-local Claude Code startup hooks and VS Code `folderOpen` tasks. Hook presence alone is a review finding unless campaign evidence correlates it. |
-| Git history | Checks bounded local history for exact documented campaign identity tuples when a trusted system Git executable is available. |
+| Git history | Not scanned. A `.git` directory or gitfile emits `Local Git history not scanned: strict metadata confinement unavailable` and makes the result incomplete. No Git-history IOC finding is produced. |
 
 Finding confidence is part of the verdict. `confirmed` means an exact known IOC
 match. `high` means strongly correlated evidence. `review` is a heuristic that
@@ -104,17 +107,16 @@ of compromise.
   CI logs, and network traffic are not scanned.
 - Scans do not fetch intelligence or verify IOC freshness. The bundled database
   is fixed at build time.
-- File, directory-entry, diagnostic, byte, and Git-history bounds protect the
-  scanner. Reaching a relevant bound makes the result incomplete rather than
-  silently clean.
+- File, directory-entry, diagnostic, and byte bounds protect the scanner.
+  Reaching a relevant bound makes the result incomplete rather than silently
+  clean.
 - `--redact` recognizes specific path and secret-shaped patterns. It reduces
   disclosure risk but is not a guarantee that arbitrary sensitive content was
   removed. Review output before sharing it.
 - Linux, macOS, and Windows with Python 3.11, 3.12, and 3.13 are CI targets. This
-  source checkout was not locally verified on all nine combinations. On Windows,
-  reparse-point traversal is refused and local Git history is available only when
-  a trusted Git executable can be resolved from a system or Program Files
-  location; otherwise the scan reports incomplete coverage with exit code `2`.
+  source checkout was not locally verified on all nine combinations. On every
+  platform, local Git history remains disabled until strict metadata confinement
+  can be guaranteed.
 
 ## Self-scan release expectation
 
@@ -124,11 +126,13 @@ A self-scan of this repository is intentionally not a clean or complete scan:
 agentsec scan . --format json --redact
 ```
 
-The expected exit code is `2`. The tracked positive fixtures must remain visible
-as findings, while `tests/fixtures/lockfiles/bun.lockb` must produce the documented
-unsupported-format diagnostic. Local `.venv` symlinks and generated build
-artifacts may add further incomplete-coverage diagnostics. The release gate
-checks this exact shape and never treats self-scan output as a clean-machine claim.
+The expected exit code is `2`. The repository's `.git` metadata must produce the
+documented unscanned-history diagnostic. The tracked positive fixtures must
+remain visible as findings, while `tests/fixtures/lockfiles/bun.lockb` must produce
+the documented unsupported-format diagnostic. Local `.venv` symlinks and
+generated build artifacts may add further incomplete-coverage diagnostics. The
+release gate checks this exact shape and never treats self-scan output as a
+clean-machine claim.
 
 The supported negative fixture provides a completed applicable scan without
 hiding files:

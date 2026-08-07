@@ -7,6 +7,10 @@ authorized public release while the licensing decision remains unresolved.
 
 ### Fixed
 
+- Disabled local Git-history subprocess execution for untrusted repositories until
+  strict metadata confinement is available. Repositories with `.git` now fail
+  closed with an incomplete result instead of allowing Git to follow object
+  symlinks, alternates, or external gitfiles.
 - Canonicalized scan root, diagnostic, and finding paths to forward-slash form in
   deterministic JSON and human output, including Windows paths, and made the CI
   self-scan assertion tolerate native separators defensively.
@@ -34,8 +38,8 @@ authorized public release while the licensing decision remains unresolved.
 - Schema-validated threat database 2.26.0 import and deterministic runtime JSON
   build.
 - `shai-hulud-keyv` detector for supported lockfiles, installed package metadata,
-  exact payload hashes, repository-local startup configuration, and bounded local
-  Git history.
+  exact payload hashes, and repository-local startup configuration. Local Git
+  history is explicitly reported as not scanned until strict confinement exists.
 - Human and versioned JSON output, redaction, detector and database inspection,
   and the dependency-free `doctor` command.
 - Positive, negative, malformed-input, safety, integration, packaging, and schema

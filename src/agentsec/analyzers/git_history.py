@@ -1,3 +1,5 @@
+"""Trusted-input Git utility, intentionally unreachable from runtime detectors."""
+
 from __future__ import annotations
 
 import ctypes
@@ -56,7 +58,7 @@ class _PipeResult:
 def inspect_git_history(
     root: Path, max_commits: int
 ) -> tuple[tuple[GitIndicator, ...], tuple[Diagnostic, ...]]:
-    """Inspect bounded local history without invoking a shell or repository hooks."""
+    """Inspect history only after a caller independently guarantees metadata trust."""
     if (
         isinstance(max_commits, bool)
         or not isinstance(max_commits, int)

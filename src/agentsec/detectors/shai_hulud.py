@@ -8,7 +8,6 @@ import stat
 from itertools import chain, islice
 from pathlib import Path
 
-from agentsec.analyzers.git_history import GitIndicator, inspect_git_history
 from agentsec.analyzers.lockfiles import ResolvedPackage, parse_lockfile_content
 from agentsec.analyzers.packages import (
     InstalledPackage,
@@ -51,7 +50,9 @@ _SHELL_ENVIRONMENT_ASSIGNMENT = re.compile(
 _MAX_NPM_PACKAGE_NAME_LENGTH = 214
 _MAX_COMMAND_LENGTH = 1024 * 1024
 _MAX_ENV_SPLIT_DEPTH = 4
-_MAX_GIT_COMMITS = 100_000
+_GIT_HISTORY_NOT_SCANNED = (
+    "Local Git history not scanned: strict metadata confinement unavailable"
+)
 
 
 class ShaiHuludDetector:
@@ -137,12 +138,13 @@ class ShaiHuludDetector:
         if git_diagnostic is not None:
             diagnostics.append(git_diagnostic)
         elif has_git:
-            indicators, analyzer_diagnostics = inspect_git_history(
-                context.root,
-                max_commits=min(context.limits.max_git_commits, _MAX_GIT_COMMITS),
+            diagnostics.append(
+                Diagnostic(
+                    DiagnosticKind.ERROR,
+                    context.root / ".git",
+                    _GIT_HISTORY_NOT_SCANNED,
+                )
             )
-            diagnostics.extend(analyzer_diagnostics)
-            findings.extend(_git_findings(indicators, context.database))
 
         return DetectorResult(
             detector_id=self.id,
@@ -671,25 +673,6 @@ def _runtime_entrypoint_is_campaign(
 
 def _command_basename(token: str) -> str:
     return token.replace("\\", "/").rsplit("/", 1)[-1].lower()
-
-
-def _git_findings(
-    indicators: tuple[GitIndicator, ...], database: ThreatDatabase
-) -> tuple[Finding, ...]:
-    expected = {
-        (item["author"], item["email"], item["subject"]) for item in database.commit_indicators
-    }
-    return tuple(
-        _finding(
-            rule_id="campaign-git-identity",
-            severity=Severity.HIGH,
-            confidence=Confidence.HIGH,
-            path=Path("."),
-            evidence=f"{indicator.author} <{indicator.email}>: {indicator.subject}",
-        )
-        for indicator in indicators
-        if (indicator.author, indicator.email, indicator.subject) in expected
-    )
 
 
 def _git_metadata_state(root: Path) -> tuple[bool, Diagnostic | None]:
