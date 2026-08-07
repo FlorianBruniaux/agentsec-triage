@@ -10,7 +10,7 @@ events:
       with the August 2026 Shai-Hulud campaign. AgentSec treats exact confirmed
       package/version and payload-hash matches as incident-response evidence.
     ecosystems: [npm, developer-tools]
-    disclosed_date: "2026-08-06"
+    disclosed_date: "2026-08-04"
     status: confirmed
     confidence: confirmed
     source_ids:

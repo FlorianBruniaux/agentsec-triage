@@ -7,7 +7,7 @@ sources:
     publisher: Aikido Security
     url: https://www.aikido.dev/blog/keyv-and-friends-compromised-in-npm-supply-chain-attack
     source_type: research
-    published_date: "2026-08-06"
+    published_date: "2026-08-04"
     topics: [keyv, npm, shai-hulud, supply-chain]
     supports:
       - Compromise reporting for Keyv and related npm packages in August 2026.
@@ -16,11 +16,11 @@ sources:
     status: active
 
   - id: safedep-keyv-2026
-    title: Keyv npm Supply Chain Compromise
+    title: npm Worm Poisons keyv, cacheable and 400+ Other Packages Across Nine Organisations
     publisher: SafeDep
     url: https://safedep.io/keyv-npm-supply-chain-compromise/
     source_type: research
-    published_date: "2026-08-06"
+    published_date: "2026-08-04"
     topics: [keyv, npm, shai-hulud, supply-chain]
     supports:
       - Package-scope reporting considered when classifying disputed @keyv version intelligence.
@@ -28,11 +28,11 @@ sources:
     status: active
 
   - id: jfrog-shai-hulud-2026
-    title: Shai-Hulud Is Back — August 2026
+    title: Major Shai-Hulud campaign strikes npm again, affecting keyv and 400+ packages
     publisher: JFrog Security Research
     url: https://research.jfrog.com/post/shai-hulud-is-back-august/
     source_type: research
-    published_date: "2026-08-06"
+    published_date: "2026-08-04"
     topics: [keyv, npm, shai-hulud, supply-chain]
     supports:
       - Campaign and package-scope reporting retained as attributed intelligence.
@@ -44,7 +44,7 @@ sources:
     publisher: Socket
     url: https://socket.dev/blog/popular-npm-packages-keyv-and-cacheable-compromised
     source_type: research
-    published_date: "2026-08-06"
+    published_date: "2026-08-04"
     topics: [keyv, npm, shai-hulud, supply-chain]
     supports:
       - Confirmation and technical context for compromised npm package versions.
@@ -56,7 +56,7 @@ sources:
     publisher: The Hacker News
     url: https://thehackernews.com/2026/08/keyv-linked-npm-worm-poisons-hundreds.html
     source_type: news
-    published_date: "2026-08-06"
+    published_date: "2026-08-04"
     topics: [keyv, npm, shai-hulud, supply-chain]
     supports:
       - Secondary reporting on the scope and public disclosure of the campaign.

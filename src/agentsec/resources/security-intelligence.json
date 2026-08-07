@@ -1,0 +1,191 @@
+{
+  "events": [
+    {
+      "confidence": "contested",
+      "detector_coverage": {
+        "detector_ids": [
+          "shai-hulud-keyv"
+        ],
+        "notes": "Matching scoped packages are reported high/contested with source attribution; lifecycle-only evidence remains a separate review finding.",
+        "status": "detected"
+      },
+      "ecosystems": [
+        "npm",
+        "developer-tools"
+      ],
+      "event_type": "intelligence_update",
+      "id": "evt-2026-08-keyv-contested-scope",
+      "related": {
+        "campaign_ids": [
+          "shai-hulud-keyv-2026-08"
+        ],
+        "cve_ids": [],
+        "technique_ids": [
+          "npm.compromised-version"
+        ]
+      },
+      "source_ids": [
+        "jfrog-shai-hulud-2026",
+        "safedep-keyv-2026"
+      ],
+      "status": "contested",
+      "summary": "AgentSec preserves JFrog and SafeDep reporting for @keyv/*@6.0.0 as contested intelligence instead of promoting the wildcard package scope to critical and confirmed.",
+      "title": "Scope of @keyv/* version 6.0.0 remains contested",
+      "updated_date": "2026-08-06"
+    },
+    {
+      "confidence": "confirmed",
+      "detector_coverage": {
+        "detector_ids": [
+          "shai-hulud-keyv"
+        ],
+        "notes": "Repository lockfiles, installed packages, payload hashes, and startup configuration are covered; Git history and host-level evidence are not.",
+        "status": "partial"
+      },
+      "disclosed_date": "2026-08-04",
+      "ecosystems": [
+        "npm",
+        "developer-tools"
+      ],
+      "event_type": "campaign",
+      "id": "evt-2026-08-keyv-campaign-disclosure",
+      "related": {
+        "campaign_ids": [
+          "shai-hulud-keyv-2026-08"
+        ],
+        "cve_ids": [],
+        "technique_ids": [
+          "npm.compromised-version",
+          "npm.lifecycle-script",
+          "payload.sha256"
+        ]
+      },
+      "source_ids": [
+        "aikido-keyv-2026",
+        "hackernews-keyv-2026",
+        "socket-keyv-2026"
+      ],
+      "status": "confirmed",
+      "summary": "Security researchers reported malicious npm package versions associated with the August 2026 Shai-Hulud campaign. AgentSec treats exact confirmed package/version and payload-hash matches as incident-response evidence.",
+      "title": "Keyv and cacheable npm supply-chain campaign disclosed"
+    }
+  ],
+  "schema_version": "1",
+  "sources": [
+    {
+      "id": "aikido-keyv-2026",
+      "published_date": "2026-08-04",
+      "publisher": "Aikido Security",
+      "reviewed_date": "2026-08-07",
+      "source_type": "research",
+      "status": "active",
+      "supports": [
+        "Compromise reporting for Keyv and related npm packages in August 2026.",
+        "Indicators and package-version context used for repository triage."
+      ],
+      "title": "Keyv and Friends Compromised in npm Supply Chain Attack",
+      "topics": [
+        "keyv",
+        "npm",
+        "shai-hulud",
+        "supply-chain"
+      ],
+      "url": "https://www.aikido.dev/blog/keyv-and-friends-compromised-in-npm-supply-chain-attack"
+    },
+    {
+      "id": "turnbull-shai-hulud-2026",
+      "publisher": "Alex Turnbull on LinkedIn",
+      "reviewed_date": "2026-08-07",
+      "source_type": "social",
+      "status": "active",
+      "supports": [
+        "Community warning and discussion context; not an independent IOC authority."
+      ],
+      "title": "Shai-Hulud npm exploit warning",
+      "topics": [
+        "keyv",
+        "npm",
+        "shai-hulud",
+        "supply-chain"
+      ],
+      "url": "https://www.linkedin.com/posts/alex-turnbull-1ab9992_warning-the-shai-hulud-npm-exploit-has-nfected-share-7490508767600627714-LkNb"
+    },
+    {
+      "id": "jfrog-shai-hulud-2026",
+      "published_date": "2026-08-04",
+      "publisher": "JFrog Security Research",
+      "reviewed_date": "2026-08-07",
+      "source_type": "research",
+      "status": "active",
+      "supports": [
+        "Campaign and package-scope reporting retained as attributed intelligence."
+      ],
+      "title": "Major Shai-Hulud campaign strikes npm again, affecting keyv and 400+ packages",
+      "topics": [
+        "keyv",
+        "npm",
+        "shai-hulud",
+        "supply-chain"
+      ],
+      "url": "https://research.jfrog.com/post/shai-hulud-is-back-august/"
+    },
+    {
+      "id": "safedep-keyv-2026",
+      "published_date": "2026-08-04",
+      "publisher": "SafeDep",
+      "reviewed_date": "2026-08-07",
+      "source_type": "research",
+      "status": "active",
+      "supports": [
+        "Package-scope reporting considered when classifying disputed @keyv version intelligence."
+      ],
+      "title": "npm Worm Poisons keyv, cacheable and 400+ Other Packages Across Nine Organisations",
+      "topics": [
+        "keyv",
+        "npm",
+        "shai-hulud",
+        "supply-chain"
+      ],
+      "url": "https://safedep.io/keyv-npm-supply-chain-compromise/"
+    },
+    {
+      "id": "socket-keyv-2026",
+      "published_date": "2026-08-04",
+      "publisher": "Socket",
+      "reviewed_date": "2026-08-07",
+      "source_type": "research",
+      "status": "active",
+      "supports": [
+        "Confirmation and technical context for compromised npm package versions."
+      ],
+      "title": "Popular npm Packages Keyv and Cacheable Compromised",
+      "topics": [
+        "keyv",
+        "npm",
+        "shai-hulud",
+        "supply-chain"
+      ],
+      "url": "https://socket.dev/blog/popular-npm-packages-keyv-and-cacheable-compromised"
+    },
+    {
+      "id": "hackernews-keyv-2026",
+      "published_date": "2026-08-04",
+      "publisher": "The Hacker News",
+      "reviewed_date": "2026-08-07",
+      "source_type": "news",
+      "status": "active",
+      "supports": [
+        "Secondary reporting on the scope and public disclosure of the campaign."
+      ],
+      "title": "Keyv-Linked npm Worm Poisons Hundreds of Packages",
+      "topics": [
+        "keyv",
+        "npm",
+        "shai-hulud",
+        "supply-chain"
+      ],
+      "url": "https://thehackernews.com/2026/08/keyv-linked-npm-worm-poisons-hundreds.html"
+    }
+  ],
+  "updated": "2026-08-07"
+}
