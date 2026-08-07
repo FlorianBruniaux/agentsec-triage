@@ -1,0 +1,55 @@
+tests/integration/test_shai_hulud_detector.py
+  s_0df90997879182::t_fb26697a8adb54 42-44,82-84,179-184,190-195,202,204,494-496
+src/agentsec/cli.py
+  s_0df90997879182::t_115e94961cc53f 139-143
+data/threat-db.schema.json
+  s_0df90997879182::t_4b24e95acf1a58 47
+tests/unit/test_models.py
+  s_0df90997879182::t_fb26697a8adb54 66-70,78-80,88-90,96-101,106-107
+docs/superpowers/specs/2026-08-06-agentsec-triage-design.md
+  s_0df90997879182::t_1c2ecf4fd30963 216-217,304-305
+tests/golden/finding.json
+  s_0df90997879182::t_843c5a4425b407 4-7
+src/agentsec/threat_db.py
+  s_0df90997879182::t_64d48cabbb7fb6 34-36,83-132,204-229,233-237
+data/threat-db.yaml
+  s_0df90997879182::t_4b24e95acf1a58 1170
+tests/integration/test_cli.py
+  s_0df90997879182::t_fb26697a8adb54 82-94,168-170
+docs/superpowers/plans/2026-08-06-v0.1-alpha-implementation.md
+  s_0df90997879182::t_1c2ecf4fd30963 737-741,778-784,1076-1077,1079-1081
+src/agentsec/detectors/shai_hulud.py
+  s_0df90997879182::t_f34bc1c4910251 8,59-65,114,118-126,210-212,214-261,275-287,290-291,293,302,305,309-310,312-316,320-323,327-329,331-332
+scripts/build_threat_db.py
+  s_0df90997879182::t_4b24e95acf1a58 109-110,114,201-207,210-213,221-237,239,241-242,248-259,334-340,344-345,349,391-397,401
+src/agentsec/models.py
+  s_0df90997879182::t_64d48cabbb7fb6 4,82-90,114-148
+CHANGELOG.md
+  s_0df90997879182::t_1c2ecf4fd30963 10-14
+README.md
+  s_0df90997879182::t_1c2ecf4fd30963 174,186-190
+  s_0df90997879182::t_2129c8502d3f70 191
+tests/unit/test_threat_db.py
+  s_0df90997879182::t_fb26697a8adb54 28-39,253-265
+tests/unit/test_json_output.py
+  s_0df90997879182::t_786aa79e5d2203 123
+  s_0df90997879182::t_fb26697a8adb54 119-122,124-125
+src/agentsec/resources/threat-db.json
+  s_0df90997879182::t_4d18421842fe0e 10-15,30-131,184
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "cbacb93cb9adb055ecccfa6def33a31d05a84d71",
+  "prompts": {},
+  "sessions": {
+    "s_0df90997879182": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019fd73a-588d-7f03-ab50-494ca0e95848",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Florian BRUNIAUX <florian@bruniaux.com>"
+    }
+  }
+}
