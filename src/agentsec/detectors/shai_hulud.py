@@ -139,7 +139,7 @@ class ShaiHuludDetector:
         elif has_git:
             indicators, analyzer_diagnostics = inspect_git_history(
                 context.root,
-                max_commits=min(context.limits.max_files, _MAX_GIT_COMMITS),
+                max_commits=min(context.limits.max_git_commits, _MAX_GIT_COMMITS),
             )
             diagnostics.extend(analyzer_diagnostics)
             findings.extend(_git_findings(indicators, context.database))

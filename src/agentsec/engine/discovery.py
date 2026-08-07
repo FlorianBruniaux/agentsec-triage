@@ -17,6 +17,7 @@ class DiscoveryLimits:
     max_file_bytes: int
     max_files: int
     max_diagnostics: int
+    max_git_commits: int = 10_000
     max_depth: int = 64
     max_entries: int = 100_000
     max_directories: int = 10_000
@@ -26,6 +27,7 @@ class DiscoveryLimits:
             ("max_file_bytes", self.max_file_bytes),
             ("max_files", self.max_files),
             ("max_diagnostics", self.max_diagnostics),
+            ("max_git_commits", self.max_git_commits),
             ("max_depth", self.max_depth),
             ("max_entries", self.max_entries),
             ("max_directories", self.max_directories),

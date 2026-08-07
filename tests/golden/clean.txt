@@ -1,0 +1,12 @@
+AgentSec 0.1.0a0 | threat database 2.26.0
+Complete: yes
+Coverage: files_seen=0 files_inspected=0 bytes_inspected=0
+No applicable detectors; no indicators found in completed checks.
+Findings:
+  critical: none
+  high: none
+  medium: none
+  low: none
+  info: none
+Diagnostics: none
+Not scanned: none
