@@ -1,0 +1,41 @@
+tests/unit/test_intelligence_docs.py
+  s_0df90997879182::t_48bd55a2a80887 4,76-186
+  s_0df90997879182::t_96b02fffb28a29 2-3,13-22
+  s_958cad3948f5dd::t_95be895c388909 75
+data/intelligence/sources.yaml
+  s_0df90997879182::t_7823310b923211 10,19,23,31,35,47,59
+scripts/build_intelligence_docs.py
+  s_0df90997879182::t_dfc19855036b91 1-505
+data/intelligence/events.yaml
+  s_0df90997879182::t_7823310b923211 13
+docs/SECURITY-INTELLIGENCE.md
+  s_0df90997879182::t_b83a7622c0ec89 1-70
+docs/SECURITY-TIMELINE.md
+  s_0df90997879182::t_944ba3c53eda64 1-52
+src/agentsec/resources/security-intelligence.json
+  s_0df90997879182::t_50d13b24bbc11e 1-191
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "5a431f54b0a42e670ac604a9e095a46b1cc04a42",
+  "prompts": {},
+  "sessions": {
+    "s_0df90997879182": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019fd73a-588d-7f03-ab50-494ca0e95848",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Florian BRUNIAUX <florian@bruniaux.com>"
+    },
+    "s_958cad3948f5dd": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "53b15b1a-d8dd-4dd4-b9b6-3db1b9882465",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Florian BRUNIAUX <florian@bruniaux.com>"
+    }
+  }
+}
