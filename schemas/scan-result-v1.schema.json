@@ -94,7 +94,12 @@
             }
           },
           "line": { "type": ["integer", "null"], "minimum": 1 },
-          "remediation_url": { "const": "https://cc.bruniaux.com/security/" }
+          "remediation_url": {
+            "anyOf": [
+              { "type": "null" },
+              { "const": "https://cc.bruniaux.com/security/" }
+            ]
+          }
         }
       }
     }

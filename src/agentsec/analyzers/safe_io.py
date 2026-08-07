@@ -197,14 +197,13 @@ def _stat_at(parent: int, component: str) -> os.stat_result:
 
 def _read_bounded(descriptor: int, max_bytes: int) -> bytes:
     result = bytearray()
-    while True:
-        read_size = min(_READ_CHUNK_SIZE, max_bytes - len(result) + 1)
+    while len(result) < max_bytes:
+        read_size = min(_READ_CHUNK_SIZE, max_bytes - len(result))
         chunk = os.read(descriptor, read_size)
         if not chunk:
             return bytes(result)
         result.extend(chunk)
-        if len(result) > max_bytes:
-            raise _UnsafeFileError("file exceeds byte limit")
+    return bytes(result)
 
 
 def _verify_parent_path(path: Path, original_parent: int, filename: str) -> None:
@@ -353,14 +352,13 @@ def _read_windows(path: Path, max_bytes: int) -> bytes:
 
 def _read_windows_bounded(api: _WindowsFileApi, handle: int, max_bytes: int) -> bytes:
     result = bytearray()
-    while True:
-        read_size = min(_READ_CHUNK_SIZE, max_bytes - len(result) + 1)
+    while len(result) < max_bytes:
+        read_size = min(_READ_CHUNK_SIZE, max_bytes - len(result))
         chunk = api.read(handle, read_size)
         if not chunk:
             return bytes(result)
         result.extend(chunk)
-        if len(result) > max_bytes:
-            raise _UnsafeFileError("Windows file exceeds byte limit")
+    return bytes(result)
 
 
 def _windows_file_api() -> _WindowsFileApi:

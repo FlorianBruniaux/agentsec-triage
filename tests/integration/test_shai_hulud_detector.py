@@ -8,6 +8,7 @@ from pathlib import Path
 
 import pytest
 
+from agentsec.analyzers import safe_io
 from agentsec.detectors.base import ScanContext
 from agentsec.detectors.registry import get_detectors
 from agentsec.detectors.shai_hulud import (
@@ -770,15 +771,67 @@ def test_aggregate_byte_budget_stops_before_next_file_and_is_incomplete(
 
     assert result.exit_code() == 2
     assert result.coverage.files_seen == 100
-    assert result.coverage.files_inspected == 1
-    assert result.coverage.bytes_inspected == 10
+    assert result.coverage.files_inspected == 2
+    assert result.coverage.bytes_inspected == 20
     budget_diagnostics = [
         item
         for item in result.detector_results[0].diagnostics
         if "max_total_bytes=20" in item.message
     ]
     assert len(budget_diagnostics) == 1
-    assert budget_diagnostics[0].path == tmp_path / "file-1.txt"
+    assert budget_diagnostics[0].path == tmp_path / "file-10.txt"
+
+
+def test_aggregate_byte_budget_accepts_one_exact_size_file(tmp_path: Path) -> None:
+    (tmp_path / "payload.bin").write_bytes(b"1234")
+    limits = DiscoveryLimits(
+        max_file_bytes=100,
+        max_files=100,
+        max_diagnostics=100,
+        max_total_bytes=4,
+    )
+
+    result = _scan(tmp_path, limits=limits)
+
+    assert result.complete is True
+    assert result.coverage.files_inspected == 1
+    assert result.coverage.bytes_inspected == 4
+
+
+def test_aggregate_budget_stops_after_failed_physical_read(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    growing = tmp_path / "a.bin"
+    growing.write_bytes(b"1234")
+    (tmp_path / "b.bin").write_bytes(b"5678")
+    real_read = safe_io.os.read
+    bytes_returned = 0
+    grew = False
+
+    def grow_then_read(descriptor: int, size: int) -> bytes:
+        nonlocal bytes_returned, grew
+        if not grew:
+            grew = True
+            with growing.open("ab") as stream:
+                stream.write(b"5")
+        chunk = real_read(descriptor, size)
+        bytes_returned += len(chunk)
+        return chunk
+
+    monkeypatch.setattr(safe_io.os, "read", grow_then_read)
+    limits = DiscoveryLimits(
+        max_file_bytes=100,
+        max_files=100,
+        max_diagnostics=100,
+        max_total_bytes=8,
+    )
+
+    result = _scan(tmp_path, limits=limits)
+
+    assert result.exit_code() == 2
+    assert bytes_returned <= 8
+    assert result.coverage.files_inspected == 0
+    assert result.coverage.bytes_inspected == 0
 
 
 def test_sparse_file_larger_than_remaining_budget_is_not_read(tmp_path: Path) -> None:

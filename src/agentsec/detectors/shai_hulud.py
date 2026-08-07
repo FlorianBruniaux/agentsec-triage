@@ -135,7 +135,7 @@ class ShaiHuludDetector:
                 diagnostics.append(safety_error)
                 continue
             remaining_bytes = context.limits.max_total_bytes - inspected_bytes
-            if remaining_bytes <= 0 or item.size >= remaining_bytes:
+            if remaining_bytes <= 0 or item.size > remaining_bytes:
                 diagnostics.append(
                     Diagnostic(
                         DiagnosticKind.ERROR,
@@ -152,7 +152,7 @@ class ShaiHuludDetector:
             )
             diagnostics.extend(analyzer_diagnostics)
             if content is None:
-                continue
+                break
             inspected_files += 1
             inspected_bytes += len(content)
 

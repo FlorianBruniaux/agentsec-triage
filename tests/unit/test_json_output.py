@@ -6,7 +6,15 @@ from jsonschema import validate
 from jsonschema.validators import Draft202012Validator
 
 from agentsec.cli import _SCAN_RESULT_SCHEMA_SHA256
-from agentsec.models import ScanResult
+from agentsec.models import (
+    Applicability,
+    Confidence,
+    Coverage,
+    DetectorResult,
+    Finding,
+    ScanResult,
+    Severity,
+)
 from agentsec.output.json_output import render_json
 from agentsec.redaction import redact_result
 
@@ -123,3 +131,36 @@ def test_public_schema_accepts_contested_confidence() -> None:
     confidence = schema["properties"]["findings"]["items"]["properties"]["confidence"]
 
     assert "contested" in confidence["enum"]
+
+
+def test_public_schema_accepts_external_finding_without_remediation_url(
+    empty_scan_result: ScanResult,
+) -> None:
+    external_finding = Finding(
+        detector_id="external",
+        rule_id="external-rule",
+        severity=Severity.LOW,
+        confidence=Confidence.REVIEW,
+        path=Path("input.txt"),
+        evidence="external evidence",
+    )
+    detector_result = DetectorResult(
+        detector_id="external",
+        applicability=Applicability.APPLICABLE,
+        findings=(external_finding,),
+        diagnostics=(),
+        coverage=Coverage(files_seen=1, files_inspected=1, bytes_inspected=1),
+    )
+    result = ScanResult(
+        tool_version=empty_scan_result.tool_version,
+        database_version=empty_scan_result.database_version,
+        root=empty_scan_result.root,
+        detector_results=(detector_result,),
+        diagnostics=(),
+        elapsed_ms=0,
+    )
+    payload = json.loads(render_json(result, redact=False))
+    schema = json.loads(Path("schemas/scan-result-v1.schema.json").read_text())
+
+    validate(instance=payload, schema=schema)
+    assert payload["findings"][0]["remediation_url"] is None

@@ -112,8 +112,10 @@ of compromise.
 - Scans do not fetch intelligence or verify IOC freshness. The bundled database
   is fixed at build time.
 - File, directory-entry, diagnostic, and byte bounds protect the scanner.
-  Reaching a relevant bound makes the result incomplete rather than silently
-  clean.
+  A file that exactly fills the remaining byte budget is accepted. A later file
+  or a file that exceeds the remaining budget makes the result incomplete
+  rather than silently clean. A failed safe read stops further file reads so
+  bytes consumed before a concurrent-change error cannot be spent twice.
 - The safe reader accepts at most 4,000,000 bytes per file. The aggregate read
   budget defaults to 1,000,000,000 bytes and can be lowered with
   `--max-total-bytes`. Package manifests and repository startup configuration

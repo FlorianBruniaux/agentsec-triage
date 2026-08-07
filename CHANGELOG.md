@@ -7,6 +7,13 @@ authorized public release while the licensing decision remains unresolved.
 
 ### Fixed
 
+- Removed the safe reader's one-byte sentinel read. POSIX and Windows reads now
+  consume at most the exact remaining physical byte budget, accept exact-size
+  and zero-byte files, and use post-read identity and metadata checks to reject
+  concurrent growth. A failed safe read stops the detector so unreturned bytes
+  cannot be spent again on a later file. The public schema again permits `null`
+  remediation URLs for protocol-compatible external detectors while the
+  built-in detector keeps emitting the canonical security URL.
 - Added immutable detector metadata and deterministic `detectors explain`
   output for supported inputs, campaign and technique IDs, canonical sources,
   limitations, remediation, and declared exclusions.

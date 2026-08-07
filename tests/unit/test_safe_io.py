@@ -20,6 +20,49 @@ def test_reads_regular_file_with_exact_limit(tmp_path: Path) -> None:
     assert diagnostics == ()
 
 
+def test_posix_growth_never_reads_past_physical_budget(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    path = tmp_path / "payload"
+    path.write_bytes(b"1234")
+    real_read = safe_io.os.read
+    bytes_returned = 0
+    grew = False
+
+    def grow_then_read(descriptor: int, size: int) -> bytes:
+        nonlocal bytes_returned, grew
+        if not grew:
+            grew = True
+            with path.open("ab") as stream:
+                stream.write(b"5")
+        chunk = real_read(descriptor, size)
+        bytes_returned += len(chunk)
+        return chunk
+
+    monkeypatch.setattr(safe_io.os, "read", grow_then_read)
+
+    content, diagnostics = safe_read_regular_file(path, max_bytes=4)
+
+    assert content is None
+    assert diagnostics[0].kind is DiagnosticKind.ERROR
+    assert bytes_returned <= 4
+
+
+def test_zero_budget_accepts_only_empty_file(tmp_path: Path) -> None:
+    empty = tmp_path / "empty"
+    nonempty = tmp_path / "nonempty"
+    empty.write_bytes(b"")
+    nonempty.write_bytes(b"x")
+
+    empty_content, empty_diagnostics = safe_read_regular_file(empty, max_bytes=0)
+    content, diagnostics = safe_read_regular_file(nonempty, max_bytes=0)
+
+    assert empty_content == b""
+    assert empty_diagnostics == ()
+    assert content is None
+    assert diagnostics[0].kind is DiagnosticKind.ERROR
+
+
 def test_rejects_oversized_file_without_partial_content(tmp_path: Path) -> None:
     path = tmp_path / "payload"
     path.write_bytes(b"12345")
@@ -88,11 +131,26 @@ def test_windows_reader_returns_content_instead_of_failing_platform_closed(
     monkeypatch.setattr(safe_io, "_is_windows", lambda: True)
     monkeypatch.setattr(safe_io, "_windows_file_api", lambda: api)
 
-    content, diagnostics = safe_read_regular_file(path, max_bytes=100)
+    content, diagnostics = safe_read_regular_file(path, max_bytes=len(api.content))
 
     assert content == b"windows bytes"
     assert diagnostics == ()
     assert api.closed == list(reversed(api.opened))
+
+
+def test_windows_growth_never_reads_past_physical_budget(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    path = tmp_path / "payload"
+    api = _GrowingWindowsFileApi(b"1234")
+    monkeypatch.setattr(safe_io, "_is_windows", lambda: True)
+    monkeypatch.setattr(safe_io, "_windows_file_api", lambda: api)
+
+    content, diagnostics = safe_read_regular_file(path, max_bytes=4)
+
+    assert content is None
+    assert diagnostics[0].kind is DiagnosticKind.ERROR
+    assert api.bytes_returned <= 4
 
 
 class _FakeWindowsFileApi:
@@ -132,3 +190,18 @@ class _FakeWindowsFileApi:
 
     def close(self, handle: int) -> None:
         self.closed.append(handle)
+
+
+class _GrowingWindowsFileApi(_FakeWindowsFileApi):
+    def __init__(self, content: bytes) -> None:
+        super().__init__(content)
+        self.bytes_returned = 0
+        self.grew = False
+
+    def read(self, handle: int, size: int) -> bytes:
+        if not self.grew:
+            self.content += b"5"
+            self.grew = True
+        chunk = super().read(handle, size)
+        self.bytes_returned += len(chunk)
+        return chunk

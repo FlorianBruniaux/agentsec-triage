@@ -205,8 +205,13 @@ The aggregate `ScanResult` includes:
 Repository reads have two independent limits: a 4,000,000-byte safe-reader hard
 cap per file and a 1,000,000,000-byte default aggregate budget. Before each
 read, the detector compares the discovered size with the remaining aggregate
-budget and stops with one deterministic error if the next file would reach or
-exceed that budget. Parser-specific limits remain stricter where applicable.
+budget. A file that exactly fills the remaining budget is accepted. A later
+file, or one larger than the remaining budget, stops the detector with one
+deterministic error. The shared reader never consumes a sentinel byte beyond
+its budget; post-read identity, size, and timestamp checks reject concurrent
+growth. A failed safe read stops the detector because consumed bytes cannot be
+recovered reliably from a rejected content result. Parser-specific limits
+remain stricter where applicable.
 
 The `--redact` option replaces user-specific absolute path prefixes and potential
 secret material with stable placeholders so beta reports can be shared safely.
