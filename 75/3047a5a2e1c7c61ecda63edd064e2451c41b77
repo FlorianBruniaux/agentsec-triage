@@ -1,0 +1,23 @@
+data/intelligence/intelligence.schema.json
+  s_0df90997879182::t_e05db188aac2d8 199
+tests/unit/test_intelligence_docs.py
+  s_0df90997879182::t_1098a6cb799110 187-202
+CHANGELOG.md
+  s_0df90997879182::t_42e4396e52d961 22-24
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "753047a5a2e1c7c61ecda63edd064e2451c41b77",
+  "prompts": {},
+  "sessions": {
+    "s_0df90997879182": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019fd73a-588d-7f03-ab50-494ca0e95848",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Florian BRUNIAUX <florian@bruniaux.com>"
+    }
+  }
+}
