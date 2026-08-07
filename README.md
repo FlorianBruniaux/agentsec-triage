@@ -45,6 +45,9 @@ agentsec scan . --format json --redact
 # Run one detector explicitly
 agentsec scan . --detector shai-hulud-keyv
 
+# Tighten the aggregate read budget; the default is 1,000,000,000 bytes
+agentsec scan . --max-total-bytes 100000000
+
 # Inspect local resources and detector registration
 agentsec doctor
 agentsec db info
@@ -73,8 +76,9 @@ repository hide evidence behind developer-tool ignore rules.
 | `2` | The scan is incomplete or an error prevents a clean verdict. Do not treat it as a pass. |
 
 Human and JSON output include completion, coverage, diagnostics, findings, and
-the detector-declared `not_scanned` / **Not scanned** list. An empty list does
-not expand the threat model: the fixed V0.1 exclusions below still apply.
+the selected detector and V0.1-wide `not_scanned` / **Not scanned** capability
+IDs. Declared exclusions are transparency metadata. They do not make an
+otherwise completed in-scope scan incomplete.
 
 ## V0.1 coverage
 
@@ -110,6 +114,14 @@ of compromise.
 - File, directory-entry, diagnostic, and byte bounds protect the scanner.
   Reaching a relevant bound makes the result incomplete rather than silently
   clean.
+- The safe reader accepts at most 4,000,000 bytes per file. The aggregate read
+  budget defaults to 1,000,000,000 bytes and can be lowered with
+  `--max-total-bytes`. Package manifests and repository startup configuration
+  have stricter parser-specific 1 MiB caps. Lockfiles have a parser-specific
+  4 MiB cap.
+- Stable `not_scanned` IDs report the V0.1 exclusions for host processes,
+  caches, global configuration, credentials, remote repositories and CI,
+  container filesystems, Git history, and automatic remediation.
 - `--redact` recognizes specific path and secret-shaped patterns. It reduces
   disclosure risk but is not a guarantee that arbitrary sensitive content was
   removed. Review output before sharing it.
@@ -162,7 +174,17 @@ This abridged example shows the shape of a confirmed finding:
     "files_inspected": 2,
     "bytes_inspected": 512
   },
-  "not_scanned": [],
+  "not_scanned": [
+    "container.filesystems",
+    "git.history",
+    "host.caches",
+    "host.credentials",
+    "host.global_config",
+    "host.processes",
+    "remediation.automatic",
+    "remote.ci",
+    "remote.repositories"
+  ],
   "diagnostics": [],
   "findings": [
     {
@@ -173,9 +195,9 @@ This abridged example shows the shape of a confirmed finding:
       "path": "package-lock.json",
       "evidence": "keyv@6.0.0",
       "campaign_ids": ["shai-hulud-keyv-2026-08"],
-      "technique_ids": [],
+      "technique_ids": ["npm.compromised-version"],
       "line": null,
-      "remediation_url": null
+      "remediation_url": "https://cc.bruniaux.com/security/"
     }
   ]
 }

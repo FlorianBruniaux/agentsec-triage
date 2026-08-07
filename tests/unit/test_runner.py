@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from agentsec.detectors.base import ScanContext
+from agentsec.detectors.base import DetectorMetadata, ScanContext
 from agentsec.detectors.registry import get_detectors
 from agentsec.engine.discovery import DiscoveryLimits
 from agentsec.engine.runner import run_scan
@@ -21,6 +21,16 @@ LIMITS = DiscoveryLimits(max_file_bytes=4_000_000, max_files=1000, max_diagnosti
 class NeverAppliesDetector:
     id = "never"
     version = "1"
+    metadata = DetectorMetadata(
+        description="never applies",
+        supported_inputs=(),
+        campaign_ids=(),
+        technique_ids=(),
+        source_references=(),
+        limitations=(),
+        remediation_url=None,
+        not_scanned=("detector.never",),
+    )
 
     def applies(self, context: ScanContext) -> bool:
         return False
@@ -32,6 +42,7 @@ class NeverAppliesDetector:
 class ExplodingDetector:
     id = "explode"
     version = "1"
+    metadata = NeverAppliesDetector.metadata
 
     def applies(self, context: ScanContext) -> bool:
         return True
@@ -61,6 +72,17 @@ def test_not_applicable_detector_does_not_make_scan_incomplete(
     assert result.complete is True
     assert result.exit_code() == 0
     assert result.detector_results[0].applicability is Applicability.NOT_APPLICABLE
+    assert result.not_scanned == (
+        "container.filesystems",
+        "detector.never",
+        "host.caches",
+        "host.credentials",
+        "host.global_config",
+        "host.processes",
+        "remediation.automatic",
+        "remote.ci",
+        "remote.repositories",
+    )
 
 
 def test_detector_exception_becomes_error_not_clean_result(

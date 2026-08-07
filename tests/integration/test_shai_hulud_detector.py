@@ -752,3 +752,52 @@ def test_structured_file_between_parser_and_hash_caps_is_hashed_then_rejected(
         and "limit" in diagnostic.message.lower()
         for diagnostic in result.detector_results[0].diagnostics
     )
+
+
+def test_aggregate_byte_budget_stops_before_next_file_and_is_incomplete(
+    tmp_path: Path,
+) -> None:
+    for index in range(100):
+        (tmp_path / f"file-{index}.txt").write_bytes(b"x" * 10)
+    limits = DiscoveryLimits(
+        max_file_bytes=100,
+        max_files=100,
+        max_diagnostics=100,
+        max_total_bytes=20,
+    )
+
+    result = _scan(tmp_path, limits=limits)
+
+    assert result.exit_code() == 2
+    assert result.coverage.files_seen == 100
+    assert result.coverage.files_inspected == 1
+    assert result.coverage.bytes_inspected == 10
+    budget_diagnostics = [
+        item
+        for item in result.detector_results[0].diagnostics
+        if "max_total_bytes=20" in item.message
+    ]
+    assert len(budget_diagnostics) == 1
+    assert budget_diagnostics[0].path == tmp_path / "file-1.txt"
+
+
+def test_sparse_file_larger_than_remaining_budget_is_not_read(tmp_path: Path) -> None:
+    sparse = tmp_path / "sparse.bin"
+    with sparse.open("wb") as stream:
+        stream.truncate(2_000_000)
+    limits = DiscoveryLimits(
+        max_file_bytes=4_000_000,
+        max_files=100,
+        max_diagnostics=100,
+        max_total_bytes=64,
+    )
+
+    result = _scan(tmp_path, limits=limits)
+
+    assert result.exit_code() == 2
+    assert result.coverage.files_inspected == 0
+    assert result.coverage.bytes_inspected == 0
+    assert (
+        sum("max_total_bytes=64" in item.message for item in result.detector_results[0].diagnostics)
+        == 1
+    )

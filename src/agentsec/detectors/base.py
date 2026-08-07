@@ -11,6 +11,20 @@ from agentsec.models import DetectorResult, ThreatDatabase
 
 
 @dataclass(frozen=True, slots=True)
+class DetectorMetadata:
+    """Immutable, machine-readable description of one detector's contract."""
+
+    description: str
+    supported_inputs: tuple[str, ...]
+    campaign_ids: tuple[str, ...]
+    technique_ids: tuple[str, ...]
+    source_references: tuple[str, ...]
+    limitations: tuple[str, ...]
+    remediation_url: str | None
+    not_scanned: tuple[str, ...]
+
+
+@dataclass(frozen=True, slots=True)
 class ScanContext:
     """Immutable scan inputs shared by every detector in a run."""
 
@@ -25,6 +39,7 @@ class Detector(Protocol):
 
     id: str
     version: str
+    metadata: DetectorMetadata
 
     def applies(self, context: ScanContext) -> bool: ...
 

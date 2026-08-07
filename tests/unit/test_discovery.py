@@ -11,6 +11,10 @@ from agentsec.models import DiagnosticKind
 LIMITS = DiscoveryLimits(max_file_bytes=4_000_000, max_files=1000, max_diagnostics=100)
 
 
+def test_default_total_byte_budget_is_bounded() -> None:
+    assert LIMITS.max_total_bytes == 1_000_000_000
+
+
 def test_missing_root_is_error(tmp_path: Path):
     files, diagnostics = discover(tmp_path / "missing", LIMITS)
     assert files == ()

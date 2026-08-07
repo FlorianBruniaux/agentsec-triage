@@ -16,7 +16,7 @@ from agentsec.analyzers.packages import (
 )
 from agentsec.analyzers.safe_io import safe_read_regular_file
 from agentsec.analyzers.startup import StartupHook, inspect_startup_config_content
-from agentsec.detectors.base import ScanContext
+from agentsec.detectors.base import DetectorMetadata, ScanContext
 from agentsec.engine.discovery import DiscoveredFile
 from agentsec.models import (
     Applicability,
@@ -54,6 +54,22 @@ _MAX_ENV_SPLIT_DEPTH = 4
 _GIT_HISTORY_NOT_SCANNED = (
     "Local Git history not scanned: strict metadata confinement unavailable"
 )
+_REMEDIATION_URL = "https://cc.bruniaux.com/security/"
+_TECHNIQUE_IDS = (
+    "npm.compromised-version",
+    "npm.lifecycle-script",
+    "payload.sha256",
+    "repository.startup-hook",
+)
+_TECHNIQUES_BY_RULE = {
+    "known-payload-hash": ("payload.sha256",),
+    "compromised-lockfile-version": ("npm.compromised-version",),
+    "compromised-installed-version": ("npm.compromised-version",),
+    "campaign-lifecycle-script": ("npm.lifecycle-script",),
+    "suspicious-lifecycle-script": ("npm.lifecycle-script",),
+    "campaign-startup-hook": ("repository.startup-hook",),
+    "startup-hook": ("repository.startup-hook",),
+}
 
 
 @dataclass(frozen=True, slots=True)
@@ -68,6 +84,40 @@ class ShaiHuludDetector:
 
     id = "shai-hulud-keyv"
     version = "1"
+    metadata = DetectorMetadata(
+        description=(
+            "Detect repository-local indicators associated with the August 2026 "
+            "Shai-Hulud Keyv/cacheable npm campaign."
+        ),
+        supported_inputs=(
+            "all discovered regular files (SHA-256)",
+            "bun.lock",
+            "node_modules/**/package.json",
+            "npm-shrinkwrap.json",
+            "package-lock.json",
+            "pnpm-lock.yaml",
+            "pnpm-lock.yml",
+            "repository .claude/settings.json and .claude/settings.local.json",
+            "repository .vscode/tasks.json",
+            "yarn.lock",
+        ),
+        campaign_ids=(_CAMPAIGN_ID,),
+        technique_ids=_TECHNIQUE_IDS,
+        source_references=(
+            "https://safedep.io/keyv-npm-supply-chain-compromise/",
+            "https://www.aikido.dev/blog/keyv-and-friends-compromised-in-npm-supply-chain-attack",
+            "https://research.jfrog.com/post/shai-hulud-is-back-august/",
+            "https://socket.dev/blog/popular-npm-packages-keyv-and-cacheable-compromised",
+        ),
+        limitations=(
+            "Binary bun.lockb is unsupported.",
+            "Only repository-local files are inspected.",
+            "Package manifests and startup configuration have parser-specific 1 MiB caps.",
+            "Threat intelligence is bundled and is not refreshed during a scan.",
+        ),
+        remediation_url=_REMEDIATION_URL,
+        not_scanned=("git.history",),
+    )
 
     def applies(self, context: ScanContext) -> bool:
         return bool(context.files) or _git_metadata_state(context.root)[0]
@@ -84,10 +134,21 @@ class ShaiHuludDetector:
             if safety_error is not None:
                 diagnostics.append(safety_error)
                 continue
+            remaining_bytes = context.limits.max_total_bytes - inspected_bytes
+            if remaining_bytes <= 0 or item.size >= remaining_bytes:
+                diagnostics.append(
+                    Diagnostic(
+                        DiagnosticKind.ERROR,
+                        item.absolute_path,
+                        "Aggregate byte budget reached at "
+                        f"max_total_bytes={context.limits.max_total_bytes}; scan incomplete",
+                    )
+                )
+                break
 
             content, analyzer_diagnostics = safe_read_regular_file(
                 item.absolute_path,
-                context.limits.max_file_bytes,
+                min(context.limits.max_file_bytes, remaining_bytes),
             )
             diagnostics.extend(analyzer_diagnostics)
             if content is None:
@@ -801,6 +862,8 @@ def _finding(
         path=path,
         evidence=evidence,
         campaign_ids=(_CAMPAIGN_ID,),
+        technique_ids=_TECHNIQUES_BY_RULE[rule_id],
+        remediation_url=_REMEDIATION_URL,
     )
 
 

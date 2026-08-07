@@ -27,6 +27,16 @@ from agentsec.models import (
 )
 
 _LOGGER = logging.getLogger(__name__)
+_GLOBAL_NOT_SCANNED = (
+    "container.filesystems",
+    "host.caches",
+    "host.credentials",
+    "host.global_config",
+    "host.processes",
+    "remediation.automatic",
+    "remote.ci",
+    "remote.repositories",
+)
 
 
 @dataclass(slots=True)
@@ -101,6 +111,11 @@ def run_scan(
     diagnostics = _DiagnosticBuffer(root=context_root, limit=limits.max_diagnostics)
     diagnostics.extend(discovery_diagnostics)
     detector_results: list[DetectorResult] = []
+    selected_not_scanned = {
+        capability
+        for detector in detectors
+        for capability in getattr(getattr(detector, "metadata", None), "not_scanned", ())
+    }
 
     for detector in sorted(detectors, key=lambda item: item.id):
         try:
@@ -128,6 +143,7 @@ def run_scan(
         detector_results=tuple(detector_results),
         diagnostics=diagnostics.finish(),
         elapsed_ms=elapsed_ms,
+        global_not_scanned=tuple(sorted({*_GLOBAL_NOT_SCANNED, *selected_not_scanned})),
     )
 
 

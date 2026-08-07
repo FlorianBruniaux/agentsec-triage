@@ -163,6 +163,7 @@ class ScanResult:
     detector_results: tuple[DetectorResult, ...]
     diagnostics: tuple[Diagnostic, ...]
     elapsed_ms: int
+    global_not_scanned: tuple[str, ...] = ()
 
     @property
     def complete(self) -> bool:
@@ -195,7 +196,8 @@ class ScanResult:
     def not_scanned(self) -> tuple[str, ...]:
         return tuple(
             sorted(
-                {
+                set(self.global_not_scanned)
+                | {
                     capability
                     for result in self.detector_results
                     for capability in result.coverage.not_scanned

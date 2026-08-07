@@ -9,4 +9,13 @@ Findings:
   low: none
   info: none
 Diagnostics: none
-Not scanned: none
+Not scanned:
+  container.filesystems
+  git.history
+  host.caches
+  host.credentials
+  host.global_config
+  host.processes
+  remediation.automatic
+  remote.ci
+  remote.repositories

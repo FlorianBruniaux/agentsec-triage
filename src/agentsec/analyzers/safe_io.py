@@ -11,7 +11,7 @@ from typing import Any, Protocol
 from agentsec.models import Diagnostic, DiagnosticKind
 
 _READ_CHUNK_SIZE = 64 * 1024
-_MAX_SAFE_FILE_BYTES = 4 * 1024 * 1024
+_MAX_SAFE_FILE_BYTES = 4_000_000
 
 
 class _UnsafeFileError(OSError):

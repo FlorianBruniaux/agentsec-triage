@@ -1,8 +1,99 @@
-[
-  "keyv@6.0.0",
-  "keyv@6.0.0",
-  "claude SessionStart: node setup.mjs",
-  "@keyv/mongo@6.0.0 (contested intelligence; sources: JFrog, SafeDep)",
-  "@keyv/mongo@6.0.0 (contested intelligence; sources: JFrog, SafeDep)",
-  "@keyv/mongo@6.0.0 preinstall: node setup.mjs"
-]
+{
+  "complete": true,
+  "coverage": {
+    "bytes_inspected": 472,
+    "files_inspected": 5,
+    "files_seen": 5
+  },
+  "database_version": "2.26.0",
+  "diagnostics": [],
+  "elapsed_ms": 0,
+  "findings": [
+    {
+      "campaign_ids": ["shai-hulud-keyv-2026-08"],
+      "confidence": "confirmed",
+      "detector_id": "shai-hulud-keyv",
+      "evidence": "keyv@6.0.0",
+      "line": null,
+      "path": "node_modules/keyv/package.json",
+      "remediation_url": "https://cc.bruniaux.com/security/",
+      "rule_id": "compromised-installed-version",
+      "severity": "critical",
+      "technique_ids": ["npm.compromised-version"]
+    },
+    {
+      "campaign_ids": ["shai-hulud-keyv-2026-08"],
+      "confidence": "confirmed",
+      "detector_id": "shai-hulud-keyv",
+      "evidence": "keyv@6.0.0",
+      "line": null,
+      "path": "package-lock.json",
+      "remediation_url": "https://cc.bruniaux.com/security/",
+      "rule_id": "compromised-lockfile-version",
+      "severity": "critical",
+      "technique_ids": ["npm.compromised-version"]
+    },
+    {
+      "campaign_ids": ["shai-hulud-keyv-2026-08"],
+      "confidence": "high",
+      "detector_id": "shai-hulud-keyv",
+      "evidence": "claude SessionStart: node setup.mjs",
+      "line": null,
+      "path": ".claude/settings.json",
+      "remediation_url": "https://cc.bruniaux.com/security/",
+      "rule_id": "campaign-startup-hook",
+      "severity": "high",
+      "technique_ids": ["repository.startup-hook"]
+    },
+    {
+      "campaign_ids": ["shai-hulud-keyv-2026-08"],
+      "confidence": "contested",
+      "detector_id": "shai-hulud-keyv",
+      "evidence": "@keyv/mongo@6.0.0 (contested intelligence; sources: JFrog, SafeDep)",
+      "line": null,
+      "path": "node_modules/@keyv/mongo/package.json",
+      "remediation_url": "https://cc.bruniaux.com/security/",
+      "rule_id": "compromised-installed-version",
+      "severity": "high",
+      "technique_ids": ["npm.compromised-version"]
+    },
+    {
+      "campaign_ids": ["shai-hulud-keyv-2026-08"],
+      "confidence": "contested",
+      "detector_id": "shai-hulud-keyv",
+      "evidence": "@keyv/mongo@6.0.0 (contested intelligence; sources: JFrog, SafeDep)",
+      "line": null,
+      "path": "package-lock.json",
+      "remediation_url": "https://cc.bruniaux.com/security/",
+      "rule_id": "compromised-lockfile-version",
+      "severity": "high",
+      "technique_ids": ["npm.compromised-version"]
+    },
+    {
+      "campaign_ids": ["shai-hulud-keyv-2026-08"],
+      "confidence": "review",
+      "detector_id": "shai-hulud-keyv",
+      "evidence": "@keyv/mongo@6.0.0 preinstall: node setup.mjs",
+      "line": null,
+      "path": "node_modules/@keyv/mongo/package.json",
+      "remediation_url": "https://cc.bruniaux.com/security/",
+      "rule_id": "suspicious-lifecycle-script",
+      "severity": "medium",
+      "technique_ids": ["npm.lifecycle-script"]
+    }
+  ],
+  "not_scanned": [
+    "container.filesystems",
+    "git.history",
+    "host.caches",
+    "host.credentials",
+    "host.global_config",
+    "host.processes",
+    "remediation.automatic",
+    "remote.ci",
+    "remote.repositories"
+  ],
+  "root": "<SCAN_ROOT>",
+  "schema_version": "1",
+  "tool_version": "0.1.0a0"
+}

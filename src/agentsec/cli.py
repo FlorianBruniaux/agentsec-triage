@@ -20,10 +20,11 @@ from agentsec.redaction import redact_text
 from agentsec.threat_db import ThreatDatabaseError, load_bundled_database
 
 _DEFAULT_MAX_FILE_BYTES = 4_000_000
+_DEFAULT_MAX_TOTAL_BYTES = 1_000_000_000
 _DEFAULT_MAX_FILES = 1_000_000
 _DEFAULT_MAX_GIT_COMMITS = 10_000
 _DEFAULT_MAX_DIAGNOSTICS = 100
-_SCAN_RESULT_SCHEMA_SHA256 = "86fc1a24eeeb90d8b11a4c3ffc06b2b750852a77b584623b0d77ac2685365ea5"
+_SCAN_RESULT_SCHEMA_SHA256 = "f087133e87ba1b2ce584a6b77f84558a3e0da0b577afb1a353d8648f57d1598e"
 
 
 class _ArgumentParser(argparse.ArgumentParser):
@@ -42,7 +43,8 @@ def build_parser() -> argparse.ArgumentParser:
     scan.add_argument("--detector", action="append", dest="detector_ids")
     scan.add_argument("--format", choices=("human", "json"), default="human")
     scan.add_argument("--redact", action="store_true")
-    scan.add_argument("--max-file-bytes", type=_non_negative, default=_DEFAULT_MAX_FILE_BYTES)
+    scan.add_argument("--max-file-bytes", type=_max_file_bytes, default=_DEFAULT_MAX_FILE_BYTES)
+    scan.add_argument("--max-total-bytes", type=_non_negative, default=_DEFAULT_MAX_TOTAL_BYTES)
     scan.add_argument("--max-files", type=_non_negative, default=_DEFAULT_MAX_FILES)
     scan.add_argument("--max-git-commits", type=_non_negative, default=_DEFAULT_MAX_GIT_COMMITS)
 
@@ -86,6 +88,13 @@ def _non_negative(value: str) -> int:
     return parsed
 
 
+def _max_file_bytes(value: str) -> int:
+    parsed = _non_negative(value)
+    if parsed > _DEFAULT_MAX_FILE_BYTES:
+        raise argparse.ArgumentTypeError("must not exceed 4000000 bytes")
+    return parsed
+
+
 def _scan(arguments: argparse.Namespace) -> int:
     database = _load_database(redact=arguments.redact, root=arguments.root)
     if database is None:
@@ -99,6 +108,7 @@ def _scan(arguments: argparse.Namespace) -> int:
         max_file_bytes=arguments.max_file_bytes,
         max_files=arguments.max_files,
         max_diagnostics=_DEFAULT_MAX_DIAGNOSTICS,
+        max_total_bytes=arguments.max_total_bytes,
         max_git_commits=arguments.max_git_commits,
     )
     result = run_scan(arguments.root, detectors, database, limits)
@@ -121,7 +131,23 @@ def _detectors(arguments: argparse.Namespace) -> int:
         print(f"agentsec: unknown detector ID: {detector_id}", file=sys.stderr)
         return 2
     detector = matching[0]
-    print(f"{detector.id}\nversion: {detector.version}")
+    metadata = detector.metadata
+    print(
+        "\n".join(
+            (
+                detector.id,
+                f"version: {detector.version}",
+                f"description: {metadata.description}",
+                f"supported_inputs: {', '.join(metadata.supported_inputs) or 'none'}",
+                f"campaign_ids: {', '.join(metadata.campaign_ids) or 'none'}",
+                f"technique_ids: {', '.join(metadata.technique_ids) or 'none'}",
+                f"source_references: {', '.join(metadata.source_references) or 'none'}",
+                f"limitations: {'; '.join(metadata.limitations) or 'none'}",
+                f"remediation_url: {metadata.remediation_url or 'none'}",
+                f"not_scanned: {', '.join(metadata.not_scanned) or 'none'}",
+            )
+        )
+    )
     return 0
 
 

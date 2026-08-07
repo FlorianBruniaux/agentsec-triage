@@ -11,6 +11,7 @@ from email.parser import BytesParser
 from pathlib import Path
 
 import pytest
+from jsonschema import validate
 
 import agentsec.cli as cli
 from agentsec.threat_db import ThreatDatabaseError, load_bundled_database
@@ -92,9 +93,11 @@ def test_scan_positive_fixture_exits_one_and_names_exact_package_version(tmp_pat
         and finding["confidence"] == "confirmed"
         for finding in payload["findings"]
     )
-    assert [finding["evidence"] for finding in payload["findings"]] == json.loads(
-        (GOLDEN / "finding.json").read_text(encoding="utf-8")
-    )
+    schema = json.loads((PROJECT_ROOT / "schemas" / "scan-result-v1.schema.json").read_text())
+    validate(instance=payload, schema=schema)
+    payload["root"] = "<SCAN_ROOT>"
+    payload["elapsed_ms"] = 0
+    assert payload == json.loads((GOLDEN / "finding.json").read_text(encoding="utf-8"))
 
 
 def test_scan_negative_fixture_completes_with_review_findings_and_no_critical(
@@ -147,6 +150,42 @@ def test_detectors_list_contains_built_in_detector() -> None:
     assert completed.returncode == 0
     assert completed.stderr == ""
     assert "shai-hulud-keyv" in completed.stdout
+
+
+def test_detectors_explain_is_deterministic_and_exposes_metadata() -> None:
+    first = _run("detectors", "explain", "shai-hulud-keyv")
+    second = _run("detectors", "explain", "shai-hulud-keyv")
+
+    assert first.returncode == 0
+    assert first.stderr == ""
+    assert first.stdout == second.stdout
+    assert "description:" in first.stdout
+    assert "supported_inputs:" in first.stdout
+    assert "campaign_ids: shai-hulud-keyv-2026-08" in first.stdout
+    assert "technique_ids:" in first.stdout
+    assert "https://safedep.io/keyv-npm-supply-chain-compromise/" in first.stdout
+    assert "limitations:" in first.stdout
+    assert "remediation_url: https://cc.bruniaux.com/security/" in first.stdout
+    assert "not_scanned: git.history" in first.stdout
+
+
+def test_scan_rejects_file_limit_above_safe_reader_cap(tmp_path: Path) -> None:
+    completed = _run("scan", str(tmp_path), "--max-file-bytes", "4000001")
+
+    assert completed.returncode == 2
+    assert completed.stdout == ""
+    assert "must not exceed 4000000 bytes" in completed.stderr
+
+
+def test_scan_total_byte_limit_is_exposed_and_incomplete_when_reached(tmp_path: Path) -> None:
+    (tmp_path / "payload.bin").write_bytes(b"xx")
+
+    completed = _run("scan", str(tmp_path), "--max-total-bytes", "1", "--format", "json")
+
+    assert completed.returncode == 2
+    payload = json.loads(completed.stdout)
+    assert payload["coverage"]["bytes_inspected"] == 0
+    assert any("max_total_bytes=1" in item["message"] for item in payload["diagnostics"])
 
 
 def test_unknown_detector_has_concise_usage_error() -> None:

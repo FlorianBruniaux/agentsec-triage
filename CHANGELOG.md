@@ -7,6 +7,19 @@ authorized public release while the licensing decision remains unresolved.
 
 ### Fixed
 
+- Added immutable detector metadata and deterministic `detectors explain`
+  output for supported inputs, campaign and technique IDs, canonical sources,
+  limitations, remediation, and declared exclusions.
+- Added stable V0.1 `not_scanned` capability IDs to human and JSON results,
+  without treating out-of-scope capabilities as failed in-scope checks. Every
+  finding now links to the security remediation page.
+- Added a 1,000,000,000-byte aggregate scan budget and
+  `--max-total-bytes`. Budget exhaustion stops before the next unsafe read and
+  returns an incomplete result. `--max-file-bytes` now rejects values above the
+  safe reader's 4,000,000-byte hard cap.
+- Replaced the evidence-only positive golden with a schema-validated semantic
+  JSON golden covering verdict, coverage, diagnostics, exclusions, finding
+  severity, confidence, paths, campaign and technique IDs, and remediation.
 - Preserved contested npm intelligence and package/version source attribution in
   the generated database and immutable runtime model. `@keyv/*@6.0.0` now emits
   `high/contested` findings attributed to JFrog and SafeDep, while exact

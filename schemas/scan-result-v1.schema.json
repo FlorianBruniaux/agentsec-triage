@@ -34,7 +34,11 @@
     },
     "not_scanned": {
       "type": "array",
-      "items": { "type": "string" }
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z][a-z0-9]*(?:[._-][a-z0-9]+)*$"
+      }
     },
     "diagnostics": {
       "type": "array",
@@ -75,14 +79,22 @@
           "evidence": { "type": "string" },
           "campaign_ids": {
             "type": "array",
-            "items": { "type": "string" }
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9]*(?:[._-][a-z0-9]+)*$"
+            }
           },
           "technique_ids": {
             "type": "array",
-            "items": { "type": "string" }
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9]*(?:[._-][a-z0-9]+)*$"
+            }
           },
           "line": { "type": ["integer", "null"], "minimum": 1 },
-          "remediation_url": { "type": ["string", "null"] }
+          "remediation_url": { "const": "https://cc.bruniaux.com/security/" }
         }
       }
     }

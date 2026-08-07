@@ -163,6 +163,7 @@ result is complete only when every selected applicable detector completes.
 Every detector declares:
 
 - stable detector ID and detector version;
+- immutable typed metadata available through `detectors explain`;
 - campaign or technique IDs;
 - affected ecosystems;
 - supported inputs;
@@ -171,6 +172,13 @@ Every detector declares:
 - known limitations;
 - remediation guidance;
 - optional educational URL.
+
+V0.1 uses stable dotted capability IDs for declared exclusions. The aggregate
+always reports host processes, caches, global configuration, credentials,
+remote repositories and CI, container filesystems, and automatic remediation
+as not scanned. The Shai-Hulud detector also declares `git.history`. These
+declarations do not change completeness; an attempted in-scope check that hits
+an I/O, parser, Git-confinement, or resource limit does.
 
 Every finding includes:
 
@@ -193,6 +201,12 @@ The aggregate `ScanResult` includes:
 - coverage statistics;
 - explicit `not_scanned` capabilities;
 - elapsed time.
+
+Repository reads have two independent limits: a 4,000,000-byte safe-reader hard
+cap per file and a 1,000,000,000-byte default aggregate budget. Before each
+read, the detector compares the discovered size with the remaining aggregate
+budget and stops with one deterministic error if the next file would reach or
+exceed that budget. Parser-specific limits remain stricter where applicable.
 
 The `--redact` option replaces user-specific absolute path prefixes and potential
 secret material with stable placeholders so beta reports can be shared safely.
