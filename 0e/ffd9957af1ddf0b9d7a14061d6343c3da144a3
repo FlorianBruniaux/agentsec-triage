@@ -1,0 +1,19 @@
+docs/superpowers/plans/2026-08-07-repository-guidance-intelligence-implementation.md
+  s_0df90997879182::t_99dea5b3073740 56,64,70,72-75,77,80,278,281,285,310,313
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "0effd9957af1ddf0b9d7a14061d6343c3da144a3",
+  "prompts": {},
+  "sessions": {
+    "s_0df90997879182": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019fd73a-588d-7f03-ab50-494ca0e95848",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Florian BRUNIAUX <florian@bruniaux.com>"
+    }
+  }
+}
