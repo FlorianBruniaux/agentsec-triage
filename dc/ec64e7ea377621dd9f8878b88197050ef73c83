@@ -1,0 +1,36 @@
+src/agentsec/analyzers/git_history.py
+  s_0df90997879182::t_102c1dbcf854a8 1,61
+  s_0df90997879182::t_ab77cfb96077d4 2
+docs/superpowers/plans/2026-08-06-v0.1-alpha-implementation.md
+  s_0df90997879182::t_39630e2a9cf9f6 5-9,12
+docs/superpowers/specs/2026-08-06-agentsec-triage-design.md
+  s_0df90997879182::t_cc3317d55ec1c1 49-50
+  s_0df90997879182::t_102c1dbcf854a8 60-63,219-220
+tests/integration/test_shai_hulud_detector.py
+  s_0df90997879182::t_091391eb588a83 52-158
+  s_0df90997879182::t_4bec0697b0c19b 225,243-248
+README.md
+  s_0df90997879182::t_f4703af7524225 5-8,56-59,93,110-112,117-119,129-135
+tests/integration/test_cli.py
+  s_0df90997879182::t_baffc95afba816 49-65
+CHANGELOG.md
+  s_0df90997879182::t_772e0bf89fc35d 10-13,41-42
+src/agentsec/detectors/shai_hulud.py
+  s_0df90997879182::t_6310d9b6ce1fac 53-55,141-146
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "dcec64e7ea377621dd9f8878b88197050ef73c83",
+  "prompts": {},
+  "sessions": {
+    "s_0df90997879182": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019fd73a-588d-7f03-ab50-494ca0e95848",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Florian BRUNIAUX <florian@bruniaux.com>"
+    }
+  }
+}
