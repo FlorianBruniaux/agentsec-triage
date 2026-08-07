@@ -6,7 +6,7 @@ requirements appear.
 
 ## Current state — V0.1 alpha implementation
 
-Implemented on `codex/v0.1-alpha`:
+Implemented in the current alpha codebase:
 
 - bounded, read-only, offline repository discovery;
 - human and versioned JSON results with explicit coverage and exit codes;
@@ -25,7 +25,7 @@ credential stores, and automatic remediation remain explicitly out of scope.
 
 - Resolve the code and threat-data review in `LICENSE-DECISION.md`.
 - Select compatible code and data licenses with SPDX metadata and attribution.
-- Merge the verified alpha branch into local `main`.
+- Keep the fully verified alpha history on local `main` before any release tag.
 - Configure the public Git remote and run the full GitHub Actions matrix.
 - Fix failures found outside the local macOS environment.
 - Create the annotated `v0.1.0-alpha` tag only after every release gate passes.
@@ -89,4 +89,3 @@ A milestone is complete only when its behavior is documented, its supported
 inputs and exclusions are explicit, new behavior has regression tests, generated
 artifacts are deterministic, the full offline release gate passes, and the
 changelog records the outcome without overstating coverage.
-

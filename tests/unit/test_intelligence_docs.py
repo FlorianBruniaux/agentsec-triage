@@ -200,3 +200,22 @@ def test_loader_accepts_distinct_occurrence_and_disclosure_dates(tmp_path: Path)
     )
 
     assert corpus is not None
+
+
+def test_loader_rejects_nonexistent_calendar_date(tmp_path: Path) -> None:
+    sources = deepcopy(_load_yaml("sources.yaml"))
+    events = deepcopy(_load_yaml("events.yaml"))
+    source_records = cast(list[dict[str, object]], sources["sources"])
+    source_records[0]["reviewed_date"] = "2026-99-99"
+    source_path, event_path = _write_documents(tmp_path, sources, events)
+
+    try:
+        load_intelligence(
+            source_path,
+            event_path,
+            INTELLIGENCE_ROOT / "intelligence.schema.json",
+        )
+    except IntelligenceBuildError as exc:
+        assert str(exc) == "validation failed: sources document"
+    else:
+        raise AssertionError("nonexistent calendar date was accepted")
