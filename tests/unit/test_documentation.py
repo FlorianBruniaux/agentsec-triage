@@ -90,6 +90,7 @@ def test_ci_is_cross_platform_and_runs_every_alpha_gate() -> None:
     for command in (
         'python -m pip install -e ".[dev]"',
         "python scripts/build_threat_db.py",
+        "python scripts/build_scan_schema_digest.py --check",
         "git diff --exit-code -- src/agentsec/resources/threat-db.json",
         "ruff check src tests scripts",
         "mypy src scripts",
@@ -97,6 +98,7 @@ def test_ci_is_cross_platform_and_runs_every_alpha_gate() -> None:
         "python -m build --no-isolation",
         "pip install --no-deps",
         "agentsec doctor",
+        "python -m agentsec doctor",
         "agentsec scan . --format json --redact",
         "agentsec scan tests/fixtures/shai_hulud/negative --format json",
     ):

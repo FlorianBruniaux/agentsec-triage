@@ -16,9 +16,23 @@ authorized public release while the licensing decision remains unresolved.
 - Added deterministic generation of `docs/SECURITY-INTELLIGENCE.md`,
   `docs/SECURITY-TIMELINE.md`, and the packaged
   `security-intelligence.json` resource, with CI drift and wheel-content gates.
+- Added `python -m agentsec` as a source and installed-package entry point.
+- Added an opt-in local benchmark that writes a new redacted aggregate JSON
+  report without copying findings, diagnostics, stderr, or the absolute root.
+- Added a factual license evidence inventory that distinguishes the imported
+  source digest from the adapted AgentSec authoring file and keeps publication
+  blocked pending explicit owner decisions and prose review.
+- Added deterministic generation and wheel packaging of the public scan-result
+  schema digest.
 
 ### Fixed
 
+- Made authoring-to-runtime threat-data projection explicit and validated. The
+  runtime artifact and `db info` now report projected and ignored records by
+  reason instead of silently hiding the builder's V0.1 scope.
+- Allowed each detector to provide its own reviewed HTTPS remediation URL while
+  rejecting relative, credential-bearing, query-bearing, fragment-bearing, and
+  non-HTTPS values in the public result schema.
 - Allowed intelligence events to retain multiple distinct lifecycle dates, such
   as occurrence and disclosure, instead of incorrectly requiring exactly one
   date field. Intelligence dates now reject impossible calendar values rather

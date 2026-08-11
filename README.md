@@ -22,6 +22,8 @@ The commands below are for review from this source tree, not a published package
   of reviewed articles, advisories, reports, and source scope.
 - [Security timeline](docs/SECURITY-TIMELINE.md) — generated chronology of
   security events tracked by AgentSec, including contested and corrected claims.
+- [License evidence inventory](docs/LICENSE-INVENTORY.md) — verified provenance,
+  candidate licenses, and unresolved publication decisions.
 - [Contributing](CONTRIBUTING.md) — TDD, threat-source, and local release rules.
 - [Security policy](SECURITY.md) — scanner vulnerabilities, false positives,
   false negatives, and IOC corrections.
@@ -42,6 +44,14 @@ references, and emits the two Markdown pages plus the packaged
 IOC payloads remain in `data/threat-db.yaml`; the event ledger references threat
 campaigns and techniques instead of duplicating detector data.
 
+The authoring threat database is intentionally broader than the V0.1 runtime
+artifact. Generated `authoring_coverage` metadata records how many source records
+are projected and how every omitted malicious-skill record is classified. A
+runtime database marked `complete` means that declared projection was generated
+and validated completely; it does not mean that every authoring CVE, technique,
+campaign, or ecosystem has an implemented detector. Inspect the current counts
+with `agentsec db info`.
+
 ## Quick start from source
 
 Python 3.11 through 3.13 is the supported alpha target.
@@ -51,6 +61,8 @@ python3 -m venv .venv
 .venv/bin/python -m pip install -e ".[dev]"
 .venv/bin/agentsec doctor
 .venv/bin/agentsec scan /path/to/repository
+.venv/bin/python -m agentsec doctor
+.venv/bin/python -m agentsec scan /path/to/repository
 ```
 
 On Windows PowerShell, use `.venv\Scripts\python` and
@@ -241,6 +253,25 @@ separate class. Matches such as `@keyv/mongo@6.0.0` are reported
 `high/contested`, with the JFrog and SafeDep attribution in evidence. They are
 not promoted to `critical/confirmed`; a matching lifecycle command remains the
 independent `medium/review` heuristic.
+
+## Local performance benchmark
+
+The optional benchmark wrapper measures one explicitly supplied repository and
+writes a redacted aggregate report to a new file:
+
+```bash
+.venv/bin/python scripts/benchmark_scan.py /path/to/repository \
+  --output /path/to/new-report.json
+```
+
+The wrapper runs the real scanner locally and offline, records completion,
+coverage, counts, versions, elapsed wall time, and the scanner exit code, and
+does not copy findings, diagnostics, stderr, or the absolute scan root into the
+report. It refuses to overwrite an existing output file. Exit codes `0`, `1`,
+and `2` are all valid measurements and remain recorded in `scan_exit_code`.
+
+Benchmark results depend on hardware, filesystem, repository contents, caches,
+and platform. The project does not publish a speed claim from a single run.
 
 ## Privacy and reporting
 

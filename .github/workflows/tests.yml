@@ -45,6 +45,9 @@ jobs:
       - name: Require deterministic generated intelligence
         run: git diff --exit-code -- docs/SECURITY-INTELLIGENCE.md docs/SECURITY-TIMELINE.md src/agentsec/resources/security-intelligence.json
 
+      - name: Require current scan-result schema digest
+        run: python scripts/build_scan_schema_digest.py --check
+
       - name: Ruff
         run: ruff check src tests scripts
 
@@ -106,3 +109,4 @@ jobs:
           test -n "${wheel}"
           PIP_NO_INDEX=1 python -m pip install --no-deps --no-index "${wheel}"
           agentsec doctor
+          python -m agentsec doctor

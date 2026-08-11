@@ -61,6 +61,20 @@ Changes to `data/threat-db.yaml` must validate against
 git diff --exit-code -- src/agentsec/resources/threat-db.json
 ```
 
+The generated runtime artifact contains `authoring_coverage`. Every source
+malicious-skill record must be projected or counted under one explicit ignored
+reason. Adding data for an unsupported ecosystem does not make that data active
+in a detector; its projection count remains visible in the generated artifact
+and `agentsec db info`.
+
+After changing `schemas/scan-result-v1.schema.json`, regenerate and check the
+committed digest:
+
+```bash
+.venv/bin/python scripts/build_scan_schema_digest.py
+.venv/bin/python scripts/build_scan_schema_digest.py --check
+```
+
 ## Security intelligence publishing
 
 Detector inputs and editorial intelligence have different responsibilities:
@@ -103,6 +117,7 @@ Run every gate before requesting review:
 
 ```bash
 .venv/bin/python scripts/build_threat_db.py
+.venv/bin/python scripts/build_scan_schema_digest.py --check
 .venv/bin/python scripts/build_intelligence_docs.py
 git diff --exit-code -- src/agentsec/resources/threat-db.json
 git diff --exit-code -- docs/SECURITY-INTELLIGENCE.md docs/SECURITY-TIMELINE.md src/agentsec/resources/security-intelligence.json
@@ -111,6 +126,7 @@ git diff --exit-code -- docs/SECURITY-INTELLIGENCE.md docs/SECURITY-TIMELINE.md 
 PIP_NO_INDEX=1 .venv/bin/pytest --cov=agentsec --cov-report=term-missing
 PIP_NO_INDEX=1 .venv/bin/python -m build --no-isolation
 .venv/bin/agentsec doctor
+.venv/bin/python -m agentsec doctor
 ```
 
 Install `.[dev]` before setting `PIP_NO_INDEX=1`; it includes Hatchling so the

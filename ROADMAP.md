@@ -12,6 +12,11 @@ Implemented in the current alpha codebase:
 - human and versioned JSON results with explicit coverage and exit codes;
 - redaction for report preparation;
 - schema-validated threat database import and deterministic runtime artifact;
+- validated authoring-to-runtime projection counts with explicit ignored reasons;
+- detector-specific HTTPS remediation URLs and generated schema-digest checks;
+- console-script and `python -m agentsec` entry points;
+- an opt-in redacted local benchmark without published performance claims;
+- a factual license evidence inventory that preserves the publication gate;
 - `shai-hulud-keyv` detector for supported npm, pnpm, Yarn, and text Bun
   lockfiles, installed package metadata, payload hashes, and repository startup
   configuration;
@@ -23,6 +28,9 @@ credential stores, and automatic remediation remain explicitly out of scope.
 
 ## P0 — Make the alpha releasable
 
+- Complete the 28-field third-party prose review recorded in
+  `docs/LICENSE-INVENTORY.md`.
+- Record the owner's explicit code-license and data-license decisions.
 - Resolve the code and threat-data review in `LICENSE-DECISION.md`.
 - Select compatible code and data licenses with SPDX metadata and attribution.
 - Keep the fully verified alpha history on local `main` before any release tag.
