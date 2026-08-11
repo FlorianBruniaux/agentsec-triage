@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import sys
 from collections.abc import Sequence
 from hashlib import sha256
@@ -24,9 +25,6 @@ _DEFAULT_MAX_TOTAL_BYTES = 1_000_000_000
 _DEFAULT_MAX_FILES = 1_000_000
 _DEFAULT_MAX_GIT_COMMITS = 10_000
 _DEFAULT_MAX_DIAGNOSTICS = 100
-_SCAN_RESULT_SCHEMA_SHA256 = "4c906bd37df15780ca52eea27ea638cee12701d296ae4df5132cdc4637a38ef2"
-
-
 class _ArgumentParser(argparse.ArgumentParser):
     def error(self, message: str) -> NoReturn:
         self.print_usage(sys.stderr)
@@ -198,7 +196,8 @@ def _doctor() -> int:
         return 2
     try:
         raw_schema = _read_schema_bytes()
-        if sha256(raw_schema).hexdigest() != _SCAN_RESULT_SCHEMA_SHA256:
+        expected_digest = _read_schema_digest()
+        if sha256(raw_schema).hexdigest() != expected_digest:
             raise ValueError("schema integrity digest mismatch")
         schema = json.loads(raw_schema)
         _validate_schema_contract(schema)
@@ -234,6 +233,24 @@ def _read_schema_bytes() -> bytes:
             Path(__file__).resolve().parents[2] / "schemas" / "scan-result-v1.schema.json"
         )
         return source_schema.read_bytes()
+
+
+def _read_schema_digest() -> str:
+    digest = resources.files("agentsec.resources").joinpath(
+        "scan-result-v1.schema.sha256"
+    )
+    try:
+        raw = digest.read_text(encoding="ascii")
+    except FileNotFoundError:
+        source_digest = (
+            Path(__file__).resolve().parents[2]
+            / "schemas"
+            / "scan-result-v1.schema.sha256"
+        )
+        raw = source_digest.read_text(encoding="ascii")
+    if re.fullmatch(r"[0-9a-f]{64}\n", raw) is None:
+        raise ValueError("schema integrity digest is invalid")
+    return raw[:-1]
 
 
 def _validate_schema_contract(schema: object) -> None:

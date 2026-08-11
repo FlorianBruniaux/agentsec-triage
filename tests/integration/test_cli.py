@@ -8,6 +8,7 @@ import sys
 import venv
 import zipfile
 from email.parser import BytesParser
+from hashlib import sha256
 from pathlib import Path
 
 import pytest
@@ -250,6 +251,7 @@ def test_doctor_from_wheel_without_dependencies_validates_packaged_schema(tmp_pa
     wheel = next(dist.glob("*.whl"))
     with zipfile.ZipFile(wheel) as archive:
         assert "agentsec/resources/security-intelligence.json" in archive.namelist()
+        assert "agentsec/resources/scan-result-v1.schema.sha256" in archive.namelist()
         metadata_name = next(name for name in archive.namelist() if name.endswith("METADATA"))
         metadata = BytesParser().parsebytes(archive.read(metadata_name))
     assert metadata.get_all("License-File", []) == []
@@ -306,6 +308,11 @@ def test_doctor_invalid_schema_returns_concise_error_without_traceback(
     database = load_bundled_database()
     monkeypatch.setattr(cli, "_load_database", lambda: database)
     monkeypatch.setattr(cli.resources, "files", lambda package: InvalidSchemaResource())
+    monkeypatch.setattr(
+        cli,
+        "_read_schema_digest",
+        lambda: sha256(content.encode("utf-8")).hexdigest(),
+    )
 
     assert cli.main(["doctor"]) == 2
 
@@ -338,6 +345,13 @@ def test_doctor_rejects_schema_that_is_not_the_prevalidated_artifact(
     database = load_bundled_database()
     monkeypatch.setattr(cli, "_load_database", lambda: database)
     monkeypatch.setattr(cli.resources, "files", lambda package: MutatedSchemaResource())
+    monkeypatch.setattr(
+        cli,
+        "_read_schema_digest",
+        lambda: (PROJECT_ROOT / "schemas" / "scan-result-v1.schema.sha256")
+        .read_text(encoding="ascii")
+        .strip(),
+    )
 
     assert cli.main(["doctor"]) == 2
 
@@ -345,6 +359,40 @@ def test_doctor_rejects_schema_that_is_not_the_prevalidated_artifact(
     assert captured.out == ""
     assert captured.err.startswith("agentsec: local schema validation failed:")
     assert "Traceback" not in captured.err
+
+
+def test_doctor_rejects_schema_digest_mismatch(
+    monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    database = load_bundled_database()
+    schema = (PROJECT_ROOT / "schemas" / "scan-result-v1.schema.json").read_bytes()
+    monkeypatch.setattr(cli, "_load_database", lambda: database)
+    monkeypatch.setattr(cli, "_read_schema_bytes", lambda: schema)
+    monkeypatch.setattr(cli, "_read_schema_digest", lambda: "0" * 64)
+
+    assert cli.main(["doctor"]) == 2
+
+    captured = capsys.readouterr()
+    assert captured.out == ""
+    assert "schema integrity digest mismatch" in captured.err
+    assert "Traceback" not in captured.err
+
+
+def test_schema_digest_reader_rejects_malformed_digest(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    class DigestResource:
+        def joinpath(self, *names: str) -> DigestResource:
+            return self
+
+        def read_text(self, *, encoding: str) -> str:
+            assert encoding == "ascii"
+            return "not-a-sha256\n"
+
+    monkeypatch.setattr(cli.resources, "files", lambda package: DigestResource())
+
+    with pytest.raises(ValueError, match="schema integrity digest is invalid"):
+        cli._read_schema_digest()
 
 
 def _checked(arguments: list[str], *, env: dict[str, str] | None = None) -> None:

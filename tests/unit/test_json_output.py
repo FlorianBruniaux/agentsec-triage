@@ -2,10 +2,10 @@ import json
 from hashlib import sha256
 from pathlib import Path, PureWindowsPath
 
-from jsonschema import validate
+import pytest
+from jsonschema import FormatChecker, ValidationError, validate
 from jsonschema.validators import Draft202012Validator
 
-from agentsec.cli import _SCAN_RESULT_SCHEMA_SHA256
 from agentsec.models import (
     Applicability,
     Confidence,
@@ -117,13 +117,14 @@ def test_json_matches_public_schema(empty_scan_result: ScanResult):
     validate(instance=payload, schema=schema)
 
 
-def test_public_schema_is_meta_valid_and_matches_runtime_digest() -> None:
+def test_public_schema_is_meta_valid_and_matches_generated_digest() -> None:
     raw_schema = Path("schemas/scan-result-v1.schema.json").read_bytes()
     schema = json.loads(raw_schema)
+    digest = Path("schemas/scan-result-v1.schema.sha256").read_text(encoding="ascii")
 
     Draft202012Validator.check_schema(schema)
 
-    assert sha256(raw_schema).hexdigest() == _SCAN_RESULT_SCHEMA_SHA256
+    assert digest == f"{sha256(raw_schema).hexdigest()}\n"
 
 
 def test_public_schema_accepts_contested_confidence() -> None:
@@ -131,6 +132,38 @@ def test_public_schema_accepts_contested_confidence() -> None:
     confidence = schema["properties"]["findings"]["items"]["properties"]["confidence"]
 
     assert "contested" in confidence["enum"]
+
+
+def _remediation_validator() -> Draft202012Validator:
+    schema = json.loads(
+        Path("schemas/scan-result-v1.schema.json").read_text(encoding="utf-8")
+    )
+    remediation = schema["properties"]["findings"]["items"]["properties"][
+        "remediation_url"
+    ]
+    return Draft202012Validator(remediation, format_checker=FormatChecker())
+
+
+@pytest.mark.parametrize(
+    "url", [None, "https://security.example.org/incidents/keyv"]
+)
+def test_schema_accepts_safe_detector_remediation_urls(url: str | None) -> None:
+    _remediation_validator().validate(url)
+
+
+@pytest.mark.parametrize(
+    "url",
+    [
+        "http://security.example.org/keyv",
+        "/relative/path",
+        "https://user:pass@security.example.org/keyv",
+        "https://security.example.org/keyv?token=secret",
+        "https://security.example.org/keyv#fragment",
+    ],
+)
+def test_schema_rejects_unsafe_remediation_urls(url: str) -> None:
+    with pytest.raises(ValidationError):
+        _remediation_validator().validate(url)
 
 
 def test_public_schema_accepts_external_finding_without_remediation_url(
