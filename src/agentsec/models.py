@@ -71,6 +71,25 @@ class DetectorResult:
 
 
 @dataclass(frozen=True, slots=True)
+class AuthoringCoverage:
+    malicious_skills_total: int
+    malicious_skills_projected: int
+    ignored_missing_platform: int
+    ignored_unsupported_platform: int
+    ignored_missing_version: int
+    cves_total: int
+    cves_projected: int
+    attack_techniques_total: int
+    attack_techniques_projected: int
+    campaigns_total: int
+    commit_indicators_projected: int
+    malware_hashes_total: int
+    malware_hashes_projected: int
+    domains_total: int
+    domains_projected: int
+
+
+@dataclass(frozen=True, slots=True)
 class ThreatDatabase:
     version: str
     updated: str
@@ -88,6 +107,7 @@ class ThreatDatabase:
     package_version_sources: Mapping[str, Mapping[str, tuple[str, ...]]] = field(
         default_factory=dict
     )
+    authoring_coverage: AuthoringCoverage | None = None
     complete: bool = True
 
     def __post_init__(self) -> None:

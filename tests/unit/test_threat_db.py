@@ -12,6 +12,24 @@ from jsonschema import Draft202012Validator
 
 PROJECT_ROOT = Path(__file__).parents[2]
 
+EXPECTED_AUTHORING_COVERAGE = {
+    "attack_techniques_projected": 0,
+    "attack_techniques_total": 40,
+    "campaigns_total": 17,
+    "commit_indicators_projected": 1,
+    "cves_projected": 0,
+    "cves_total": 107,
+    "domains_projected": 7,
+    "domains_total": 7,
+    "ignored_missing_platform": 64,
+    "ignored_missing_version": 3,
+    "ignored_unsupported_platform": 5,
+    "malicious_skills_projected": 17,
+    "malicious_skills_total": 89,
+    "malware_hashes_projected": 3,
+    "malware_hashes_total": 5,
+}
+
 
 def _load_authoring_yaml(path: Path) -> dict[str, object]:
     namespace = runpy.run_path(str(PROJECT_ROOT / "scripts/build_threat_db.py"))
@@ -44,6 +62,18 @@ def test_bundled_database_is_marked_complete():
     from agentsec.threat_db import load_bundled_database
 
     assert load_bundled_database().complete is True
+
+
+def test_bundled_database_exposes_authoring_projection_coverage():
+    from agentsec.threat_db import load_bundled_database
+
+    coverage = load_bundled_database().authoring_coverage
+
+    assert coverage.malicious_skills_total == 89
+    assert coverage.malicious_skills_projected == 17
+    assert coverage.ignored_missing_platform == 64
+    assert coverage.ignored_unsupported_platform == 5
+    assert coverage.ignored_missing_version == 3
 
 
 def test_authoring_schema_accepts_canonical_database():
@@ -277,7 +307,108 @@ def test_builder_normalizes_canonical_source_deterministically(tmp_path: Path):
             "subject": "chore: update config",
         }
     ]
+    assert payload["authoring_coverage"] == EXPECTED_AUTHORING_COVERAGE
     assert payload["complete"] is True
+
+
+def test_runtime_loader_rejects_resource_without_authoring_coverage(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    from agentsec import threat_db
+
+    payload = json.loads(
+        (PROJECT_ROOT / "src/agentsec/resources/threat-db.json").read_text(encoding="utf-8")
+    )
+    del payload["authoring_coverage"]
+    (tmp_path / "threat-db.json").write_text(json.dumps(payload), encoding="utf-8")
+    monkeypatch.setattr(threat_db.resources, "files", lambda _package: tmp_path)
+
+    with pytest.raises(
+        threat_db.ThreatDatabaseError,
+        match="missing required runtime key 'authoring_coverage'",
+    ):
+        threat_db.load_bundled_database()
+
+
+@pytest.mark.parametrize(
+    "mutation",
+    ["negative", "boolean", "missing", "unexpected", "inconsistent_total"],
+)
+def test_runtime_loader_rejects_invalid_authoring_coverage(
+    mutation: str, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    from agentsec import threat_db
+
+    payload = json.loads(
+        (PROJECT_ROOT / "src/agentsec/resources/threat-db.json").read_text(encoding="utf-8")
+    )
+    coverage = dict(EXPECTED_AUTHORING_COVERAGE)
+    if mutation == "negative":
+        coverage["cves_total"] = -1
+    elif mutation == "boolean":
+        coverage["cves_total"] = True
+    elif mutation == "missing":
+        del coverage["cves_total"]
+    elif mutation == "unexpected":
+        coverage["unexpected"] = 1
+    else:
+        coverage["malicious_skills_total"] = 88
+    payload["authoring_coverage"] = coverage
+    (tmp_path / "threat-db.json").write_text(json.dumps(payload), encoding="utf-8")
+    monkeypatch.setattr(threat_db.resources, "files", lambda _package: tmp_path)
+
+    with pytest.raises(threat_db.ThreatDatabaseError, match="authoring_coverage"):
+        threat_db.load_bundled_database()
+
+
+@pytest.mark.parametrize(
+    "mutation",
+    [
+        "projected_packages",
+        "projected_hashes",
+        "projected_domains",
+        "projected_commit_indicators",
+        "cves_exceed_total",
+        "techniques_exceed_total",
+        "hashes_exceed_total",
+        "domains_exceed_total",
+        "commit_indicators_exceed_campaigns",
+    ],
+)
+def test_runtime_loader_rejects_projection_counts_that_disagree_with_runtime_or_totals(
+    mutation: str, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    from agentsec import threat_db
+
+    payload = json.loads(
+        (PROJECT_ROOT / "src/agentsec/resources/threat-db.json").read_text(encoding="utf-8")
+    )
+    coverage = dict(EXPECTED_AUTHORING_COVERAGE)
+    if mutation == "projected_packages":
+        coverage["malicious_skills_projected"] = 16
+        coverage["ignored_missing_platform"] = 65
+    elif mutation == "projected_hashes":
+        coverage["malware_hashes_projected"] = 2
+    elif mutation == "projected_domains":
+        coverage["domains_projected"] = 6
+    elif mutation == "projected_commit_indicators":
+        coverage["commit_indicators_projected"] = 0
+    elif mutation == "cves_exceed_total":
+        coverage["cves_projected"] = 108
+    elif mutation == "techniques_exceed_total":
+        coverage["attack_techniques_projected"] = 41
+    elif mutation == "hashes_exceed_total":
+        coverage["malware_hashes_total"] = 2
+    elif mutation == "domains_exceed_total":
+        coverage["domains_total"] = 6
+    else:
+        coverage["campaigns_total"] = 0
+    payload["authoring_coverage"] = coverage
+    (tmp_path / "threat-db.json").write_text(json.dumps(payload), encoding="utf-8")
+    monkeypatch.setattr(threat_db.resources, "files", lambda _package: tmp_path)
+
+    with pytest.raises(threat_db.ThreatDatabaseError, match="authoring_coverage"):
+        threat_db.load_bundled_database()
 
 
 def test_runtime_loader_rejects_incomplete_resource_without_fallback(

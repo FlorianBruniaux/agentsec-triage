@@ -6,7 +6,7 @@ from collections.abc import Mapping
 from importlib import resources
 from typing import cast
 
-from agentsec.models import ThreatDatabase
+from agentsec.models import AuthoringCoverage, ThreatDatabase
 
 
 class ThreatDatabaseError(RuntimeError):
@@ -38,6 +38,25 @@ _REQUIRED_KEYS = (
     "domains",
     "commit_indicators",
     "complete",
+    "authoring_coverage",
+)
+
+_AUTHORING_COVERAGE_FIELDS = (
+    "attack_techniques_projected",
+    "attack_techniques_total",
+    "campaigns_total",
+    "commit_indicators_projected",
+    "cves_projected",
+    "cves_total",
+    "domains_projected",
+    "domains_total",
+    "ignored_missing_platform",
+    "ignored_missing_version",
+    "ignored_unsupported_platform",
+    "malicious_skills_projected",
+    "malicious_skills_total",
+    "malware_hashes_projected",
+    "malware_hashes_total",
 )
 
 
@@ -172,6 +191,78 @@ def _commit_indicators(value: object) -> tuple[dict[str, str], ...]:
     return tuple(indicators)
 
 
+def _authoring_coverage(
+    value: object,
+    *,
+    projected_packages: int,
+    projected_hashes: int,
+    projected_domains: int,
+    projected_commit_indicators: int,
+) -> AuthoringCoverage:
+    mapping = _object(value, "authoring_coverage")
+    if set(mapping) != set(_AUTHORING_COVERAGE_FIELDS):
+        raise ThreatDatabaseError(
+            "authoring_coverage must contain exactly the required fields"
+        )
+    counts: dict[str, int] = {}
+    for field in _AUTHORING_COVERAGE_FIELDS:
+        count = mapping[field]
+        if isinstance(count, bool) or not isinstance(count, int) or count < 0:
+            raise ThreatDatabaseError(
+                f"authoring_coverage.{field} must be a non-negative integer"
+            )
+        counts[field] = count
+    if counts["malicious_skills_total"] != (
+        counts["malicious_skills_projected"]
+        + counts["ignored_missing_platform"]
+        + counts["ignored_unsupported_platform"]
+        + counts["ignored_missing_version"]
+    ):
+        raise ThreatDatabaseError(
+            "authoring_coverage malicious skill counts are inconsistent"
+        )
+    runtime_counts = {
+        "malicious_skills_projected": projected_packages,
+        "malware_hashes_projected": projected_hashes,
+        "domains_projected": projected_domains,
+        "commit_indicators_projected": projected_commit_indicators,
+    }
+    for field, expected_count in runtime_counts.items():
+        if counts[field] != expected_count:
+            raise ThreatDatabaseError(
+                f"authoring_coverage.{field} does not match the runtime artifact"
+            )
+    bounded_pairs = (
+        ("cves_projected", "cves_total"),
+        ("attack_techniques_projected", "attack_techniques_total"),
+        ("commit_indicators_projected", "campaigns_total"),
+        ("malware_hashes_projected", "malware_hashes_total"),
+        ("domains_projected", "domains_total"),
+    )
+    for projected_field, total_field in bounded_pairs:
+        if counts[projected_field] > counts[total_field]:
+            raise ThreatDatabaseError(
+                f"authoring_coverage.{projected_field} exceeds {total_field}"
+            )
+    return AuthoringCoverage(
+        malicious_skills_total=counts["malicious_skills_total"],
+        malicious_skills_projected=counts["malicious_skills_projected"],
+        ignored_missing_platform=counts["ignored_missing_platform"],
+        ignored_unsupported_platform=counts["ignored_unsupported_platform"],
+        ignored_missing_version=counts["ignored_missing_version"],
+        cves_total=counts["cves_total"],
+        cves_projected=counts["cves_projected"],
+        attack_techniques_total=counts["attack_techniques_total"],
+        attack_techniques_projected=counts["attack_techniques_projected"],
+        campaigns_total=counts["campaigns_total"],
+        commit_indicators_projected=counts["commit_indicators_projected"],
+        malware_hashes_total=counts["malware_hashes_total"],
+        malware_hashes_projected=counts["malware_hashes_projected"],
+        domains_total=counts["domains_total"],
+        domains_projected=counts["domains_projected"],
+    )
+
+
 def _load_payload() -> dict[str, object]:
     try:
         raw = resources.files("agentsec.resources").joinpath("threat-db.json").read_text(
@@ -227,6 +318,26 @@ def load_bundled_database() -> ThreatDatabase:
         contested_package_versions,
         contested_wildcard_package_versions,
     )
+    hashes = _hash_mapping(payload["hashes"])
+    domains = frozenset(_sorted_unique_strings(payload["domains"], "domains"))
+    commit_indicators = _commit_indicators(payload["commit_indicators"])
+    projected_packages = sum(
+        len(versions)
+        for mapping in (
+            package_versions,
+            wildcard_package_versions,
+            contested_package_versions,
+            contested_wildcard_package_versions,
+        )
+        for versions in mapping.values()
+    )
+    authoring_coverage = _authoring_coverage(
+        payload["authoring_coverage"],
+        projected_packages=projected_packages,
+        projected_hashes=len(hashes),
+        projected_domains=len(domains),
+        projected_commit_indicators=len(commit_indicators),
+    )
     return ThreatDatabase(
         version=_string(payload["version"], "version"),
         updated=_string(payload["updated"], "updated"),
@@ -235,8 +346,9 @@ def load_bundled_database() -> ThreatDatabase:
         contested_package_versions=contested_package_versions,
         contested_wildcard_package_versions=contested_wildcard_package_versions,
         package_version_sources=package_version_sources,
-        hashes=_hash_mapping(payload["hashes"]),
-        domains=frozenset(_sorted_unique_strings(payload["domains"], "domains")),
-        commit_indicators=_commit_indicators(payload["commit_indicators"]),
+        hashes=hashes,
+        domains=domains,
+        commit_indicators=commit_indicators,
+        authoring_coverage=authoring_coverage,
         complete=True,
     )

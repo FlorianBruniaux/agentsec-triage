@@ -104,6 +104,7 @@ def _reject_duplicate_json_keys(pairs: list[tuple[str, object]]) -> dict[str, ob
 
 
 class NormalizedPayload(TypedDict):
+    authoring_coverage: dict[str, int]
     commit_indicators: list[dict[str, str]]
     complete: bool
     contested_package_versions: dict[str, list[str]]
@@ -204,6 +205,7 @@ def _extract_packages(
     dict[str, list[str]],
     dict[str, list[str]],
     dict[str, dict[str, list[str]]],
+    dict[str, int],
 ]:
     exact: dict[str, set[str]] = {}
     wildcard: dict[str, set[str]] = {}
@@ -211,11 +213,27 @@ def _extract_packages(
     contested_wildcard: dict[str, set[str]] = {}
     sources: dict[str, dict[str, set[str]]] = {}
     statuses: dict[tuple[str, str], str] = {}
+    projection = {
+        "ignored_missing_platform": 0,
+        "ignored_missing_version": 0,
+        "ignored_unsupported_platform": 0,
+        "malicious_skills_projected": 0,
+        "malicious_skills_total": 0,
+    }
     skills = _array(document.get("malicious_skills"), "malicious_skills")
     for index, value in enumerate(skills):
+        projection["malicious_skills_total"] += 1
         skill = _mapping(value, f"malicious_skills[{index}]")
-        if skill.get("platform") != "npm" or "version" not in skill:
+        if "platform" not in skill:
+            projection["ignored_missing_platform"] += 1
             continue
+        if skill.get("platform") != "npm":
+            projection["ignored_unsupported_platform"] += 1
+            continue
+        if "version" not in skill:
+            projection["ignored_missing_version"] += 1
+            continue
+        projection["malicious_skills_projected"] += 1
         name = _string(skill.get("name"), f"malicious_skills[{index}].name")
         version = _string(skill.get("version"), f"malicious_skills[{index}].version")
         status = _string(
@@ -257,6 +275,7 @@ def _extract_packages(
             }
             for name, package_sources in sorted(sources.items())
         },
+        projection,
     )
 
 
@@ -337,14 +356,39 @@ def _normalize(document: Mapping[str, object]) -> NormalizedPayload:
         contested_package_versions,
         contested_wildcard_package_versions,
         package_version_sources,
+        skill_projection,
     ) = _extract_packages(document)
+    hashes = _extract_hashes(document)
+    domains = _extract_domains(document)
+    commit_indicators = _extract_commit_indicators(document)
+    iocs = _mapping(document.get("iocs"), "iocs")
+    coverage = {
+        "attack_techniques_projected": 0,
+        "attack_techniques_total": len(
+            _array(document.get("attack_techniques"), "attack_techniques")
+        ),
+        "campaigns_total": len(_array(document.get("campaigns"), "campaigns")),
+        "commit_indicators_projected": len(commit_indicators),
+        "cves_projected": 0,
+        "cves_total": len(_array(document.get("cve_database"), "cve_database")),
+        "domains_projected": len(domains),
+        "domains_total": len(
+            _array(iocs.get("malicious_domains"), "iocs.malicious_domains")
+        ),
+        **skill_projection,
+        "malware_hashes_projected": len(hashes),
+        "malware_hashes_total": len(
+            _array(iocs.get("malware_hashes"), "iocs.malware_hashes")
+        ),
+    }
     return {
-        "commit_indicators": _extract_commit_indicators(document),
+        "authoring_coverage": coverage,
+        "commit_indicators": commit_indicators,
         "complete": True,
         "contested_package_versions": contested_package_versions,
         "contested_wildcard_package_versions": contested_wildcard_package_versions,
-        "domains": _extract_domains(document),
-        "hashes": _extract_hashes(document),
+        "domains": domains,
+        "hashes": hashes,
         "package_versions": package_versions,
         "package_version_sources": package_version_sources,
         "updated": _string(document.get("updated"), "updated"),
@@ -401,6 +445,15 @@ def main(argv: Sequence[str] | None = None) -> int:
         f"contested={contested_count} contested_wildcards={contested_wildcard_count} "
         f"hashes={len(payload['hashes'])} domains={len(payload['domains'])} "
         f"commit_indicators={len(payload['commit_indicators'])} output={args.output}"
+        f" authoring_malicious_skills={payload['authoring_coverage']['malicious_skills_total']}"
+        f" projected_malicious_skills="
+        f"{payload['authoring_coverage']['malicious_skills_projected']}"
+        f" ignored_missing_platform="
+        f"{payload['authoring_coverage']['ignored_missing_platform']}"
+        f" ignored_unsupported_platform="
+        f"{payload['authoring_coverage']['ignored_unsupported_platform']}"
+        f" ignored_missing_version="
+        f"{payload['authoring_coverage']['ignored_missing_version']}"
     )
     return 0
 

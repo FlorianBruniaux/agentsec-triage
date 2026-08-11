@@ -155,6 +155,10 @@ def _db_info() -> int:
     database = _load_database()
     if database is None:
         return 2
+    coverage = database.authoring_coverage
+    if coverage is None:
+        print("agentsec: threat database projection coverage unavailable", file=sys.stderr)
+        return 2
     print(
         "\n".join(
             (
@@ -170,6 +174,18 @@ def _db_info() -> int:
                 f"hashes={len(database.hashes)}",
                 f"domains={len(database.domains)}",
                 f"commit_indicators={len(database.commit_indicators)}",
+                f"authoring_malicious_skills={coverage.malicious_skills_total}",
+                f"projected_malicious_skills={coverage.malicious_skills_projected}",
+                f"ignored_missing_platform={coverage.ignored_missing_platform}",
+                "ignored_unsupported_platform="
+                f"{coverage.ignored_unsupported_platform}",
+                f"ignored_missing_version={coverage.ignored_missing_version}",
+                f"projected_cves={coverage.cves_projected}/{coverage.cves_total}",
+                "projected_attack_techniques="
+                f"{coverage.attack_techniques_projected}/"
+                f"{coverage.attack_techniques_total}",
+                "projected_campaign_indicators="
+                f"{coverage.commit_indicators_projected}/{coverage.campaigns_total}",
             )
         )
     )

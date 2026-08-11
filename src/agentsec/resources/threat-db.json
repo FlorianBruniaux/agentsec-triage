@@ -1,4 +1,21 @@
 {
+  "authoring_coverage": {
+    "attack_techniques_projected": 0,
+    "attack_techniques_total": 40,
+    "campaigns_total": 17,
+    "commit_indicators_projected": 1,
+    "cves_projected": 0,
+    "cves_total": 107,
+    "domains_projected": 7,
+    "domains_total": 7,
+    "ignored_missing_platform": 64,
+    "ignored_missing_version": 3,
+    "ignored_unsupported_platform": 5,
+    "malicious_skills_projected": 17,
+    "malicious_skills_total": 89,
+    "malware_hashes_projected": 3,
+    "malware_hashes_total": 5
+  },
   "commit_indicators": [
     {
       "author": "claude",
