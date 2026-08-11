@@ -1,0 +1,19 @@
+src/agentsec/__main__.py
+  s_0df90997879182::t_0e92ccac53f6f4 1-6
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "3c99deb1a57c768997af5f0ccbd6b0489e172674",
+  "prompts": {},
+  "sessions": {
+    "s_0df90997879182": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019fd73a-588d-7f03-ab50-494ca0e95848",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Florian BRUNIAUX <florian@bruniaux.com>"
+    }
+  }
+}
