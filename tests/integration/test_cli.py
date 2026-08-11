@@ -23,9 +23,13 @@ GOLDEN = PROJECT_ROOT / "tests" / "golden"
 
 
 def _run(*arguments: str) -> subprocess.CompletedProcess[str]:
+    return _run_module("agentsec.cli", *arguments)
+
+
+def _run_module(module: str, *arguments: str) -> subprocess.CompletedProcess[str]:
     environment = {**os.environ, "PYTHONPATH": str(PROJECT_ROOT / "src")}
     return subprocess.run(
-        [sys.executable, "-m", "agentsec.cli", *arguments],
+        [sys.executable, "-m", module, *arguments],
         cwd=PROJECT_ROOT,
         env=environment,
         check=False,
@@ -33,6 +37,15 @@ def _run(*arguments: str) -> subprocess.CompletedProcess[str]:
         text=True,
         capture_output=True,
     )
+
+
+def test_package_module_entrypoint_matches_cli_module() -> None:
+    package = _run_module("agentsec", "--help")
+    cli_module = _run_module("agentsec.cli", "--help")
+
+    assert package.returncode == cli_module.returncode == 0
+    assert package.stdout == cli_module.stdout
+    assert package.stderr == cli_module.stderr == ""
 
 
 def test_scan_missing_root_is_incomplete_json_and_exits_two(tmp_path: Path) -> None:
@@ -275,6 +288,17 @@ def test_doctor_from_wheel_without_dependencies_validates_packaged_schema(tmp_pa
     assert completed.returncode == 0
     assert completed.stderr == ""
     assert "schema: valid" in completed.stdout
+
+    module_completed = subprocess.run(
+        [str(python), "-m", "agentsec", "doctor"],
+        check=False,
+        shell=False,
+        text=True,
+        capture_output=True,
+    )
+    assert module_completed.returncode == 0
+    assert module_completed.stdout == completed.stdout
+    assert module_completed.stderr == ""
 
 
 def test_redacted_scan_database_load_error_does_not_leak_root_or_secret(
