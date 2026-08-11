@@ -1,0 +1,24 @@
+.github/workflows/tests.yml
+  h_07916ece6468dd 48-50,112
+CHANGELOG.md
+  h_07916ece6468dd 19-26,30-35
+CONTRIBUTING.md
+  h_07916ece6468dd 64-77,120,129
+README.md
+  h_07916ece6468dd 25-26,47-54,64-65,257-275
+ROADMAP.md
+  h_07916ece6468dd 15-19,31-33
+tests/unit/test_documentation.py
+  h_07916ece6468dd 93,101
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "98f3500a0e661b4e19a0b260ac78d10b664f8597",
+  "prompts": {},
+  "humans": {
+    "h_07916ece6468dd": {
+      "author": "Florian BRUNIAUX <florian@bruniaux.com>"
+    }
+  }
+}
