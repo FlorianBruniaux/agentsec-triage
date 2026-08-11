@@ -6,6 +6,10 @@
 public release artifact, or redistribute a source archive. Do not tag
 `v0.1.0-alpha` while this decision is unresolved.
 
+The verified evidence, candidate licenses, prose-review scope, and remaining
+owner decisions are tracked in [`docs/LICENSE-INVENTORY.md`](docs/LICENSE-INVENTORY.md).
+That inventory is a decision aid, not permission to publish.
+
 No `LICENSE` file is present and `pyproject.toml` deliberately says
 `License decision pending before public release`. That text is a release gate,
 not an open-source license and not permission to redistribute the project.
