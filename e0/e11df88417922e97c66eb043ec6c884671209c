@@ -1,0 +1,35 @@
+scripts/build_threat_db.py
+  s_6dd57fb35c1620::t_80976dc17f0018 107,208,216-222,225,227-234,236,278,359,361-383,385-386,390-391,448-456
+src/agentsec/cli.py
+  s_6dd57fb35c1620::t_070a7730fdaf65 158-161,177-188
+src/agentsec/models.py
+  s_6dd57fb35c1620::t_a7f8e2dba27b9f 73-91,110
+src/agentsec/resources/threat-db.json
+  s_0df90997879182::t_22bae00fec068d 2-18
+tests/integration/test_cli.py
+  s_6dd57fb35c1620::t_3216d821a824e6 213-220
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "e0e11df88417922e97c66eb043ec6c884671209c",
+  "prompts": {},
+  "sessions": {
+    "s_0df90997879182": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019fd73a-588d-7f03-ab50-494ca0e95848",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Florian BRUNIAUX <florian@bruniaux.com>"
+    },
+    "s_6dd57fb35c1620": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "390ece92-fad9-4d32-be26-19b81c945438",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "Florian BRUNIAUX <florian@bruniaux.com>"
+    }
+  }
+}
