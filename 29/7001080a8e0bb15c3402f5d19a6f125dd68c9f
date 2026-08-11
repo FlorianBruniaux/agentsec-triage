@@ -1,0 +1,16 @@
+LICENSE-DECISION.md
+  h_07916ece6468dd 9-12
+docs/LICENSE-INVENTORY.md
+  h_07916ece6468dd 1-144
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "297001080a8e0bb15c3402f5d19a6f125dd68c9f",
+  "prompts": {},
+  "humans": {
+    "h_07916ece6468dd": {
+      "author": "Florian BRUNIAUX <florian@bruniaux.com>"
+    }
+  }
+}
