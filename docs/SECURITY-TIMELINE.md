@@ -16,37 +16,37 @@ vulnerabilities. Occurrence, disclosure, and update dates remain distinct.
 
 ## Event details
 
-### 2026-08-06 — Scope of @keyv/* version 6.0.0 remains contested
+### 2026-08-06: Scope of @keyv/* version 6.0.0 remains contested
 
 - ID: `evt-2026-08-keyv-contested-scope`
 - Status: **CONTESTED** · Confidence: **CONTESTED**
 - Type: `intelligence_update`
 - Ecosystems: npm, developer-tools
-- Dates: occurred `—`, disclosed `—`, updated `2026-08-06`
-- Detector coverage: `detected` — Matching scoped packages are reported high/contested with source attribution; lifecycle-only evidence remains a separate review finding.
+- Dates: occurred `not recorded`, disclosed `not recorded`, updated `2026-08-06`
+- Detector coverage: `detected`: Matching scoped packages are reported high/contested with source attribution; lifecycle-only evidence remains a separate review finding.
 
 AgentSec preserves JFrog and SafeDep reporting for @keyv/*@6.0.0 as contested intelligence instead of promoting the wildcard package scope to critical and confirmed.
 
 Sources:
-- [JFrog Security Research — Major Shai-Hulud campaign strikes npm again, affecting keyv and 400+ packages](https://research.jfrog.com/post/shai-hulud-is-back-august/) (`jfrog-shai-hulud-2026`)
-- [SafeDep — npm Worm Poisons keyv, cacheable and 400+ Other Packages Across Nine Organisations](https://safedep.io/keyv-npm-supply-chain-compromise/) (`safedep-keyv-2026`)
+- [JFrog Security Research: Major Shai-Hulud campaign strikes npm again, affecting keyv and 400+ packages](https://research.jfrog.com/post/shai-hulud-is-back-august/) (`jfrog-shai-hulud-2026`)
+- [SafeDep: npm Worm Poisons keyv, cacheable and 400+ Other Packages Across Nine Organisations](https://safedep.io/keyv-npm-supply-chain-compromise/) (`safedep-keyv-2026`)
 
-Related — campaigns: `shai-hulud-keyv-2026-08`; techniques: `npm.compromised-version`
+Related: campaigns: `shai-hulud-keyv-2026-08`; techniques: `npm.compromised-version`
 
-### 2026-08-04 — Keyv and cacheable npm supply-chain campaign disclosed
+### 2026-08-04: Keyv and cacheable npm supply-chain campaign disclosed
 
 - ID: `evt-2026-08-keyv-campaign-disclosure`
 - Status: **CONFIRMED** · Confidence: **CONFIRMED**
 - Type: `campaign`
 - Ecosystems: npm, developer-tools
-- Dates: occurred `—`, disclosed `2026-08-04`, updated `—`
-- Detector coverage: `partial` — Repository lockfiles, installed packages, payload hashes, and startup configuration are covered; Git history and host-level evidence are not.
+- Dates: occurred `not recorded`, disclosed `2026-08-04`, updated `not recorded`
+- Detector coverage: `partial`: Repository lockfiles, installed packages, payload hashes, and startup configuration are covered; Git history and host-level evidence are not.
 
 Security researchers reported malicious npm package versions associated with the August 2026 Shai-Hulud campaign. AgentSec treats exact confirmed package/version and payload-hash matches as incident-response evidence.
 
 Sources:
-- [Aikido Security — Keyv and Friends Compromised in npm Supply Chain Attack](https://www.aikido.dev/blog/keyv-and-friends-compromised-in-npm-supply-chain-attack) (`aikido-keyv-2026`)
-- [The Hacker News — Keyv-Linked npm Worm Poisons Hundreds of Packages](https://thehackernews.com/2026/08/keyv-linked-npm-worm-poisons-hundreds.html) (`hackernews-keyv-2026`)
-- [Socket — Popular npm Packages Keyv and Cacheable Compromised](https://socket.dev/blog/popular-npm-packages-keyv-and-cacheable-compromised) (`socket-keyv-2026`)
+- [Aikido Security: Keyv and Friends Compromised in npm Supply Chain Attack](https://www.aikido.dev/blog/keyv-and-friends-compromised-in-npm-supply-chain-attack) (`aikido-keyv-2026`)
+- [The Hacker News: Keyv-Linked npm Worm Poisons Hundreds of Packages](https://thehackernews.com/2026/08/keyv-linked-npm-worm-poisons-hundreds.html) (`hackernews-keyv-2026`)
+- [Socket: Popular npm Packages Keyv and Cacheable Compromised](https://socket.dev/blog/popular-npm-packages-keyv-and-cacheable-compromised) (`socket-keyv-2026`)
 
-Related — campaigns: `shai-hulud-keyv-2026-08`; techniques: `npm.compromised-version`, `npm.lifecycle-script`, `payload.sha256`
+Related: campaigns: `shai-hulud-keyv-2026-08`; techniques: `npm.compromised-version`, `npm.lifecycle-script`, `payload.sha256`

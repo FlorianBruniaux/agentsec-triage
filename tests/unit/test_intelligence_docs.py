@@ -155,11 +155,15 @@ def test_renderers_are_deterministic_and_expose_contested_status() -> None:
         INTELLIGENCE_ROOT / "intelligence.schema.json",
     )
 
-    assert render_sources_markdown(corpus) == render_sources_markdown(corpus)
+    sources = render_sources_markdown(corpus)
+    assert sources == render_sources_markdown(corpus)
     timeline = render_timeline_markdown(corpus)
     assert timeline == render_timeline_markdown(corpus)
     assert "CONTESTED" in timeline
     assert "events tracked by AgentSec" in timeline
+    assert chr(0x2014) not in sources
+    assert chr(0x2014) not in timeline
+    assert "not recorded" in timeline
 
     rendered_json = render_json(corpus)
     assert rendered_json == render_json(corpus)

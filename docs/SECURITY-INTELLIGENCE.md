@@ -12,7 +12,7 @@ endorsement of every statement in that source.
 | Publisher | Source | Type | Status | Published | Reviewed | Topics |
 | --- | --- | --- | --- | --- | --- | --- |
 | Aikido Security | [Keyv and Friends Compromised in npm Supply Chain Attack](https://www.aikido.dev/blog/keyv-and-friends-compromised-in-npm-supply-chain-attack) | research | ACTIVE | 2026-08-04 | 2026-08-07 | keyv, npm, shai-hulud, supply-chain |
-| Alex Turnbull on LinkedIn | [Shai-Hulud npm exploit warning](https://www.linkedin.com/posts/alex-turnbull-1ab9992_warning-the-shai-hulud-npm-exploit-has-nfected-share-7490508767600627714-LkNb) | social | ACTIVE | — | 2026-08-07 | keyv, npm, shai-hulud, supply-chain |
+| Alex Turnbull on LinkedIn | [Shai-Hulud npm exploit warning](https://www.linkedin.com/posts/alex-turnbull-1ab9992_warning-the-shai-hulud-npm-exploit-has-nfected-share-7490508767600627714-LkNb) | social | ACTIVE | not recorded | 2026-08-07 | keyv, npm, shai-hulud, supply-chain |
 | JFrog Security Research | [Major Shai-Hulud campaign strikes npm again, affecting keyv and 400+ packages](https://research.jfrog.com/post/shai-hulud-is-back-august/) | research | ACTIVE | 2026-08-04 | 2026-08-07 | keyv, npm, shai-hulud, supply-chain |
 | SafeDep | [npm Worm Poisons keyv, cacheable and 400+ Other Packages Across Nine Organisations](https://safedep.io/keyv-npm-supply-chain-compromise/) | research | ACTIVE | 2026-08-04 | 2026-08-07 | keyv, npm, shai-hulud, supply-chain |
 | Socket | [Popular npm Packages Keyv and Cacheable Compromised](https://socket.dev/blog/popular-npm-packages-keyv-and-cacheable-compromised) | research | ACTIVE | 2026-08-04 | 2026-08-07 | keyv, npm, shai-hulud, supply-chain |

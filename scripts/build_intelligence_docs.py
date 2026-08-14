@@ -295,7 +295,7 @@ def _markdown(value: str) -> str:
 
 def _optional_date(record: Mapping[str, object], key: str) -> str:
     value = record.get(key)
-    return value if isinstance(value, str) else "—"
+    return value if isinstance(value, str) else "not recorded"
 
 
 def render_sources_markdown(corpus: IntelligenceCorpus) -> str:
@@ -406,7 +406,7 @@ def render_timeline_markdown(corpus: IntelligenceCorpus) -> str:
         event_id = _string(event.get("id"), "event id")
         lines.extend(
             (
-                f"### {_event_date(event)} — {_markdown(_string(event.get('title'), 'title'))}",
+                f"### {_event_date(event)}: {_markdown(_string(event.get('title'), 'title'))}",
                 "",
                 f"- ID: `{event_id}`",
                 (
@@ -421,7 +421,7 @@ def render_timeline_markdown(corpus: IntelligenceCorpus) -> str:
                     f"updated `{_optional_date(event, 'updated_date')}`"
                 ),
                 (
-                    f"- Detector coverage: `{_string(coverage.get('status'), 'coverage')}` — "
+                    f"- Detector coverage: `{_string(coverage.get('status'), 'coverage')}`: "
                     f"{_markdown(_string(coverage.get('notes'), 'coverage notes'))}"
                 ),
                 "",
@@ -434,7 +434,7 @@ def render_timeline_markdown(corpus: IntelligenceCorpus) -> str:
             source = sources[source_id]
             lines.append(
                 "- "
-                f"[{_markdown(_string(source.get('publisher'), 'publisher'))} — "
+                f"[{_markdown(_string(source.get('publisher'), 'publisher'))}: "
                 f"{_markdown(_string(source.get('title'), 'title'))}]"
                 f"({_string(source.get('url'), 'source URL')}) (`{source_id}`)"
             )
@@ -448,7 +448,7 @@ def render_timeline_markdown(corpus: IntelligenceCorpus) -> str:
             if values:
                 related_parts.append(f"{label}: {', '.join(f'`{value}`' for value in values)}")
         if related_parts:
-            lines.extend(("", "Related — " + "; ".join(related_parts)))
+            lines.extend(("", "Related: " + "; ".join(related_parts)))
         lines.append("")
     return "\n".join(lines).rstrip() + "\n"
 
