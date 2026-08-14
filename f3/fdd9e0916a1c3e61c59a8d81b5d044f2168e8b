@@ -1,0 +1,14 @@
+docs/superpowers/specs/2026-08-14-agent-instructions-design.md
+  h_07916ece6468dd 1-69
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "f3fdd9e0916a1c3e61c59a8d81b5d044f2168e8b",
+  "prompts": {},
+  "humans": {
+    "h_07916ece6468dd": {
+      "author": "Florian BRUNIAUX <florian@bruniaux.com>"
+    }
+  }
+}
