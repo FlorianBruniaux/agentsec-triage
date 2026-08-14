@@ -17,15 +17,15 @@ The commands below are for review from this source tree, not a published package
 
 ## Project documentation
 
-- [Roadmap](ROADMAP.md) — priorities, release gates, and explicit non-goals.
-- [Security intelligence](docs/SECURITY-INTELLIGENCE.md) — generated catalogue
+- [Roadmap](ROADMAP.md): priorities, release gates, and explicit non-goals.
+- [Security intelligence](docs/SECURITY-INTELLIGENCE.md): generated catalogue
   of reviewed articles, advisories, reports, and source scope.
-- [Security timeline](docs/SECURITY-TIMELINE.md) — generated chronology of
+- [Security timeline](docs/SECURITY-TIMELINE.md): generated chronology of
   security events tracked by AgentSec, including contested and corrected claims.
-- [License evidence inventory](docs/LICENSE-INVENTORY.md) — verified provenance,
+- [License evidence inventory](docs/LICENSE-INVENTORY.md): verified provenance,
   candidate licenses, and unresolved publication decisions.
-- [Contributing](CONTRIBUTING.md) — TDD, threat-source, and local release rules.
-- [Security policy](SECURITY.md) — scanner vulnerabilities, false positives,
+- [Contributing](CONTRIBUTING.md): TDD, threat-source, and local release rules.
+- [Security policy](SECURITY.md): scanner vulnerabilities, false positives,
   false negatives, and IOC corrections.
 
 The intelligence documents are generated from structured YAML. They track the

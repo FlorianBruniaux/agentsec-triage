@@ -2,17 +2,77 @@
 
 @AGENTS.md
 
-## Claude Code navigation
+## Session entry
 
-Start with `README.md` for the product contract, then use:
+Read `AGENTS.md` first. Continue with `README.md`, then open the file that owns
+the task:
 
-- `ROADMAP.md` for priorities and deferred work;
-- `CONTRIBUTING.md` for TDD, intelligence sourcing, and the release gate;
-- `SECURITY.md` for vulnerability and false-positive reporting;
-- `docs/superpowers/specs/` for approved designs;
-- `docs/superpowers/plans/` for implementation plans.
+| Task | Read next |
+| --- | --- |
+| Detector or scan behavior | `CONTRIBUTING.md`, relevant analyzer and detector, fixtures, tests |
+| Threat data | `data/threat-db.yaml`, its schema, builder, runtime loader, tests |
+| Intelligence pages | YAML under `data/intelligence/`, builder, renderer tests |
+| Public result schema | schema JSON, digest builder, package and CLI tests |
+| Security report workflow | `SECURITY.md` |
+| License, tag, or publication | `LICENSE-DECISION.md`, `docs/LICENSE-INVENTORY.md` |
+| Planned work | `ROADMAP.md`, approved spec, implementation plan |
 
-Use Plan Mode for cross-cutting detector, schema, or release work. Keep generated
-intelligence artifacts synchronized through their builder rather than editing
-them directly.
+Run `git status --short --branch` before editing. Preserve changes that the
+current task did not create. Use a worktree for broad changes when the main
+checkout is dirty.
 
+## Planning and execution
+
+Use Plan Mode for detector additions, schema changes, generated-data changes,
+release work, or edits that cross three or more ownership areas. A small prose
+fix or one-file test correction can proceed directly after reading its source of
+truth.
+
+Follow red-green-refactor for executable behavior. A plan, subagent report, or
+previous test run is evidence to inspect. Claude Code must review the resulting
+diff and run the final gate on the exact tree it presents to the user.
+
+## Delegation
+
+Give each delegated task an exact file set and return contract. Two workers must
+not edit the same file at the same time. Every worker inherits the security and
+release restrictions from `AGENTS.md`, including the ban on executing target
+content and the unresolved license gate.
+
+Delegated results require local review. Check the diff, rerun the relevant test,
+and reject claims that lack command output. Keep license selection, tagging,
+publication, destructive cleanup, and changes outside the requested repository
+with the primary session unless the user grants that authority.
+
+## Generated files
+
+Route each change through its owner:
+
+- Threat runtime JSON comes from `data/threat-db.yaml` and
+  `scripts/build_threat_db.py`.
+- Intelligence Markdown and JSON come from YAML under `data/intelligence/` and
+  `scripts/build_intelligence_docs.py`.
+- The scan-result digest comes from `schemas/scan-result-v1.schema.json` and
+  `scripts/build_scan_schema_digest.py`.
+
+Never hand-edit a generated artifact without the source change that reproduces
+it. Run the builder twice and inspect the generated diff.
+
+## Writing and final review
+
+Use direct technical prose. Remove em dashes, canned introductions, mechanical
+transitions, vague buzzwords, repeated sentence openings, and decorative final
+lines. Keep exact source titles, hashes, URLs, commands, dates, and quoted output
+unchanged.
+
+Before reporting completion, run the full gate from `AGENTS.md`. Finish with:
+
+```bash
+.venv/bin/python scripts/check_markdown_style.py .
+.venv/bin/agentsec doctor
+.venv/bin/python -m agentsec doctor
+git diff --check
+git status --short --branch
+```
+
+The final response must name the commit, merge, push, tag, and publication state.

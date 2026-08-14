@@ -36,8 +36,8 @@ Before public distribution or tagging:
 
 1. Inventory the imported database's relevant contribution history and identify
    the owners of code, schema, data selection, descriptions, and later edits.
-2. Confirm what the guide's CC BY-SA 4.0 notice covers and whether imported or
-   contributed material has additional terms.
+2. Confirm what the guide's CC BY-SA 4.0 notice covers. Record any additional
+   terms attached to imported or contributed material.
 3. Review attribution, notice, adaptation, database-right, and share-alike
    obligations for source and generated threat-data artifacts.
 4. Select compatible licenses for code and data separately. Obtain missing

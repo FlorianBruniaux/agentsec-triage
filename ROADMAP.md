@@ -4,7 +4,7 @@ This roadmap describes intended work, not shipped guarantees. Priorities may
 change when new evidence, false positives, platform constraints, or licensing
 requirements appear.
 
-## Current state — V0.1 alpha implementation
+## Current state: V0.1 alpha implementation
 
 Implemented in the current alpha codebase:
 
@@ -26,7 +26,7 @@ Implemented in the current alpha codebase:
 Git history, host state, remote repositories, remote CI, network traffic,
 credential stores, and automatic remediation remain explicitly out of scope.
 
-## P0 — Make the alpha releasable
+## P0: Make the alpha releasable
 
 - Complete the 28-field third-party prose review recorded in
   `docs/LICENSE-INVENTORY.md`.
@@ -39,7 +39,7 @@ credential stores, and automatic remediation remain explicitly out of scope.
 - Create the annotated `v0.1.0-alpha` tag only after every release gate passes.
 - Publish checksums and a signed provenance statement with release artifacts.
 
-## P1 — Intelligence publishing
+## P1: Intelligence publishing
 
 - Maintain a structured, attributable bibliography of relevant security sources.
 - Maintain a dated ledger of tracked incidents, disclosures, corrections,
@@ -50,7 +50,7 @@ credential stores, and automatic remediation remain explicitly out of scope.
   at a time; never synthesize individual events from aggregate counts.
 - Define a correction and retraction policy with preserved history.
 
-## P1 — Detector expansion
+## P1: Detector expansion
 
 - Add ClawHavoc and ToxicSkills repository detectors with synthetic fixtures.
 - Add generic agent-skill and repository-persistence checks without treating
@@ -62,7 +62,7 @@ credential stores, and automatic remediation remain explicitly out of scope.
 Every detector must declare supported inputs, limitations, sources, techniques,
 remediation, and stable `not_scanned` capability IDs.
 
-## P2 — Distribution and integrations
+## P2: Distribution and integrations
 
 - Provide a GitHub Action with pinned, checksummed releases.
 - Add SARIF output for GitHub Code Scanning and compatible platforms.
@@ -72,7 +72,7 @@ remediation, and stable `not_scanned` capability IDs.
   paths with generated data.
 - Add an AgentSec installation and scan CTA to `https://cc.bruniaux.com/security/`.
 
-## P3 — Advanced analysis
+## P3: Advanced analysis
 
 - Revisit local Git-history inspection only after strict object, alternates,
   gitfile, symlink, race, and platform confinement is demonstrated.

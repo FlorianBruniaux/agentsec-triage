@@ -119,6 +119,7 @@ Run every gate before requesting review:
 .venv/bin/python scripts/build_threat_db.py
 .venv/bin/python scripts/build_scan_schema_digest.py --check
 .venv/bin/python scripts/build_intelligence_docs.py
+.venv/bin/python scripts/check_markdown_style.py .
 git diff --exit-code -- src/agentsec/resources/threat-db.json
 git diff --exit-code -- docs/SECURITY-INTELLIGENCE.md docs/SECURITY-TIMELINE.md src/agentsec/resources/security-intelligence.json
 .venv/bin/ruff check src tests scripts
