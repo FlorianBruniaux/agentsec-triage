@@ -1,0 +1,29 @@
+docs/superpowers/plans/2026-08-14-markdown-style-cleanup-implementation.md
+  s_0df90997879182::t_ad640aebadeaa3 1-344
+docs/superpowers/specs/2026-08-14-agent-instructions-design.md
+  s_c30c5e2b88e8c1::t_fe69cd214a9979 4,19-22,25-29,46-49,66,76-82
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "a7d73b8b4f7f5d1c51e569e6e51b26c98916cee2",
+  "prompts": {},
+  "sessions": {
+    "s_0df90997879182": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019fd73a-588d-7f03-ab50-494ca0e95848",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Florian BRUNIAUX <florian@bruniaux.com>"
+    },
+    "s_c30c5e2b88e8c1": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "bf8f39c7-9963-4a69-a77c-bd8e38fc55ab",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "Florian BRUNIAUX <florian@bruniaux.com>"
+    }
+  }
+}
