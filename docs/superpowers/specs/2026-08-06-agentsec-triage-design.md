@@ -1,4 +1,4 @@
-# AgentSec Triage — Technical Design
+# AgentSec Triage: Technical Design
 
 **Status:** Design approved in conversation; pending review of this written specification  
 **Date:** 2026-08-06  
