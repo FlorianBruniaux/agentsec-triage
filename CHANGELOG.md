@@ -7,6 +7,9 @@ authorized public release while the licensing decision remains unresolved.
 
 ### Added
 
+- Added a dependency-free Markdown style checker and a CI gate for automatic
+  prose markers. The checker ignores fenced and inline code plus local build,
+  cache, environment, and worktree directories.
 - Added canonical `AGENTS.md` repository instructions, a minimal Claude Code
   adapter in `CLAUDE.md`, and a prioritized `ROADMAP.md` with explicit release
   gates and non-goals.
@@ -27,6 +30,14 @@ authorized public release while the licensing decision remains unresolved.
 
 ### Fixed
 
+- Reviewed all 19 Markdown files tracked at the start of the work and removed
+  the identified prose markers without changing threat facts, source titles,
+  commands, hashes, dates, exit codes, or license decisions. Generated
+  intelligence punctuation now comes from its renderer.
+- Expanded `AGENTS.md` with post-hardening generation, projection, worktree, and
+  verification rules. `CLAUDE.md` now covers Claude Code navigation,
+  delegation, generated-file ownership, and final review without duplicating
+  the repository contract.
 - Made authoring-to-runtime threat-data projection explicit and validated. The
   runtime artifact and `db info` now report projected and ignored records by
   reason instead of silently hiding the builder's V0.1 scope.
