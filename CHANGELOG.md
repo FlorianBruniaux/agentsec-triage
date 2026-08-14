@@ -7,6 +7,8 @@ authorized public release while the licensing decision remains unresolved.
 
 ### Added
 
+- Added an `At a glance` README table that summarizes current scan scope,
+  detector coverage, output, exit codes, safety boundaries, and alpha limits.
 - Added a dependency-free Markdown style checker and a CI gate for automatic
   prose markers. The checker ignores fenced and inline code plus local build,
   cache, environment, and worktree directories.
