@@ -19,14 +19,14 @@ The commands below are for review from this source tree, not a published package
 
 | Question | Answer |
 | --- | --- |
-| What does it scan? | Files inside one local repository, without executing repository code. |
-| What does it detect today? | Evidence associated with the documented Shai-Hulud/Keyv campaign: compromised package versions, known payload hashes, lifecycle commands, Claude Code hooks, and VS Code startup tasks. |
-| Which package formats are covered? | Supported npm, pnpm, Yarn, and Bun text lockfiles, plus installed `node_modules` metadata. Binary `bun.lockb` is reported as unsupported. |
-| How does it run? | Deterministically, read-only, and offline by default. It does not follow symlinks outside the scan root or invoke Git on the target repository. |
-| What does it return? | Human-readable or versioned JSON output with findings, confidence, coverage, diagnostics, remediation links, and completion status. |
+| What does it scan? | Files inside **one local repository**, without executing repository code. |
+| What does it detect today? | Evidence associated with the documented **Shai-Hulud/Keyv campaign**: compromised package versions, known payload hashes, lifecycle commands, Claude Code hooks, and VS Code startup tasks. |
+| Which package formats are covered? | Supported `npm`, `pnpm`, `Yarn`, and `Bun` text lockfiles, plus installed `node_modules` metadata. Binary `bun.lockb` is reported as **unsupported**. |
+| How does it run? | **Deterministically**, **read-only**, and **offline by default**. It does not follow symlinks outside the scan root or invoke Git on the target repository. |
+| What does it return? | Human-readable or versioned `JSON` output with **findings**, **coverage**, **diagnostics**, remediation links, and completion status. |
 | What do exit codes mean? | `0`: completed checks found nothing; `1`: findings require action or review; `2`: the scan is incomplete or failed. |
-| What does it not do? | It does not certify a repository as clean and does not replace antivirus, EDR, SAST, dependency, or secret scanning. |
-| What is the current status? | Alpha, one implemented detector, source-only use, and no authorized public package release. |
+| What does it not do? | It does not certify a repository as **clean** and does not replace antivirus, `EDR`, `SAST`, dependency, or secret scanning. |
+| What is the current status? | **Alpha**, one implemented detector, source-only use, and **no authorized public package release**. |
 
 ## Project documentation
 
