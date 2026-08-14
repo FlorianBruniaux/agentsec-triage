@@ -48,6 +48,9 @@ jobs:
       - name: Require current scan-result schema digest
         run: python scripts/build_scan_schema_digest.py --check
 
+      - name: Check Markdown style markers
+        run: python scripts/check_markdown_style.py .
+
       - name: Ruff
         run: ruff check src tests scripts
 
