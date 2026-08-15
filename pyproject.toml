@@ -45,7 +45,6 @@ exclude = [
   "/.venv",
   "/build",
   "/dist",
-  "/docs/superpowers",
 ]
 
 [tool.pytest.ini_options]

@@ -103,12 +103,29 @@ authorized public release while the licensing decision remains unresolved.
   diagnostic; a separate negative-fixture scan proves completed applicable
   behavior.
 
+### Removed
+
+- Removed eight internal implementation plans and design specifications from
+  the current public tree. Their historical commits remain unchanged.
+
 ### Blocked
 
-- Public tagging and publication are blocked pending the code and threat-data
-  ownership and compatibility review in `LICENSE-DECISION.md`.
+- Public visibility, tagging, and publication remain blocked pending the
+  threat-data prose, ownership, attribution, and compatibility review in
+  `LICENSE-DECISION.md`.
 
 ## [0.1.0-alpha] - pending
+
+### Release metadata
+
+| Field | Value |
+| --- | --- |
+| Python package | `0.1.0a0` |
+| Intended Git tag | `v0.1.0-alpha` |
+| Threat database | `2.26.0` |
+| Detector | `shai-hulud-keyv` version `1` |
+| JSON schema | version `1` |
+| Python | 3.11, 3.12, and 3.13 |
 
 ### Added
 

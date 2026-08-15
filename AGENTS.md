@@ -8,8 +8,8 @@ runs offline by default. It reports evidence, diagnostics, and coverage limits.
 No result certifies that a repository, workstation, dependency set, or account
 is clean.
 
-The V0.1 alpha ships one detector, `shai-hulud-keyv`. Read `README.md` before
-changing its declared coverage or limitations.
+Current release metadata lives in `CHANGELOG.md`. Read `README.md` and
+`docs/examples.md` before changing declared coverage or limitations.
 
 ## Instruction order
 
@@ -21,7 +21,6 @@ Use these files in order:
 4. `SECURITY.md` defines vulnerability, false-positive, false-negative, and IOC
    correction intake.
 5. `ROADMAP.md` separates shipped work from future work.
-6. Approved specs and plans live under `docs/superpowers/`.
 
 `CLAUDE.md` may add Claude Code navigation and orchestration rules. It cannot
 relax this file. If two instructions conflict, stop and report the exact files
@@ -37,8 +36,14 @@ and clauses before editing.
 | `schemas/` | Public scan-result contracts and committed digest |
 | `scripts/` | Deterministic builders, benchmark wrapper, and Markdown checker |
 | `tests/` | Unit, integration, fixture, package, safety, and golden tests |
+| `docs/installation.md` | Source installation and verification |
+| `docs/examples.md` | Scan commands, verdicts, output, and coverage limits |
 | `docs/SECURITY-INTELLIGENCE.md` | Generated source catalogue |
 | `docs/SECURITY-TIMELINE.md` | Generated event chronology |
+| `PROMPT.md` | Copy-ready read-only LLM audit prompt |
+| `llms.txt` | Canonical public documentation index for LLMs |
+| `LICENSE` | MIT grant for project-owned code and original documentation |
+| `LICENSE-DATA.md` | Pending data-license scope and review requirements |
 | `LICENSE-DECISION.md` | Blocking publication decision |
 
 ## Preflight and worktree safety
@@ -184,9 +189,9 @@ Do not hide these inputs through exclusions.
 ## Release gate
 
 `LICENSE-DECISION.md` blocks public redistribution, tags, GitHub releases,
-source archives, and PyPI publication. The intended first tag is
-`v0.1.0-alpha`, which matches Python version `0.1.0a0`. Create no tag until the
-recorded code and data licensing review is resolved.
+source archives, and PyPI publication. Release-specific package and tag values
+live in `CHANGELOG.md`. Create no tag until the recorded data licensing review
+is resolved.
 
 Do not weaken tests, package metadata, attribution, or the license gate to make
 a release appear ready. No agent may select a license, grant redistribution
