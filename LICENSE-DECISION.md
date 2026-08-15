@@ -1,4 +1,4 @@
-# License decision required before public release
+# Data license review required before public release
 
 ## Status
 
@@ -6,13 +6,20 @@
 public release artifact, or redistribute a source archive. Do not tag
 `v0.1.0-alpha` while this decision is unresolved.
 
+The project owner selected MIT for project-owned source code and original
+documentation on 2026-08-15. The grant and its scope are recorded in
+[`LICENSE`](LICENSE). This resolves the code-license choice. It does not
+license the data paths listed in [`LICENSE-DATA.md`](LICENSE-DATA.md).
+
 The verified evidence, candidate licenses, prose-review scope, and remaining
 owner decisions are tracked in [`docs/LICENSE-INVENTORY.md`](docs/LICENSE-INVENTORY.md).
 That inventory is a decision aid, not permission to publish.
 
-No `LICENSE` file is present and `pyproject.toml` deliberately says
-`License decision pending before public release`. That text is a release gate,
-not an open-source license and not permission to redistribute the project.
+`pyproject.toml` deliberately retains
+`License decision pending before public release` for the distribution package.
+The built package contains data whose review is incomplete, so declaring the
+whole distribution MIT would be inaccurate. The placeholder is a release gate,
+not permission to redistribute the package.
 
 ## Why the gate exists
 
@@ -26,9 +33,8 @@ repository and package. The database contains factual indicators plus selection,
 organization, descriptions, and source references. It is not safe to assume that
 all of those elements have the same copyright or licensing treatment.
 
-An OSS code license must not be guessed. A code license also does not, by itself,
-resolve the data license, attribution, contributor rights, or share-alike
-questions.
+The MIT code license does not resolve the data license, attribution, contributor
+rights, or share-alike questions.
 
 ## Required review and recorded decision
 
@@ -40,13 +46,15 @@ Before public distribution or tagging:
    terms attached to imported or contributed material.
 3. Review attribution, notice, adaptation, database-right, and share-alike
    obligations for source and generated threat-data artifacts.
-4. Select compatible licenses for code and data separately. Obtain missing
-   permissions or remove and independently recreate material that cannot be
-   distributed compatibly.
-5. Record the decision, scope, copyright notices, attribution, and provenance.
-   Add the corresponding license files and SPDX expressions.
-6. Rerun the complete Task 12 gate, commit the license decision, and only then
-   consider an annotated `v0.1.0-alpha` tag and public package publication.
+4. Obtain missing permissions or remove and independently recreate material
+   that cannot be distributed under CC BY-SA 4.0.
+5. Record the final data-license scope, copyright notices, attribution,
+   adaptation notices, and provenance.
+6. Add the data license to package metadata and use the final SPDX expression
+   for the combined distribution.
+7. Rerun the complete release gate, commit the data-license decision, and only
+   then consider public repository visibility or an annotated
+   `v0.1.0-alpha` tag.
 
 Until these steps are completed, local review in the authorized working copy
 does not establish a right to publish or redistribute it.
@@ -58,7 +66,8 @@ filename must not produce a `License-File` field in wheel metadata. The project
 therefore sets `license-files = []`, and the offline packaging test parses the
 built wheel's `METADATA` and requires no `License-File` header.
 
-When the licensing review is resolved, replace the placeholder license text,
-select explicit license files and SPDX expressions, update this guard, and rerun
-the complete release gate. Until then, absence of a `License-File` header prevents
-a false grant; it does not authorize publication.
+When the data review is resolved, replace the placeholder package license,
+select the final SPDX expression, include the MIT and data-license files, update
+this guard, and rerun the complete release gate. Until then, absence of a
+`License-File` header prevents a false package-wide grant; it does not
+authorize publication.

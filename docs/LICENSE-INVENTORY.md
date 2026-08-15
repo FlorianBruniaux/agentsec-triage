@@ -2,10 +2,11 @@
 
 ## Status and scope
 
-This document is a factual decision aid, not a legal conclusion or a license
-grant. It records evidence available in the local repositories on 2026-08-11.
-Public distribution, tagging, release archives, and PyPI publication remain
-blocked by [`LICENSE-DECISION.md`](../LICENSE-DECISION.md).
+This document is a factual decision aid, not a legal conclusion or a data
+license grant. It records evidence available in the local repositories on
+2026-08-11 and the owner's code-license decision from 2026-08-15. Public
+visibility, tagging, release archives, and PyPI publication remain blocked by
+[`LICENSE-DECISION.md`](../LICENSE-DECISION.md).
 
 ## Threat-data provenance
 
@@ -77,24 +78,19 @@ reviewer, review date, and required rewrite or attribution. Unresolved fields
 must be rewritten independently from verified facts or removed before the data
 is redistributed.
 
-## Code-license candidates
+## Code-license decision
 
-No code license has been selected.
+The owner selected MIT on 2026-08-15 for project-owned source code and original
+documentation. [`LICENSE`](../LICENSE) records:
 
-### Apache-2.0
+- license: MIT;
+- copyright holder: Florian Bruniaux;
+- copyright year: 2026;
+- excluded data scope: the paths recorded in
+  [`LICENSE-DATA.md`](../LICENSE-DATA.md).
 
-- explicit patent grant and patent-termination terms;
-- requires preservation of the license and applicable notices;
-- longer and more explicit than MIT.
-
-### MIT
-
-- short and widely understood permission notice;
-- requires preservation of copyright and permission notices;
-- does not contain Apache-2.0's explicit patent grant.
-
-The owner must choose one candidate and record the copyright holder and year.
-This inventory does not make that choice.
+This decision resolves the code-license question. It does not grant rights over
+imported data or third-party expression.
 
 ## Data-license candidate
 
@@ -119,11 +115,11 @@ Primary references:
 
 ## Distribution work required after the decisions
 
-After the code license and reviewed data scope are explicitly approved:
+After the reviewed data scope is explicitly approved:
 
-1. add the exact code and data license texts in separately named files;
-2. add SPDX expressions and package metadata without implying that one license
-   covers both code and data;
+1. add the exact data license text and attribution notices;
+2. add the final SPDX expression and package metadata without implying that one
+   license covers both code and data;
 3. add copyright and attribution notices;
 4. include the required data license and notices in wheel and source artifacts;
 5. document which paths and generated artifacts each license covers;
@@ -134,11 +130,12 @@ After the code license and reviewed data scope are explicitly approved:
 
 | Decision | Current evidence | Required owner action |
 | --- | --- | --- |
-| Code license | MIT and Apache-2.0 are candidates | Select one explicitly |
-| Code copyright notice | One project owner is recorded | Confirm holder name and year |
+| Code license | MIT selected on 2026-08-15 | Resolved |
+| Code copyright notice | Florian Bruniaux, 2026 | Resolved |
 | Data license | CC BY-SA 4.0 is the candidate | Approve after prose review |
 | Third-party prose | 28 fields require classification | Complete and record the review |
 | Attribution packaging | Not implemented | Define notices and artifact inclusion |
 | Public release | Blocked | Open only after every item above is complete |
 
-Until these decisions and reviews are recorded, publication remains blocked.
+Until the remaining data decisions and reviews are recorded, publication
+remains blocked.

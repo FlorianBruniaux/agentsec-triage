@@ -7,6 +7,9 @@ authorized public release while the licensing decision remains unresolved.
 
 ### Added
 
+- Selected MIT for project-owned source code and original documentation. Added a
+  separate data-license scope record that keeps public redistribution blocked
+  until the CC BY-SA 4.0 prose, rights, and attribution review is complete.
 - Added an `At a glance` README table that summarizes current scan scope,
   detector coverage, output, exit codes, safety boundaries, and alpha limits,
   with visual emphasis for key concepts and technical literals.
