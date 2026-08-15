@@ -1,0 +1,21 @@
+CHANGELOG.md
+  s_0df90997879182::t_3145a4ad2701c4 10-12,42-44
+README.md
+  s_0df90997879182::t_6244663c0a6d20 5-6,8,10,19,24,26,28,31,34-35,37,39-48,50,52-55,57,59,61-64,66-67
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "0a9487ec3ccd884c1468c2f0e7718138f42f4b8e",
+  "prompts": {},
+  "sessions": {
+    "s_0df90997879182": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019fd73a-588d-7f03-ab50-494ca0e95848",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Florian BRUNIAUX <florian@bruniaux.com>"
+    }
+  }
+}
