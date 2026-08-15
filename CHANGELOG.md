@@ -7,6 +7,9 @@ authorized public release while the licensing decision remains unresolved.
 
 ### Added
 
+- Added focused source-installation and scan-example guides, a copy-ready
+  read-only LLM audit prompt, and a root `llms.txt` index of canonical project
+  documentation.
 - Selected MIT for project-owned source code and original documentation. Added a
   separate data-license scope record that keeps public redistribution blocked
   until the CC BY-SA 4.0 prose, rights, and attribution review is complete.
@@ -36,6 +39,9 @@ authorized public release while the licensing decision remains unresolved.
 
 ### Fixed
 
+- Reduced the README to a concise project entry point. Operational commands,
+  coverage details, JSON output, self-scan expectations, privacy guidance, and
+  benchmark instructions now have one canonical document each.
 - Reviewed all 19 Markdown files tracked at the start of the work and removed
   the identified prose markers without changing threat facts, source titles,
   commands, hashes, dates, exit codes, or license decisions. Generated

@@ -1,0 +1,28 @@
+# AgentSec Triage
+
+AgentSec Triage performs deterministic, read-only, offline-by-default triage of
+one local repository for evidence associated with documented developer,
+software-supply-chain, and coding-agent attacks. It reports findings,
+diagnostics, and incomplete coverage; it does not certify a system as clean.
+
+## Core
+
+- [Project overview](https://github.com/FlorianBruniaux/agentsec-triage/blob/main/README.md)
+- [Installation](https://github.com/FlorianBruniaux/agentsec-triage/blob/main/docs/installation.md)
+- [Examples and verdicts](https://github.com/FlorianBruniaux/agentsec-triage/blob/main/docs/examples.md)
+- [Copy-ready audit prompt](https://github.com/FlorianBruniaux/agentsec-triage/blob/main/PROMPT.md)
+
+## Security and intelligence
+
+- [Security policy](https://github.com/FlorianBruniaux/agentsec-triage/blob/main/SECURITY.md)
+- [Security intelligence](https://github.com/FlorianBruniaux/agentsec-triage/blob/main/docs/SECURITY-INTELLIGENCE.md)
+- [Security timeline](https://github.com/FlorianBruniaux/agentsec-triage/blob/main/docs/SECURITY-TIMELINE.md)
+
+## Project governance
+
+- [Changelog](https://github.com/FlorianBruniaux/agentsec-triage/blob/main/CHANGELOG.md)
+- [Roadmap](https://github.com/FlorianBruniaux/agentsec-triage/blob/main/ROADMAP.md)
+- [Contributing](https://github.com/FlorianBruniaux/agentsec-triage/blob/main/CONTRIBUTING.md)
+- [MIT code license](https://github.com/FlorianBruniaux/agentsec-triage/blob/main/LICENSE)
+- [Data license status](https://github.com/FlorianBruniaux/agentsec-triage/blob/main/LICENSE-DATA.md)
+- [Publication gate](https://github.com/FlorianBruniaux/agentsec-triage/blob/main/LICENSE-DECISION.md)
