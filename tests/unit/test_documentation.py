@@ -1,13 +1,25 @@
 from __future__ import annotations
 
+import re
 import tomllib
 from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).parents[2]
+MARKDOWN_LINK = re.compile(
+    r"\[[^]]+\]\((?!https?://|mailto:|#)([^)#]+)(?:#[^)]+)?\)"
+)
 
 
 def _read(relative_path: str) -> str:
     return (PROJECT_ROOT / relative_path).read_text(encoding="utf-8")
+
+
+def _local_links(relative_path: str) -> set[Path]:
+    source = PROJECT_ROOT / relative_path
+    return {
+        (source.parent / match).resolve()
+        for match in MARKDOWN_LINK.findall(source.read_text(encoding="utf-8"))
+    }
 
 
 def test_readme_documents_the_alpha_contract() -> None:
@@ -17,7 +29,6 @@ def test_readme_documents_the_alpha_contract() -> None:
         "read-only",
         "offline by default",
         "does not certify",
-        "not scanned",
         "https://cc.bruniaux.com/security/",
     ):
         assert concept in readme
@@ -25,8 +36,8 @@ def test_readme_documents_the_alpha_contract() -> None:
         assert exit_code in readme
 
 
-def test_readme_documents_exhaustive_traversal_and_expected_self_scan() -> None:
-    readme = _read("README.md").lower()
+def test_examples_document_traversal_verdicts_and_self_scan() -> None:
+    examples = _read("docs/examples.md").lower()
 
     for concept in (
         "except `.git`",
@@ -35,8 +46,21 @@ def test_readme_documents_exhaustive_traversal_and_expected_self_scan() -> None:
         "self-scan",
         "bun.lockb",
         "expected exit code is `2`",
+        "<tool_version>",
+        "<database_version>",
     ):
-        assert concept in readme
+        assert concept in examples
+
+
+def test_public_markdown_links_resolve_locally() -> None:
+    for document in (
+        "README.md",
+        "docs/installation.md",
+        "docs/examples.md",
+        "PROMPT.md",
+    ):
+        missing = sorted(path for path in _local_links(document) if not path.exists())
+        assert missing == []
 
 
 def test_security_has_separate_reporting_workflows() -> None:
