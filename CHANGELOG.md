@@ -44,6 +44,8 @@ authorized public release while the licensing decision remains unresolved.
 
 ### Fixed
 
+- Normalized scan-result schema line endings before computing its digest, so
+  Windows `CRLF` checkouts validate against the committed `LF` digest.
 - Normalized text input line endings before computing public-feed digests, so
   Windows `CRLF` checkouts generate the same artifact as `LF` checkouts.
 - Reduced the README to a concise project entry point. Operational commands,

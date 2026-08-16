@@ -41,3 +41,24 @@ def test_digest_builder_check_detects_drift_without_writing(tmp_path: Path) -> N
     assert result.returncode == 1
     assert result.stderr == "error: schema digest is stale\n"
     assert output.read_text(encoding="ascii") == f"{'0' * 64}\n"
+
+
+def test_digest_builder_normalizes_schema_line_endings(tmp_path: Path) -> None:
+    lf_schema = tmp_path / "schema-lf.json"
+    crlf_schema = tmp_path / "schema-crlf.json"
+    lf_output = tmp_path / "schema-lf.sha256"
+    crlf_output = tmp_path / "schema-crlf.sha256"
+    lf_bytes = b'{\n  "type": "object"\n}\n'
+    lf_schema.write_bytes(lf_bytes)
+    crlf_schema.write_bytes(lf_bytes.replace(b"\n", b"\r\n"))
+
+    lf_result = _run("--schema", str(lf_schema), "--output", str(lf_output))
+    crlf_result = _run(
+        "--schema", str(crlf_schema), "--output", str(crlf_output)
+    )
+
+    assert lf_result.returncode == 0
+    assert crlf_result.returncode == 0
+    expected = f"{sha256(lf_bytes).hexdigest()}\n"
+    assert lf_output.read_text(encoding="ascii") == expected
+    assert crlf_output.read_text(encoding="ascii") == expected

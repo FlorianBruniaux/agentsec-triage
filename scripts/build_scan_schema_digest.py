@@ -12,7 +12,8 @@ DEFAULT_OUTPUT = PROJECT_ROOT / "schemas" / "scan-result-v1.schema.sha256"
 
 
 def _expected_digest(schema: Path) -> str:
-    return f"{sha256(schema.read_bytes()).hexdigest()}\n"
+    content = schema.read_bytes().replace(b"\r\n", b"\n").replace(b"\r", b"\n")
+    return f"{sha256(content).hexdigest()}\n"
 
 
 def _write_digest(output: Path, content: str) -> None:
