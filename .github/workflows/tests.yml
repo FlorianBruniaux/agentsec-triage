@@ -80,16 +80,19 @@ jobs:
           PIP_NO_INDEX: "1"
         run: python -m build --no-isolation
 
-      - name: Verify honest self-scan and completed negative scan
+      - name: Verify honest self-scan and detector fixtures
         shell: bash
         run: |
           set +e
           agentsec scan . --format json --redact > self-scan.json
           self_scan_status=$?
+          agentsec scan tests/fixtures/shai_hulud/positive --format json > positive-scan.json
+          positive_scan_status=$?
           agentsec scan tests/fixtures/shai_hulud/negative --format json > negative-scan.json
           negative_scan_status=$?
           set -e
           test "${self_scan_status}" -eq 2
+          test "${positive_scan_status}" -eq 1
           test "${negative_scan_status}" -eq 1
           python - <<'PY'
           import json
@@ -97,7 +100,6 @@ jobs:
 
           self_scan = json.loads(Path("self-scan.json").read_text(encoding="utf-8"))
           assert self_scan["complete"] is False
-          assert self_scan["findings"]
           assert any(
               item["path"].replace("\\", "/").endswith(
                   "tests/fixtures/lockfiles/bun.lockb"
@@ -105,6 +107,11 @@ jobs:
               and item["message"] == "Unsupported binary Bun lockfile format"
               for item in self_scan["diagnostics"]
           )
+
+          positive = json.loads(Path("positive-scan.json").read_text(encoding="utf-8"))
+          assert positive["complete"] is True
+          assert positive["diagnostics"] == []
+          assert any(item["severity"] == "critical" for item in positive["findings"])
 
           negative = json.loads(Path("negative-scan.json").read_text(encoding="utf-8"))
           assert negative["complete"] is True
