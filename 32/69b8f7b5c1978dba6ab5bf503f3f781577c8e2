@@ -1,0 +1,59 @@
+tests/unit/test_startup.py
+  s_0df90997879182::t_c3c969e38709d7 17-20,246,309,435
+tests/unit/test_hashes.py
+  s_0df90997879182::t_1866d7978494a5 12-15,88,152,175,196,215,242,266,290,329
+tests/unit/test_git_history.py
+  s_0df90997879182::t_c3c969e38709d7 225-227,503,534,670
+  s_0df90997879182::t_ed8805dbc8adff 238-240
+src/agentsec/cli.py
+  s_0df90997879182::t_8650a30730cff2 200,227-228
+  s_a6272ac9eeea28::t_13a0816ac9ffeb 229-230
+tests/unit/test_json_output.py
+  s_0df90997879182::t_ed8805dbc8adff 122,128
+  s_0df90997879182::t_30fc8c640873e1 109
+tests/integration/test_cli.py
+  s_0df90997879182::t_30fc8c640873e1 248-261
+AGENTS.md
+  s_0df90997879182::t_24da725c767025 189-192
+tests/unit/test_safe_io.py
+  s_0df90997879182::t_1866d7978494a5 13-16,28,72,121
+  s_0df90997879182::t_c05fe7b58d0edf 3
+src/agentsec/redaction.py
+  s_0df90997879182::t_8650a30730cff2 49
+.github/workflows/tests.yml
+  s_0df90997879182::t_ed8805dbc8adff 67,72-76
+  s_a6272ac9eeea28::t_e733127931dec6 77
+tests/unit/test_security_feed.py
+  s_0df90997879182::t_24da725c767025 99-100
+tests/integration/test_shai_hulud_detector.py
+  s_0df90997879182::t_ed8805dbc8adff 5
+  s_0df90997879182::t_c3c969e38709d7 846
+CHANGELOG.md
+  s_0df90997879182::t_24da725c767025 47-50
+.gitattributes
+  s_0df90997879182::t_1866d7978494a5 1-13
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "3269b8f7b5c1978dba6ab5bf503f3f781577c8e2",
+  "prompts": {},
+  "sessions": {
+    "s_0df90997879182": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019fd73a-588d-7f03-ab50-494ca0e95848",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Florian BRUNIAUX <florian@bruniaux.com>"
+    },
+    "s_a6272ac9eeea28": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c67912ad-4ff6-4340-b106-34a9a2e26546",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "Florian BRUNIAUX <florian@bruniaux.com>"
+    }
+  }
+}
