@@ -1,0 +1,23 @@
+CHANGELOG.md
+  s_0df90997879182::t_0bd0b464acce03 47-48
+src/agentsec/analyzers/git_history.py
+  s_0df90997879182::t_0bd0b464acce03 260-263,468-472
+src/agentsec/analyzers/safe_io.py
+  s_0df90997879182::t_0bd0b464acce03 187
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "9752b03e3009e158e7beb07d6adafc9e94649c3e",
+  "prompts": {},
+  "sessions": {
+    "s_0df90997879182": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019fd73a-588d-7f03-ab50-494ca0e95848",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Florian BRUNIAUX <florian@bruniaux.com>"
+    }
+  }
+}
