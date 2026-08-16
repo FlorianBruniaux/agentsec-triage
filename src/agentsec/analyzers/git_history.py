@@ -257,7 +257,10 @@ def _validate_system_executable(
 
 
 def _posix_path_is_uncontrolled(path: Path) -> bool:
-    current_uid = os.geteuid()
+    geteuid = getattr(os, "geteuid", None)
+    if not callable(geteuid):
+        return False
+    current_uid = int(geteuid())
     for component in (*reversed(path.parents), path):
         try:
             component_stat = component.lstat()
@@ -462,8 +465,11 @@ def _start_isolated_process(
 def _terminate_process_tree(process: subprocess.Popen[bytes]) -> None:
     if os.name == "posix" and isinstance(process, _REAL_POPEN_TYPE):
         with suppress(OSError, ProcessLookupError):
-            os.killpg(process.pid, signal.SIGKILL)
-            return
+            killpg = getattr(os, "killpg", None)
+            sigkill = getattr(signal, "SIGKILL", None)
+            if callable(killpg) and sigkill is not None:
+                killpg(process.pid, sigkill)
+                return
     if os.name == "nt" and _taskkill_process_tree(process.pid):
         return
     with suppress(OSError):

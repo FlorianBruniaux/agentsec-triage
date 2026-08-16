@@ -184,7 +184,7 @@ def _file_open_flags() -> int:
 
 
 def _directory_open_flags() -> int:
-    return _file_open_flags() | os.O_DIRECTORY
+    return _file_open_flags() | int(getattr(os, "O_DIRECTORY", 0))
 
 
 def _open_file_at(parent: int, filename: str) -> int:

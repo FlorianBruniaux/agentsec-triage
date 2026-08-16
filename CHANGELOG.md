@@ -44,6 +44,8 @@ authorized public release while the licensing decision remains unresolved.
 
 ### Fixed
 
+- Made POSIX capability access fail closed when absent and type-check cleanly on
+  Windows without weakening directory or process-tree handling.
 - Normalized scan-result schema line endings before computing its digest, so
   Windows `CRLF` checkouts validate against the committed `LF` digest.
 - Normalized text input line endings before computing public-feed digests, so
