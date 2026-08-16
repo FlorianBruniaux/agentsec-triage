@@ -44,6 +44,8 @@ authorized public release while the licensing decision remains unresolved.
 
 ### Fixed
 
+- Normalized text input line endings before computing public-feed digests, so
+  Windows `CRLF` checkouts generate the same artifact as `LF` checkouts.
 - Reduced the README to a concise project entry point. Operational commands,
   coverage details, JSON output, self-scan expectations, privacy guidance, and
   benchmark instructions now have one canonical document each.

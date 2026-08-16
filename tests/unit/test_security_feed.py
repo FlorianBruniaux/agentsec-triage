@@ -12,9 +12,15 @@ BUILDER = PROJECT_ROOT / "scripts" / "build_security_feed.py"
 SCHEMA = PROJECT_ROOT / "schemas" / "security-feed-v1.schema.json"
 
 
-def _build(output: Path) -> subprocess.CompletedProcess[str]:
+def _build(
+    output: Path,
+    threat_database: Path | None = None,
+) -> subprocess.CompletedProcess[str]:
+    command = [sys.executable, str(BUILDER), "--output", str(output)]
+    if threat_database is not None:
+        command.extend(["--threat-database", str(threat_database)])
     return subprocess.run(
-        [sys.executable, str(BUILDER), "--output", str(output)],
+        command,
         cwd=PROJECT_ROOT,
         check=False,
         capture_output=True,
@@ -83,3 +89,20 @@ def test_builder_emits_deterministic_valid_public_feed_without_gated_iocs(
                 visit(child)
 
     visit(payload)
+
+
+def test_builder_normalizes_input_line_endings_for_cross_platform_digests(
+    tmp_path: Path,
+) -> None:
+    source = PROJECT_ROOT / "data" / "threat-db.yaml"
+    crlf_database = tmp_path / "threat-db-crlf.yaml"
+    crlf_database.write_bytes(source.read_bytes().replace(b"\n", b"\r\n"))
+    lf_output = tmp_path / "lf.json"
+    crlf_output = tmp_path / "crlf.json"
+
+    lf_result = _build(lf_output, source)
+    crlf_result = _build(crlf_output, crlf_database)
+
+    assert lf_result.returncode == 0, lf_result.stderr
+    assert crlf_result.returncode == 0, crlf_result.stderr
+    assert lf_output.read_bytes() == crlf_output.read_bytes()

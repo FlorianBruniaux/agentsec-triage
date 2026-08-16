@@ -35,6 +35,12 @@ def _read_bytes(path: Path, label: str) -> bytes:
         raise SecurityFeedBuildError(f"cannot read {label}") from exc
 
 
+def _text_digest(raw: bytes) -> str:
+    """Hash text inputs independently of Git's platform line-ending checkout."""
+    normalized = raw.replace(b"\r\n", b"\n").replace(b"\r", b"\n")
+    return hashlib.sha256(normalized).hexdigest()
+
+
 def _mapping(value: object, label: str) -> dict[str, object]:
     if not isinstance(value, Mapping) or not all(isinstance(key, str) for key in value):
         raise SecurityFeedBuildError(f"{label} must be an object")
@@ -237,8 +243,8 @@ def build_feed(
         },
         "detectors": _project_detectors(),
         "input_digests": {
-            "intelligence_sha256": hashlib.sha256(intelligence_raw).hexdigest(),
-            "threat_database_sha256": hashlib.sha256(database_raw).hexdigest(),
+            "intelligence_sha256": _text_digest(intelligence_raw),
+            "threat_database_sha256": _text_digest(database_raw),
         },
     }
 
