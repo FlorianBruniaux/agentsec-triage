@@ -7,6 +7,11 @@ authorized public release while the licensing decision remains unresolved.
 
 ### Added
 
+- Added a schema-validated, deterministic `security-feed.v1.json` containing
+  AgentSec versions, factual database counters, sourced landing metrics,
+  detector contracts, and reviewed intelligence fiches. Added byte-for-byte
+  guide and landing synchronization, authoring instructions, and a narrow
+  CC BY-SA 4.0 feed-publication exception that excludes gated IOC data.
 - Added focused source-installation and scan-example guides, a copy-ready
   read-only LLM audit prompt, and a root `llms.txt` index of canonical project
   documentation.

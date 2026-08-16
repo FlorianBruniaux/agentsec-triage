@@ -101,15 +101,20 @@ views:
 
 ```bash
 .venv/bin/python scripts/build_intelligence_docs.py
+.venv/bin/python scripts/build_security_feed.py
 git diff --exit-code -- \
   docs/SECURITY-INTELLIGENCE.md \
   docs/SECURITY-TIMELINE.md \
   src/agentsec/resources/security-intelligence.json
+git diff --exit-code -- exports/security-feed.v1.json
 ```
 
 The generated Markdown and JSON files are committed release artifacts. Do not
 edit them directly. Historical backfill from the guide must be reviewed record
 by record; aggregate campaign counts are not event records.
+
+The complete source and fiche template, field routing, and three-repository sync
+commands live in `docs/intelligence-authoring.md`.
 
 ## Local release gate
 
@@ -119,9 +124,11 @@ Run every gate before requesting review:
 .venv/bin/python scripts/build_threat_db.py
 .venv/bin/python scripts/build_scan_schema_digest.py --check
 .venv/bin/python scripts/build_intelligence_docs.py
+.venv/bin/python scripts/build_security_feed.py
 .venv/bin/python scripts/check_markdown_style.py .
 git diff --exit-code -- src/agentsec/resources/threat-db.json
 git diff --exit-code -- docs/SECURITY-INTELLIGENCE.md docs/SECURITY-TIMELINE.md src/agentsec/resources/security-intelligence.json
+git diff --exit-code -- exports/security-feed.v1.json
 .venv/bin/ruff check src tests scripts
 .venv/bin/mypy src scripts
 PIP_NO_INDEX=1 .venv/bin/pytest --cov=agentsec --cov-report=term-missing

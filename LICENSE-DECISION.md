@@ -3,8 +3,12 @@
 ## Status
 
 **Public release is blocked.** Do not publish this package to PyPI, create a
-public release artifact, or redistribute a source archive. Do not tag
+package or source release artifact, or redistribute a source archive. Do not tag
 `v0.1.0-alpha` while this decision is unresolved.
+
+The generated integration feed has one narrow publication exception recorded in
+`LICENSE-DATA.md`. That exception does not clear this package or repository
+release gate.
 
 The project owner selected MIT for project-owned source code and original
 documentation on 2026-08-15. The grant and its scope are recorded in

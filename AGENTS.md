@@ -33,6 +33,7 @@ and clauses before editing.
 | `src/agentsec/` | CLI, scan engine, analyzers, detectors, output, and packaged resources |
 | `data/threat-db.yaml` | Authoring data for detector intelligence |
 | `data/intelligence/` | Source bibliography and dated event ledger |
+| `exports/security-feed.v1.json` | Public metadata feed mirrored to the guide and landing |
 | `schemas/` | Public scan-result contracts and committed digest |
 | `scripts/` | Deterministic builders, benchmark wrapper, and Markdown checker |
 | `tests/` | Unit, integration, fixture, package, safety, and golden tests |
@@ -101,6 +102,7 @@ status and confidence.
 | IOC and detector inputs | `data/threat-db.yaml` | `src/agentsec/resources/threat-db.json` |
 | Sources and reports | `data/intelligence/sources.yaml` | `docs/SECURITY-INTELLIGENCE.md` and packaged JSON |
 | Events and corrections | `data/intelligence/events.yaml` | `docs/SECURITY-TIMELINE.md` and packaged JSON |
+| Guide and landing integration | validated threat and intelligence metadata | `exports/security-feed.v1.json` |
 | Scan-result schema | `schemas/scan-result-v1.schema.json` | `schemas/scan-result-v1.schema.sha256` and wheel resources |
 
 Do not edit generated Markdown, JSON, or digests as a standalone fix. Change the
@@ -126,6 +128,7 @@ Run the relevant builder after changing its source:
 .venv/bin/python scripts/build_scan_schema_digest.py
 .venv/bin/python scripts/build_scan_schema_digest.py --check
 .venv/bin/python scripts/build_intelligence_docs.py
+.venv/bin/python scripts/build_security_feed.py
 ```
 
 Then require a clean second generation:
@@ -136,7 +139,8 @@ git diff --exit-code -- \
   schemas/scan-result-v1.schema.sha256 \
   src/agentsec/resources/security-intelligence.json \
   docs/SECURITY-INTELLIGENCE.md \
-  docs/SECURITY-TIMELINE.md
+  docs/SECURITY-TIMELINE.md \
+  exports/security-feed.v1.json
 ```
 
 ## Documentation style
@@ -165,12 +169,14 @@ Install `.[dev]` before setting `PIP_NO_INDEX=1`. Then run:
 .venv/bin/python scripts/build_threat_db.py
 .venv/bin/python scripts/build_scan_schema_digest.py --check
 .venv/bin/python scripts/build_intelligence_docs.py
+.venv/bin/python scripts/build_security_feed.py
 git diff --exit-code -- \
   src/agentsec/resources/threat-db.json \
   schemas/scan-result-v1.schema.sha256 \
   src/agentsec/resources/security-intelligence.json \
   docs/SECURITY-INTELLIGENCE.md \
-  docs/SECURITY-TIMELINE.md
+  docs/SECURITY-TIMELINE.md \
+  exports/security-feed.v1.json
 .venv/bin/ruff check src tests scripts
 .venv/bin/mypy src scripts
 PIP_NO_INDEX=1 .venv/bin/pytest \
@@ -188,8 +194,9 @@ Do not hide these inputs through exclusions.
 
 ## Release gate
 
-`LICENSE-DECISION.md` blocks public redistribution, tags, GitHub releases,
-source archives, and PyPI publication. Release-specific package and tag values
+`LICENSE-DECISION.md` blocks package and repository publication, tags, GitHub
+releases, source archives, and PyPI publication. The narrow generated-feed
+exception is recorded in `LICENSE-DATA.md`. Release-specific package and tag values
 live in `CHANGELOG.md`. Create no tag until the recorded data licensing review
 is resolved.
 

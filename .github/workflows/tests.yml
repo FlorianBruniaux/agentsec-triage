@@ -45,6 +45,12 @@ jobs:
       - name: Require deterministic generated intelligence
         run: git diff --exit-code -- docs/SECURITY-INTELLIGENCE.md docs/SECURITY-TIMELINE.md src/agentsec/resources/security-intelligence.json
 
+      - name: Rebuild public security feed
+        run: python scripts/build_security_feed.py
+
+      - name: Require deterministic public security feed
+        run: git diff --exit-code -- exports/security-feed.v1.json
+
       - name: Require current scan-result schema digest
         run: python scripts/build_scan_schema_digest.py --check
 
@@ -113,3 +119,21 @@ jobs:
           PIP_NO_INDEX=1 python -m pip install --no-deps --no-index "${wheel}"
           agentsec doctor
           python -m agentsec doctor
+
+  consumer-sync:
+    name: Guide and landing feed mirrors
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out AgentSec
+        uses: actions/checkout@v4
+
+      - name: Clone public consumers
+        run: |
+          git clone --depth 1 https://github.com/FlorianBruniaux/claude-code-ultimate-guide.git ../claude-code-ultimate-guide
+          git clone --depth 1 https://github.com/FlorianBruniaux/claude-code-ultimate-guide-landing.git ../claude-code-ultimate-guide-landing
+
+      - name: Reject feed drift
+        run: |
+          python scripts/sync_security_feed.py --check \
+            --guide-root ../claude-code-ultimate-guide \
+            --landing-root ../claude-code-ultimate-guide-landing

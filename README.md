@@ -43,6 +43,8 @@ result. In particular, exit code `2` is an incomplete scan, not a pass.
 - [Security policy](SECURITY.md): vulnerabilities, false results, and IOC corrections.
 - [Security intelligence](docs/SECURITY-INTELLIGENCE.md): reviewed sources.
 - [Security timeline](docs/SECURITY-TIMELINE.md): events tracked by AgentSec.
+- [Intelligence authoring](docs/intelligence-authoring.md): add a source, fiche, IOC, or detector.
+- [Public security feed](exports/security-feed.v1.json): versioned metadata consumed by the guide and landing.
 - [Roadmap](ROADMAP.md): priorities, release gates, and non-goals.
 - [Changelog](CHANGELOG.md): release-specific versions and implemented changes.
 - [Contributing](CONTRIBUTING.md): test-first and threat-source requirements.
@@ -61,7 +63,8 @@ The related educational security page is <https://cc.bruniaux.com/security/>.
 Project-owned code and original documentation are licensed under the
 [MIT License](LICENSE). The data paths listed in
 [LICENSE-DATA.md](LICENSE-DATA.md) remain unavailable for public redistribution
-until their separate rights and CC BY-SA 4.0 review is complete.
+until their separate rights and CC BY-SA 4.0 review is complete. The narrow
+public-feed exception and excluded fields are recorded in that file.
 
 The repository must remain private. Do not publish a package, tag, archive, or
 public release while [LICENSE-DECISION.md](LICENSE-DECISION.md) is unresolved.
