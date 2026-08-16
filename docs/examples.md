@@ -104,10 +104,10 @@ agentsec scan . --format json --redact
 ```
 
 The expected exit code is `2`. The repository `.git` metadata produces the
-unscanned-history diagnostic. `tests/fixtures/lockfiles/bun.lockb` produces the
-unsupported-format diagnostic. A local `.venv` or build output may add further
-diagnostics. CI checks detector findings against the positive fixture directly;
-the full self-scan is an incomplete-coverage check, not a detector oracle.
+unscanned-history diagnostic. A local `.venv` or build output may add further
+diagnostics. CI checks the unsupported Bun lockfile plus positive and negative
+detector inputs against their fixtures directly. The full self-scan remains an
+incomplete-coverage check rather than an oracle for individual detectors.
 
 The negative fixture demonstrates completed applicable checks without hiding
 files:

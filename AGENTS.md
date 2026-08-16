@@ -190,12 +190,12 @@ CI measures the coverage threshold on Linux. macOS and Windows run the full
 applicable test suite without comparing mutually exclusive operating-system
 branches against the Linux coverage percentage.
 
-Verify all three repository-shaped scans. `agentsec scan . --format json
---redact` must exit `2` because the repository contains `.git` and an unsupported
-binary Bun lockfile fixture. The positive fixture must exit `1`, complete its
-applicable checks, and contain a critical finding. The negative fixture must exit
-`1`, report `complete: true`, emit no diagnostic, and contain no critical finding.
-Do not hide these inputs through exclusions.
+Verify four repository-shaped scans. `agentsec scan . --format json --redact`
+must exit `2` and report an incomplete result. The lockfile fixture must exit `2`
+and report its unsupported binary Bun lockfile. The positive fixture must exit
+`1`, complete its applicable checks, and contain a critical finding. The negative
+fixture must exit `1`, report `complete: true`, emit no diagnostic, and contain
+no critical finding. Do not hide these inputs through exclusions.
 
 ## Release gate
 

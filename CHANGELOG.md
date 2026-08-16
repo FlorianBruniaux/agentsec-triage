@@ -48,7 +48,7 @@ authorized public release while the licensing decision remains unresolved.
   `LF`; runtime schema verification normalizes line endings; redacted root paths
   use a stable delimiter; POSIX descriptor regressions run on POSIX; and Windows
   keeps native safe-reader coverage without a Linux-only percentage comparison.
-  CI checks detector findings against dedicated positive and negative fixtures.
+  CI checks unsupported input plus detector findings against dedicated fixtures.
 - Made POSIX capability access fail closed when absent and type-check cleanly on
   Windows without weakening directory or process-tree handling.
 - Normalized scan-result schema line endings before computing its digest, so

@@ -86,12 +86,15 @@ jobs:
           set +e
           agentsec scan . --format json --redact > self-scan.json
           self_scan_status=$?
+          agentsec scan tests/fixtures/lockfiles --format json > unsupported-scan.json
+          unsupported_scan_status=$?
           agentsec scan tests/fixtures/shai_hulud/positive --format json > positive-scan.json
           positive_scan_status=$?
           agentsec scan tests/fixtures/shai_hulud/negative --format json > negative-scan.json
           negative_scan_status=$?
           set -e
           test "${self_scan_status}" -eq 2
+          test "${unsupported_scan_status}" -eq 2
           test "${positive_scan_status}" -eq 1
           test "${negative_scan_status}" -eq 1
           python - <<'PY'
@@ -100,12 +103,18 @@ jobs:
 
           self_scan = json.loads(Path("self-scan.json").read_text(encoding="utf-8"))
           assert self_scan["complete"] is False
+          assert self_scan["diagnostics"]
+
+          unsupported = json.loads(
+              Path("unsupported-scan.json").read_text(encoding="utf-8")
+          )
+          assert unsupported["complete"] is False
           assert any(
               item["path"].replace("\\", "/").endswith(
-                  "tests/fixtures/lockfiles/bun.lockb"
+                  "bun.lockb"
               )
               and item["message"] == "Unsupported binary Bun lockfile format"
-              for item in self_scan["diagnostics"]
+              for item in unsupported["diagnostics"]
           )
 
           positive = json.loads(Path("positive-scan.json").read_text(encoding="utf-8"))
