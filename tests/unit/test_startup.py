@@ -14,6 +14,10 @@ from agentsec.analyzers.startup import (
 )
 from agentsec.models import Diagnostic, DiagnosticKind
 
+_POSIX_SAFE_READER = pytest.mark.skipif(
+    os.name == "nt", reason="POSIX descriptor regression"
+)
+
 
 def test_extracts_only_exact_claude_startup_events(tmp_path: Path):
     settings = tmp_path / ".claude" / "settings.json"
@@ -239,6 +243,7 @@ def test_claude_config_file_symlink_is_reported_without_being_followed(tmp_path:
     assert "symlink" in diagnostics[0].message.lower()
 
 
+@_POSIX_SAFE_READER
 def test_config_parent_mutation_during_open_is_rejected(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ):
@@ -301,6 +306,7 @@ def test_rejects_symlink_in_config_ancestor(tmp_path: Path):
     assert diagnostics[0].kind is DiagnosticKind.ERROR
 
 
+@_POSIX_SAFE_READER
 def test_fails_closed_when_anchored_no_follow_open_is_unavailable(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ):
@@ -426,6 +432,7 @@ def test_rejects_fifo_without_blocking(tmp_path: Path):
     _assert_error(settings, hooks, diagnostics)
 
 
+@_POSIX_SAFE_READER
 def test_reads_startup_config_in_bounded_chunks(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
     settings = tmp_path / ".claude" / "settings.json"
     settings.parent.mkdir()

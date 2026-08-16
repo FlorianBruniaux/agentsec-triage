@@ -222,9 +222,9 @@ def test_posix_uid_zero_trusts_root_owned_owner_writable_system_chain(
     system_git = Path("/usr/bin/git")
     if not system_git.is_file() or system_git.is_symlink():
         pytest.skip("trusted /usr/bin/git unavailable")
-    monkeypatch.setattr(git_history.os, "geteuid", lambda: 0)
-    monkeypatch.setattr(git_history.os, "getegid", lambda: 0)
-    monkeypatch.setattr(git_history.os, "getgroups", lambda: [0])
+    monkeypatch.setattr(git_history.os, "geteuid", lambda: 0, raising=False)
+    monkeypatch.setattr(git_history.os, "getegid", lambda: 0, raising=False)
+    monkeypatch.setattr(git_history.os, "getgroups", lambda: [0], raising=False)
 
     assert git_history._posix_path_is_uncontrolled(system_git) is True
 
@@ -235,9 +235,9 @@ def test_posix_uid_zero_rejects_non_root_owned_candidate(
     candidate = tmp_path / "git"
     candidate.write_bytes(b"untrusted")
     candidate.chmod(0o755)
-    monkeypatch.setattr(git_history.os, "geteuid", lambda: 0)
-    monkeypatch.setattr(git_history.os, "getegid", lambda: 0)
-    monkeypatch.setattr(git_history.os, "getgroups", lambda: [0])
+    monkeypatch.setattr(git_history.os, "geteuid", lambda: 0, raising=False)
+    monkeypatch.setattr(git_history.os, "getegid", lambda: 0, raising=False)
+    monkeypatch.setattr(git_history.os, "getgroups", lambda: [0], raising=False)
 
     assert git_history._posix_path_is_uncontrolled(candidate) is False
 
@@ -500,6 +500,7 @@ def test_thread_start_failure_cleans_process_and_pipes(
         "Popen",
         lambda *args, **kwargs: process,
     )
+    monkeypatch.setattr(git_history, "_taskkill_process_tree", lambda _pid: False)
     original_start = git_history.threading.Thread.start
     calls = 0
 
@@ -530,6 +531,7 @@ def test_missing_pipe_cleans_process_and_remaining_pipe(
         "Popen",
         lambda *args, **kwargs: process,
     )
+    monkeypatch.setattr(git_history, "_taskkill_process_tree", lambda _pid: False)
 
     with pytest.raises(git_history._GitExecutionError):
         git_history._run_git_bounded([sys.executable], tmp_path, {})
@@ -665,6 +667,7 @@ def _mock_git(
     monkeypatch.setattr(shutil, "which", lambda *args, **kwargs: trusted_executable)
     monkeypatch.setattr(git_history.subprocess, "run", fake_run)
     monkeypatch.setattr(git_history.subprocess, "Popen", fake_popen)
+    monkeypatch.setattr(git_history, "_taskkill_process_tree", lambda _pid: False)
     return process
 
 

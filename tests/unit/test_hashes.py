@@ -9,6 +9,10 @@ import agentsec.analyzers.safe_io as safe_io
 from agentsec.analyzers.hashes import hash_file
 from agentsec.models import Diagnostic, DiagnosticKind
 
+_POSIX_SAFE_READER = pytest.mark.skipif(
+    os.name == "nt", reason="POSIX descriptor regression"
+)
+
 
 @pytest.mark.parametrize(
     "relative_path",
@@ -81,6 +85,7 @@ def test_symlinked_parent_directory_is_never_dereferenced(tmp_path: Path):
     _assert_hash_error(linked_parent / "payload", digest, diagnostics)
 
 
+@_POSIX_SAFE_READER
 def test_parent_replaced_by_symlink_during_open_fails_closed(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ):
@@ -144,6 +149,7 @@ def test_invalid_payload_path_returns_error():
     _assert_hash_error(path, digest, diagnostics)
 
 
+@_POSIX_SAFE_READER
 def test_streams_in_chunks_no_larger_than_64_kib(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ):
@@ -166,6 +172,7 @@ def test_streams_in_chunks_no_larger_than_64_kib(
     assert max(read_sizes) <= 64 * 1024
 
 
+@_POSIX_SAFE_READER
 def test_fails_closed_when_opened_file_identity_differs(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ):
@@ -186,6 +193,7 @@ def test_fails_closed_when_opened_file_identity_differs(
     _assert_hash_error(path, digest, diagnostics)
 
 
+@_POSIX_SAFE_READER
 def test_fails_closed_when_file_changes_between_lstat_and_open(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ):
@@ -204,6 +212,7 @@ def test_fails_closed_when_file_changes_between_lstat_and_open(
     _assert_hash_error(path, digest, diagnostics)
 
 
+@_POSIX_SAFE_READER
 def test_fails_closed_when_path_becomes_symlink_after_open(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ):
@@ -230,6 +239,7 @@ def test_fails_closed_when_path_becomes_symlink_after_open(
     _assert_hash_error(path, digest, diagnostics)
 
 
+@_POSIX_SAFE_READER
 def test_fails_closed_when_file_changes_during_hashing(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ):
@@ -253,6 +263,7 @@ def test_fails_closed_when_file_changes_during_hashing(
     _assert_hash_error(path, digest, diagnostics)
 
 
+@_POSIX_SAFE_READER
 def test_fails_closed_when_file_changes_before_final_path_check(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ):
@@ -276,6 +287,7 @@ def test_fails_closed_when_file_changes_before_final_path_check(
     _assert_hash_error(path, digest, diagnostics)
 
 
+@_POSIX_SAFE_READER
 def test_rejects_opened_reparse_point(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ):
@@ -314,6 +326,7 @@ def test_rejects_opened_reparse_point(
         ("payload", True),
     ],
 )
+@_POSIX_SAFE_READER
 def test_close_failure_returns_error_and_attempts_all_cleanup(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,

@@ -106,7 +106,7 @@ def test_redaction_matches_serialized_and_native_windows_root_forms() -> None:
 
     assert redacted == {
         "root": "<SCAN_ROOT>",
-        "diagnostic": r"<SCAN_ROOT>\nested\warning.txt",
+        "diagnostic": "<SCAN_ROOT>/nested\\warning.txt",
     }
 
 
@@ -119,12 +119,13 @@ def test_json_matches_public_schema(empty_scan_result: ScanResult):
 
 def test_public_schema_is_meta_valid_and_matches_generated_digest() -> None:
     raw_schema = Path("schemas/scan-result-v1.schema.json").read_bytes()
+    canonical_schema = raw_schema.replace(b"\r\n", b"\n").replace(b"\r", b"\n")
     schema = json.loads(raw_schema)
     digest = Path("schemas/scan-result-v1.schema.sha256").read_text(encoding="ascii")
 
     Draft202012Validator.check_schema(schema)
 
-    assert digest == f"{sha256(raw_schema).hexdigest()}\n"
+    assert digest == f"{sha256(canonical_schema).hexdigest()}\n"
 
 
 def test_public_schema_accepts_contested_confidence() -> None:

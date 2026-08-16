@@ -96,7 +96,8 @@ def test_builder_normalizes_input_line_endings_for_cross_platform_digests(
 ) -> None:
     source = PROJECT_ROOT / "data" / "threat-db.yaml"
     crlf_database = tmp_path / "threat-db-crlf.yaml"
-    crlf_database.write_bytes(source.read_bytes().replace(b"\n", b"\r\n"))
+    canonical_database = source.read_bytes().replace(b"\r\n", b"\n").replace(b"\r", b"\n")
+    crlf_database.write_bytes(canonical_database.replace(b"\n", b"\r\n"))
     lf_output = tmp_path / "lf.json"
     crlf_output = tmp_path / "crlf.json"
 

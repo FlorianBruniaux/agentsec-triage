@@ -46,6 +46,7 @@ def _redact_value(value: object, roots: tuple[str, ...]) -> object:
         for root in roots:
             if root:
                 redacted = redacted.replace(root, "<SCAN_ROOT>")
+        redacted = redacted.replace("<SCAN_ROOT>\\", "<SCAN_ROOT>/")
         redacted = _USER_HOME_PATH_PATTERN.sub("<REDACTED_PATH>", redacted)
         return _SECRET_PATTERN.sub("<REDACTED_SECRET>", redacted)
     return value

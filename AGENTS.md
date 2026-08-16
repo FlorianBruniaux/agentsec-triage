@@ -186,6 +186,10 @@ PIP_NO_INDEX=1 .venv/bin/python -m build --no-isolation
 .venv/bin/python -m agentsec doctor
 ```
 
+CI measures the coverage threshold on Linux. macOS and Windows run the full
+applicable test suite without comparing mutually exclusive operating-system
+branches against the Linux coverage percentage.
+
 Verify both repository-shaped scans. `agentsec scan . --format json --redact`
 must exit `2` because the repository contains `.git`, positive fixtures, and an
 unsupported binary Bun lockfile fixture. The negative fixture must exit `1`,

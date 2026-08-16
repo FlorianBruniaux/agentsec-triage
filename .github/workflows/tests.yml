@@ -64,9 +64,16 @@ jobs:
         run: mypy src scripts
 
       - name: Tests and coverage threshold without package index
+        if: runner.os == 'Linux'
         env:
           PIP_NO_INDEX: "1"
         run: pytest --cov=agentsec --cov-report=term-missing
+
+      - name: Cross-platform tests without package index
+        if: runner.os != 'Linux'
+        env:
+          PIP_NO_INDEX: "1"
+        run: pytest
 
       - name: Build wheel and source distribution without package index
         env:

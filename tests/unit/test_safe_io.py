@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 from contextlib import suppress
 from pathlib import Path
 
@@ -8,6 +9,10 @@ import pytest
 from agentsec.analyzers import safe_io
 from agentsec.analyzers.safe_io import safe_read_regular_file
 from agentsec.models import DiagnosticKind
+
+_POSIX_SAFE_READER = pytest.mark.skipif(
+    os.name == "nt", reason="POSIX descriptor regression"
+)
 
 
 def test_reads_regular_file_with_exact_limit(tmp_path: Path) -> None:
@@ -20,6 +25,7 @@ def test_reads_regular_file_with_exact_limit(tmp_path: Path) -> None:
     assert diagnostics == ()
 
 
+@_POSIX_SAFE_READER
 def test_posix_growth_never_reads_past_physical_budget(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -63,6 +69,7 @@ def test_zero_budget_accepts_only_empty_file(tmp_path: Path) -> None:
     assert diagnostics[0].kind is DiagnosticKind.ERROR
 
 
+@_POSIX_SAFE_READER
 def test_zero_budget_detects_empty_file_growth_without_physical_read(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -111,6 +118,7 @@ def test_absolute_safe_read_cap_cannot_be_increased_by_caller(tmp_path: Path) ->
     assert diagnostics[0].kind is DiagnosticKind.ERROR
 
 
+@_POSIX_SAFE_READER
 def test_parent_traversal_close_failure_still_closes_following_descriptor(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:

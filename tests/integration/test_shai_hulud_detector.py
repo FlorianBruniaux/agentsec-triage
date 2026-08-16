@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import shutil
 import subprocess
 from pathlib import Path
@@ -842,6 +843,7 @@ def test_zero_aggregate_budget_rejects_nonempty_file_without_reading(
     assert read_calls == 0
 
 
+@pytest.mark.skipif(os.name == "nt", reason="POSIX descriptor regression")
 def test_aggregate_budget_stops_after_failed_physical_read(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:

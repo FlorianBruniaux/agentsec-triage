@@ -245,6 +245,20 @@ def test_doctor_validates_local_resources_and_schema_without_network() -> None:
     assert "schema: valid" in completed.stdout
 
 
+def test_doctor_accepts_crlf_schema_bytes(
+    monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    raw_schema = (PROJECT_ROOT / "schemas" / "scan-result-v1.schema.json").read_bytes()
+    canonical_schema = raw_schema.replace(b"\r\n", b"\n").replace(b"\r", b"\n")
+    crlf_schema = canonical_schema.replace(b"\n", b"\r\n")
+    monkeypatch.setattr(cli, "_read_schema_bytes", lambda: crlf_schema)
+
+    result = cli._doctor()
+
+    assert result == 0
+    assert "schema: valid" in capsys.readouterr().out
+
+
 def test_doctor_from_wheel_without_dependencies_validates_packaged_schema(tmp_path: Path) -> None:
     dist = tmp_path / "dist"
     environment = tmp_path / "no-deps"

@@ -197,7 +197,7 @@ def _doctor() -> int:
     try:
         raw_schema = _read_schema_bytes()
         expected_digest = _read_schema_digest()
-        if sha256(raw_schema).hexdigest() != expected_digest:
+        if sha256(_canonical_text_bytes(raw_schema)).hexdigest() != expected_digest:
             raise ValueError("schema integrity digest mismatch")
         schema = json.loads(raw_schema)
         _validate_schema_contract(schema)
@@ -222,6 +222,10 @@ def _doctor() -> int:
         )
     )
     return 0
+
+
+def _canonical_text_bytes(raw: bytes) -> bytes:
+    return raw.replace(b"\r\n", b"\n").replace(b"\r", b"\n")
 
 
 def _read_schema_bytes() -> bytes:
