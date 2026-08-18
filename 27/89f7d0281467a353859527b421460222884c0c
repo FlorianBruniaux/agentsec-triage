@@ -1,0 +1,74 @@
+CHANGELOG.md
+  s_0df90997879182::t_f006d75d204619 62-64
+  s_0df90997879182::t_7255fff06b758f 10-13,57-61
+src/agentsec/engine/discovery.py
+  s_0df90997879182::t_f006d75d204619 13,28,48-49
+  s_0df90997879182::t_fd00af329b22e4 5,15-17,122,127-131,167,231,320,344-352
+  s_0df90997879182::t_bf19e15ad6ce28 14,29,50-53,121,175-183,185-194,267
+  s_0df90997879182::t_f50948f2520af6 71-78,120,169-174,184,266,268,305-306,324,341
+  s_a6272ac9eeea28::t_695a5b6ded5e1c 307
+README.md
+  s_0df90997879182::t_7255fff06b758f 34-42
+docs/examples.md
+  s_0df90997879182::t_7255fff06b758f 20-28,64-69,71-85,124-126
+  s_0df90997879182::t_f006d75d204619 35-37,117-119
+tests/integration/test_cli.py
+  s_0df90997879182::t_3d4a5ff3085834 51-62,65-97,99,101,138-139
+  s_0df90997879182::t_4414fc78b81423 63
+  s_0df90997879182::t_942b92b2528051 64,120-137
+  s_0df90997879182::t_7d192659662297 98,100,102-119
+src/agentsec/engine/runner.py
+  s_0df90997879182::t_fd00af329b22e4 6,41-42,92-93,97,105,110-117,124-129,140-148,166,179-187
+  s_a6272ac9eeea28::t_4d6dbc0b7f7395 188-189
+docs/installation.md
+  s_0df90997879182::t_7255fff06b758f 36-46
+src/agentsec/cli.py
+  s_0df90997879182::t_fd00af329b22e4 16,44-101,108,178-180,197-203,212-225
+  s_0df90997879182::t_f006d75d204619 28,30-31,102-107,167-174,195
+  s_0df90997879182::t_bf19e15ad6ce28 29,109-114,163-166,196
+  s_a6272ac9eeea28::t_087242b1e1314b 175-176,226-227
+PROMPT.md
+  s_0df90997879182::t_7255fff06b758f 26
+src/agentsec/detectors/shai_hulud.py
+  s_0df90997879182::t_bf19e15ad6ce28 130,134-136,219-232,265,274-279,282-295,303,307
+  s_0df90997879182::t_a5cbdbb89732f8 280-281
+  s_0df90997879182::t_fd00af329b22e4 162-163
+tests/integration/test_shai_hulud_detector.py
+  s_0df90997879182::t_7d192659662297 615-628,643-662
+  s_0df90997879182::t_615d5fcddd90ee 629-642
+tests/unit/test_discovery.py
+  s_0df90997879182::t_942b92b2528051 121-122
+  s_0df90997879182::t_bade0dc88fafed 37-41,52-55,152-155
+  s_0df90997879182::t_33b741fa169918 58-92,94,96-98
+  s_0df90997879182::t_7d192659662297 99-120
+  s_0df90997879182::t_8c660c1f018598 93,95
+  s_a6272ac9eeea28::t_9a09a112104e37 56-57
+src/agentsec/detectors/base.py
+  s_0df90997879182::t_fd00af329b22e4 5,36
+tests/unit/test_documentation.py
+  s_0df90997879182::t_58cbd919c6e9e9 55-70
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "2789f7d0281467a353859527b421460222884c0c",
+  "prompts": {},
+  "sessions": {
+    "s_0df90997879182": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019fd73a-588d-7f03-ab50-494ca0e95848",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Florian BRUNIAUX <florian@bruniaux.com>"
+    },
+    "s_a6272ac9eeea28": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c67912ad-4ff6-4340-b106-34a9a2e26546",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "Florian BRUNIAUX <florian@bruniaux.com>"
+    }
+  }
+}
