@@ -9,3 +9,4 @@ htmlcov/
 build/
 dist/
 docs/superpowers/
+.idea
