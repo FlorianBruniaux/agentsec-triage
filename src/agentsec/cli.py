@@ -13,7 +13,7 @@ from typing import NoReturn
 from agentsec import __version__
 from agentsec.detectors.registry import get_detectors
 from agentsec.engine.discovery import DiscoveryLimits
-from agentsec.engine.runner import ProgressCallback, run_scan
+from agentsec.engine.runner import ProgressCallback, ProgressState, run_scan
 from agentsec.models import ThreatDatabase
 from agentsec.output.human import render_human
 from agentsec.output.json_output import render_json
@@ -177,10 +177,12 @@ def _max_entries(value: str) -> int:
 def _scan(arguments: argparse.Namespace) -> int:
     progress = _progress_reporter(arguments)
     if progress is not None:
-        progress(1, "Loading threat database", False)
+        progress(1, "Loading threat database", False, None)
     database = _load_database(redact=arguments.redact, root=arguments.root)
     if database is None:
         return 2
+    if progress is not None:
+        progress(1, _database_progress_summary(database), False, None)
     try:
         detectors = get_detectors(arguments.detector_ids)
     except ValueError as error:
@@ -209,20 +211,86 @@ def _scan(arguments: argparse.Namespace) -> int:
     return result.exit_code()
 
 
+def _database_progress_summary(database: ThreatDatabase) -> str:
+    package_records = sum(
+        len(versions)
+        for mapping in (
+            database.package_versions,
+            database.wildcard_package_versions,
+            database.contested_package_versions,
+            database.contested_wildcard_package_versions,
+        )
+        for versions in mapping.values()
+    )
+    resource = resources.files("agentsec.resources").joinpath("threat-db.json")
+    return (
+        "Threat database ready: "
+        f"version={database.version} updated={database.updated} "
+        f"package_records={package_records} hashes={len(database.hashes)} "
+        f"domains={len(database.domains)} "
+        f"commit_indicators={len(database.commit_indicators)} resource={resource}"
+    )
+
+
 def _progress_reporter(arguments: argparse.Namespace) -> ProgressCallback | None:
     mode = arguments.progress
+    interactive = sys.stderr.isatty()
     enabled = mode == "always" or (
-        mode == "auto" and (arguments.verbose or sys.stderr.isatty())
+        mode == "auto" and (arguments.verbose or interactive)
     )
     if mode == "never" or not enabled:
         return None
 
-    def report(stage: int, message: str, detail: bool) -> None:
+    active_width = 0
+
+    def report(
+        stage: int,
+        message: str,
+        detail: bool,
+        state: ProgressState | None = None,
+    ) -> None:
+        nonlocal active_width
+        if state is not None and interactive:
+            line = _render_discovery_progress(stage, state)
+            sys.stderr.write("\r" + line.ljust(active_width))
+            sys.stderr.flush()
+            active_width = len(line)
+            if state.complete:
+                sys.stderr.write("\n")
+                sys.stderr.flush()
+                active_width = 0
+            return
         if detail and not arguments.verbose:
             return
-        print(f"[{stage}/5] {message}", file=sys.stderr, flush=True)
+        if active_width:
+            sys.stderr.write("\n")
+            active_width = 0
+        visible_message = (
+            redact_text(message, arguments.root) if arguments.redact else message
+        )
+        print(f"[{stage}/5] {visible_message}", file=sys.stderr, flush=True)
 
     return report
+
+
+def _render_discovery_progress(stage: int, state: ProgressState) -> str:
+    if state.complete:
+        bar = "[============] 100%"
+    else:
+        width = 12
+        travel = (width - 1) * 2
+        position = (state.entries // 250) % travel
+        if position >= width:
+            position = travel - position
+        cells = [" "] * width
+        cells[position] = ">"
+        if position > 0:
+            cells[position - 1] = "="
+        bar = "[" + "".join(cells) + "]"
+    return (
+        f"[{stage}/5] {bar} files={state.files} "
+        f"directories={state.directories} entries={state.entries}"
+    )
 
 
 def _detectors(arguments: argparse.Namespace) -> int:

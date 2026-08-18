@@ -38,7 +38,16 @@ _GLOBAL_NOT_SCANNED = (
     "remote.repositories",
 )
 
-ProgressCallback = Callable[[int, str, bool], None]
+
+@dataclass(frozen=True, slots=True)
+class ProgressState:
+    files: int
+    directories: int
+    entries: int
+    complete: bool
+
+
+ProgressCallback = Callable[[int, str, bool, ProgressState | None], None]
 
 
 @dataclass(slots=True)
@@ -94,26 +103,66 @@ def run_scan(
 ) -> ScanResult:
     """Discover a repository once and aggregate isolated detector executions."""
     started_ns = monotonic_ns()
-    _emit_progress(progress, 2, "Validating repository")
+    detector_ids = ",".join(sorted(detector.id for detector in detectors)) or "none"
+    _emit_progress(progress, 2, f"Validating repository: requested={root}")
     scan_root, root_diagnostics = resolve_scan_root(root, limits)
     context_root = scan_root if scan_root is not None else root.absolute()
     files: tuple[DiscoveredFile, ...]
     if scan_root is None:
+        _emit_progress(
+            progress,
+            2,
+            f"Repository validation failed: diagnostics={len(root_diagnostics)}",
+        )
         files = ()
         discovery_diagnostics = root_diagnostics
     else:
+        _emit_progress(
+            progress,
+            2,
+            f"Repository validated: root={scan_root} type=directory "
+            f"scan_mode=read-only detectors={detector_ids}",
+        )
+        _emit_progress(
+            progress,
+            2,
+            "Safety limits: "
+            f"max_files={limits.max_files} max_entries={limits.max_entries} "
+            f"max_directories={limits.max_directories} "
+            f"max_file_bytes={limits.max_file_bytes} "
+            f"max_total_bytes={limits.max_total_bytes}",
+        )
         _emit_progress(progress, 3, "Discovering files")
         files, discovery_diagnostics = discover(
             scan_root,
             limits,
             resolved_root=scan_root,
-            progress=lambda file_count, directory_count, entry_count: _emit_progress(
-                progress,
-                3,
-                "Discovered "
-                f"{file_count} paths across {directory_count} directories "
-                f"({entry_count} entries seen)",
-                detail=True,
+            progress=lambda file_count, directory_count, entry_count, complete: (
+                _emit_progress(
+                    progress,
+                    3,
+                    (
+                        "Discovery complete: "
+                        if complete
+                        else "Discovered "
+                    )
+                    + (
+                        f"files={file_count} directories={directory_count} "
+                        f"entries={entry_count}"
+                        if complete
+                        else (
+                            f"{file_count} paths across {directory_count} directories "
+                            f"({entry_count} entries seen)"
+                        )
+                    ),
+                    detail=not complete,
+                    state=ProgressState(
+                        files=file_count,
+                        directories=directory_count,
+                        entries=entry_count,
+                        complete=complete,
+                    ),
+                )
             ),
         )
     context = ScanContext(
@@ -182,9 +231,10 @@ def _emit_progress(
     message: str,
     *,
     detail: bool = False,
+    state: ProgressState | None = None,
 ) -> None:
     if progress is not None:
-        progress(stage, message, detail)
+        progress(stage, message, detail, state)
 
 
 def _not_applicable_result(detector_id: str) -> DetectorResult:

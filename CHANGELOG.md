@@ -9,8 +9,12 @@ authorized public release while the licensing decision remains unresolved.
 
 - Added terminal-aware scan progress with `--progress`, forced and disabled
   modes, plus `--verbose` file, directory, and byte counters. Progress is
-  bounded, contains no target paths or content, and stays on `stderr` so JSON
-  and human reports remain isolated on `stdout`.
+  bounded, contains no target content, and stays on `stderr` so JSON and human
+  reports remain isolated on `stdout`. Progress now reports the loaded threat
+  database metadata, resolved repository scope, selected detectors, active
+  safety limits, and an indeterminate discovery bar with exact counters. The
+  bar reaches `100%` only after traversal finishes. `--redact` hides repository
+  and bundled resource paths.
 - Added threat database 2.27.0 with seven primary-source-verified CVEs, four
   Paperclip and Browser Use skill or package records, corrected minimum-safe
   versions, 12 reviewed intelligence sources, seven dated fiches, and an

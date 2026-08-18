@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import io
 import json
 import os
 import shutil
@@ -79,11 +80,107 @@ def test_progress_always_uses_stderr_without_corrupting_json(tmp_path: Path) -> 
     assert completed.returncode == 0
     assert json.loads(completed.stdout)["complete"] is True
     assert "[1/5] Loading threat database" in completed.stderr
+    assert "[1/5] Threat database ready:" in completed.stderr
+    assert "version=2.27.0" in completed.stderr
+    assert "updated=2026-08-17" in completed.stderr
+    assert "resource=" in completed.stderr
+    assert "threat-db.json" in completed.stderr
+    assert "package_records=17" in completed.stderr
+    assert "hashes=3" in completed.stderr
+    assert "domains=7" in completed.stderr
+    assert "commit_indicators=1" in completed.stderr
     assert "[2/5] Validating repository" in completed.stderr
+    assert (
+        f"[2/5] Repository validated: root={tmp_path.resolve()} "
+        "type=directory scan_mode=read-only detectors=shai-hulud-keyv"
+        in completed.stderr
+    )
+    assert "[2/5] Safety limits:" in completed.stderr
+    assert "max_entries=1000000" in completed.stderr
+    assert "max_directories=100000" in completed.stderr
     assert "[3/5] Discovering files" in completed.stderr
+    assert (
+        "[3/5] Discovery complete: files=0 directories=1 entries=0"
+        in completed.stderr
+    )
     assert "[4/5] Running detectors" in completed.stderr
     assert "[5/5] Building report" in completed.stderr
     assert "[1/5]" not in completed.stdout
+
+
+def test_progress_redacts_repository_and_resource_paths(tmp_path: Path) -> None:
+    completed = _run(
+        "scan",
+        str(tmp_path),
+        "--format",
+        "json",
+        "--progress=always",
+        "--redact",
+    )
+
+    assert completed.returncode == 0
+    assert str(tmp_path) not in completed.stderr
+    assert str(PROJECT_ROOT) not in completed.stderr
+    assert "root=<SCAN_ROOT>" in completed.stderr
+    assert "resource=<REDACTED_PATH>" in completed.stderr
+
+
+def test_progress_confirms_repository_validation_failure(tmp_path: Path) -> None:
+    missing = tmp_path / "missing"
+
+    completed = _run(
+        "scan",
+        str(missing),
+        "--format",
+        "json",
+        "--progress=always",
+    )
+
+    assert completed.returncode == 2
+    assert (
+        "[2/5] Repository validation failed: diagnostics=1" in completed.stderr
+    )
+    assert "[3/5] Discovering files" not in completed.stderr
+
+
+def test_terminal_discovery_uses_indeterminate_bar_then_finishes_at_100(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    class TerminalBuffer(io.StringIO):
+        def isatty(self) -> bool:
+            return True
+
+    progress_state_type = getattr(cli, "ProgressState", None)
+    assert progress_state_type is not None
+    stream = TerminalBuffer()
+    monkeypatch.setattr(cli.sys, "stderr", stream)
+    arguments = cli.build_parser().parse_args(["scan", "."])
+    reporter = cli._progress_reporter(arguments)
+    assert reporter is not None
+
+    reporter(
+        3,
+        "Discovery progress: files=1000 directories=20 entries=1500",
+        True,
+        progress_state_type(1000, 20, 1500, False),
+    )
+
+    ongoing = stream.getvalue()
+    assert ongoing.startswith("\r[3/5] [")
+    assert "files=1000 directories=20 entries=1500" in ongoing
+    assert "%" not in ongoing
+
+    reporter(
+        3,
+        "Discovery complete: files=1250 directories=24 entries=1800",
+        False,
+        progress_state_type(1250, 24, 1800, True),
+    )
+
+    output = stream.getvalue()
+    assert "[============] 100%" in output
+    assert "files=1250 directories=24 entries=1800" in output
+    assert output.endswith("\n")
 
 
 def test_verbose_progress_reports_bounded_live_counts(tmp_path: Path) -> None:
@@ -98,7 +195,10 @@ def test_verbose_progress_reports_bounded_live_counts(tmp_path: Path) -> None:
     assert "Discovered 1001 paths" in completed.stderr
     assert "Inspected 1000 files" in completed.stderr
     assert "Inspected 1001 files" in completed.stderr
-    assert str(tmp_path) not in completed.stderr
+    assert (
+        f"root={tmp_path.resolve()} type=directory scan_mode=read-only"
+        in completed.stderr
+    )
 
 
 def test_scan_exposes_a_directory_budget_override(tmp_path: Path) -> None:

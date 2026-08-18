@@ -81,8 +81,22 @@ shows them only when `stderr` is a terminal. `--progress=always` forces them and
 `--progress=never` disables them. `--verbose` enables progress in non-terminal
 runs and adds bounded counters every 1,000 discovered or inspected files.
 
-Progress never includes target file content or absolute target paths. JSON and
-human reports remain on `stdout`.
+The first phase confirms the threat database version, update date, bundled
+resource location, and active package, hash, domain, and commit-indicator
+counts. The second phase prints `Repository validated` with the resolved root,
+read-only scan mode, selected detectors, and active safety limits.
+
+During discovery, an interactive terminal receives an indeterminate activity
+bar with exact file, directory, and entry counts. AgentSec does not invent a
+percentage because the final repository size is unknown until traversal ends.
+The bar displays `100%` only when the discovery phase has finished. Redirected
+output and CI receive stable newline-delimited messages without terminal control
+sequences.
+
+Progress never includes target file content. It shows the resolved repository
+and bundled resource paths by default so the operator can confirm the scan
+scope. Add `--redact` to replace those paths in progress and report output.
+JSON and human reports remain on `stdout`.
 
 ## Current detector coverage
 

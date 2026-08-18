@@ -37,8 +37,11 @@ For an interactive scan with phase and bounded counter updates:
 agentsec scan /path/to/repository --progress --verbose --redact
 ```
 
-Progress is written to `stderr`. The human or JSON report remains isolated on
-`stdout`, so local automation can parse it without stripping status lines.
+Progress is written to `stderr`. It confirms the loaded threat database,
+validated repository, scan limits, live discovery counts, and phase completion.
+The human or JSON report remains isolated on `stdout`, so local automation can
+parse it without stripping status lines. Use `--redact` when paths must not
+appear in progress output.
 
 Read the [examples and verdict guide](docs/examples.md) before interpreting the
 result. In particular, exit code `2` is an incomplete scan, not a pass.

@@ -14,7 +14,7 @@ _MAX_SAFE_ENTRIES = 1_000_000
 _MAX_SAFE_DIRECTORIES = 100_000
 _PROGRESS_FILE_INTERVAL = 1_000
 
-DiscoveryProgress = Callable[[int, int, int], None]
+DiscoveryProgress = Callable[[int, int, int, bool], None]
 
 
 @dataclass(frozen=True, slots=True)
@@ -191,6 +191,14 @@ def discover(
             len(discovered),
             state.directories_opened,
             state.entries_seen,
+            False,
+        )
+    if progress is not None:
+        progress(
+            len(discovered),
+            state.directories_opened,
+            state.entries_seen,
+            True,
         )
 
     return (
@@ -347,6 +355,7 @@ def _scan_directory(
                         len(discovered),
                         state.directories_opened,
                         state.entries_seen,
+                        False,
                     )
                 while len(discovered) >= state.next_progress_file_count:
                     state.next_progress_file_count += _PROGRESS_FILE_INTERVAL

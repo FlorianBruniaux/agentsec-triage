@@ -66,6 +66,14 @@ def test_docs_explain_progress_and_large_repository_traversal() -> None:
         "one aggregated diagnostic",
     ):
         assert concept in examples
+    for concept in (
+        "threat database",
+        "repository validated",
+        "indeterminate",
+        "100%",
+        "--redact",
+    ):
+        assert concept in examples
 
 
 def test_public_markdown_links_resolve_locally() -> None:
