@@ -18,14 +18,14 @@ EXPECTED_AUTHORING_COVERAGE = {
     "campaigns_total": 17,
     "commit_indicators_projected": 1,
     "cves_projected": 0,
-    "cves_total": 107,
+    "cves_total": 114,
     "domains_projected": 7,
     "domains_total": 7,
     "ignored_missing_platform": 64,
     "ignored_missing_version": 3,
-    "ignored_unsupported_platform": 5,
+    "ignored_unsupported_platform": 9,
     "malicious_skills_projected": 17,
-    "malicious_skills_total": 89,
+    "malicious_skills_total": 93,
     "malware_hashes_projected": 3,
     "malware_hashes_total": 5,
 }
@@ -41,7 +41,7 @@ def test_bundled_database_contains_keyv_campaign_iocs():
     from agentsec.threat_db import load_bundled_database
 
     database = load_bundled_database()
-    assert database.version == "2.26.0"
+    assert database.version == "2.27.0"
     assert "6.0.0" in database.package_versions["keyv"]
     assert "@keyv/" not in database.wildcard_package_versions
     assert "6.0.0" in database.contested_wildcard_package_versions["@keyv/"]
@@ -58,6 +58,43 @@ def test_bundled_database_contains_keyv_campaign_iocs():
     assert len(database.hashes) >= 3
 
 
+def test_authoring_database_records_verified_227_vulnerabilities_and_skill_iocs():
+    document = _load_authoring_yaml(PROJECT_ROOT / "data" / "threat-db.yaml")
+    cves = {
+        cast(str, entry["id"]): entry
+        for entry in cast(list[dict[str, object]], document["cve_database"])
+    }
+    expected_cves = {
+        "CVE-2026-54316",
+        "CVE-2026-12537",
+        "CVE-2026-67431",
+        "CVE-2026-67432",
+        "CVE-2026-63118",
+        "CVE-2026-63119",
+        "CVE-2026-67430",
+    }
+    assert expected_cves <= set(cves)
+    ruby_cves = expected_cves - {"CVE-2026-12537", "CVE-2026-54316"}
+    assert {cves[cve_id]["fixed_in"] for cve_id in ruby_cves} == {
+        "mcp gem 0.23.0"
+    }
+
+    versions = cast(dict[str, object], document["minimum_safe_versions"])
+    assert versions["claude-code"] == "2.1.163"
+    assert versions["gemini-cli"] == "0.39.1"
+    assert versions["run-gemini-cli"] == "0.1.22"
+    assert versions["mcp-ruby-sdk"] == "0.23.0"
+
+    skills = cast(list[dict[str, object]], document["malicious_skills"])
+    names = {cast(str, entry["name"]) for entry in skills}
+    assert {
+        "getpaperclipai/paperclip",
+        "browser-use-headless/browser-use-headless-skill",
+        "browser-use-headless",
+        "paperclip-ai",
+    } <= names
+
+
 def test_bundled_database_is_marked_complete():
     from agentsec.threat_db import load_bundled_database
 
@@ -69,10 +106,10 @@ def test_bundled_database_exposes_authoring_projection_coverage():
 
     coverage = load_bundled_database().authoring_coverage
 
-    assert coverage.malicious_skills_total == 89
+    assert coverage.malicious_skills_total == 93
     assert coverage.malicious_skills_projected == 17
     assert coverage.ignored_missing_platform == 64
-    assert coverage.ignored_unsupported_platform == 5
+    assert coverage.ignored_unsupported_platform == 9
     assert coverage.ignored_missing_version == 3
 
 
@@ -275,7 +312,7 @@ def test_builder_normalizes_canonical_source_deterministically(tmp_path: Path):
     ]
 
     assert [result.returncode for result in results] == [0, 0]
-    assert all("version=2.26.0" in result.stdout for result in results)
+    assert all("version=2.27.0" in result.stdout for result in results)
     assert first_output.read_bytes() == second_output.read_bytes()
 
     payload = json.loads(first_output.read_text(encoding="utf-8"))
@@ -394,7 +431,7 @@ def test_runtime_loader_rejects_projection_counts_that_disagree_with_runtime_or_
     elif mutation == "projected_commit_indicators":
         coverage["commit_indicators_projected"] = 0
     elif mutation == "cves_exceed_total":
-        coverage["cves_projected"] = 108
+        coverage["cves_projected"] = 115
     elif mutation == "techniques_exceed_total":
         coverage["attack_techniques_projected"] = 41
     elif mutation == "hashes_exceed_total":
@@ -493,8 +530,8 @@ def test_runtime_loader_rejects_duplicate_commit_indicators(
     ("original", "replacement"),
     [
         (
-            '"version": "2.26.0"',
-            '"version": "2.26.0",\n  "version": "do-not-leak"',
+            '"version": "2.27.0"',
+            '"version": "2.27.0",\n  "version": "do-not-leak"',
         ),
         (
             '"author": "claude"',

@@ -216,7 +216,7 @@ def test_db_info_reports_generated_database_version_and_ioc_counts() -> None:
 
     assert completed.returncode == 0
     assert completed.stderr == ""
-    assert "2.26.0" in completed.stdout
+    assert "2.27.0" in completed.stdout
     assert "package_versions=" in completed.stdout
     assert "contested_package_versions=0" in completed.stdout
     assert "contested_wildcard_package_versions=1" in completed.stdout
@@ -224,12 +224,12 @@ def test_db_info_reports_generated_database_version_and_ioc_counts() -> None:
     assert "hashes=" in completed.stdout
     assert "domains=" in completed.stdout
     assert "commit_indicators=" in completed.stdout
-    assert "authoring_malicious_skills=89" in completed.stdout
+    assert "authoring_malicious_skills=93" in completed.stdout
     assert "projected_malicious_skills=17" in completed.stdout
     assert "ignored_missing_platform=64" in completed.stdout
-    assert "ignored_unsupported_platform=5" in completed.stdout
+    assert "ignored_unsupported_platform=9" in completed.stdout
     assert "ignored_missing_version=3" in completed.stdout
-    assert "projected_cves=0/107" in completed.stdout
+    assert "projected_cves=0/114" in completed.stdout
     assert "projected_attack_techniques=0/40" in completed.stdout
     assert "projected_campaign_indicators=1/17" in completed.stdout
 
@@ -240,7 +240,7 @@ def test_doctor_validates_local_resources_and_schema_without_network() -> None:
     assert completed.returncode == 0
     assert completed.stderr == ""
     assert "Python:" in completed.stdout
-    assert "database: 2.26.0" in completed.stdout
+    assert "database: 2.27.0" in completed.stdout
     assert "resource: available" in completed.stdout
     assert "schema: valid" in completed.stdout
 

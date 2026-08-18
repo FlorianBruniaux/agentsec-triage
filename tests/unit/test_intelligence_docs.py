@@ -73,6 +73,39 @@ def test_initial_intelligence_separates_confirmed_and_contested_keyv_claims() ->
     assert contested["confidence"] == "contested"
 
 
+def test_claude_code_webfetch_cve_is_sourced_and_explicitly_not_detected() -> None:
+    source_document = _load_yaml("sources.yaml")
+    event_document = _load_yaml("events.yaml")
+    threat_document = yaml.safe_load(
+        (PROJECT_ROOT / "data" / "threat-db.yaml").read_text(encoding="utf-8")
+    )
+    assert isinstance(threat_document, dict)
+
+    sources = {
+        cast(str, source["id"]): source
+        for source in cast(list[dict[str, object]], source_document["sources"])
+    }
+    events = {
+        cast(str, event["id"]): event
+        for event in cast(list[dict[str, object]], event_document["events"])
+    }
+
+    advisory = sources["anthropic-ghsa-fg94-h982-f3mm"]
+    assert advisory["source_type"] == "advisory"
+    assert advisory["publisher"] == "Anthropic"
+
+    event = events["evt-2026-06-claude-code-webfetch-exfiltration"]
+    assert event["status"] == "confirmed"
+    assert event["confidence"] == "confirmed"
+    assert cast(dict[str, object], event["related"])["cve_ids"] == [
+        "CVE-2026-54316"
+    ]
+    assert cast(dict[str, object], event["detector_coverage"])["status"] == (
+        "not_detected"
+    )
+    assert threat_document["version"] == "2.27.0"
+
+
 def _write_documents(
     tmp_path: Path,
     source_document: dict[str, object],

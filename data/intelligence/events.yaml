@@ -1,6 +1,6 @@
 schema_version: "1"
 kind: events
-updated: "2026-08-07"
+updated: "2026-08-18"
 events:
   - id: evt-2026-08-keyv-campaign-disclosure
     event_type: campaign
@@ -52,3 +52,177 @@ events:
       notes: >-
         Matching scoped packages are reported high/contested with source
         attribution; lifecycle-only evidence remains a separate review finding.
+
+  - id: evt-2026-06-claude-code-webfetch-exfiltration
+    event_type: vulnerability
+    title: Claude Code patched pre-approved WebFetch domain exfiltration
+    summary: >-
+      Anthropic reported that a pre-approved Hugging Face hostname allowed
+      attacker-controlled paths to act as an out-of-band data channel when
+      untrusted content reached Claude Code context. The maintainer identifies
+      2.1.163 as the first patched release.
+    ecosystems: [claude-code, developer-tools]
+    disclosed_date: "2026-06-13"
+    status: confirmed
+    confidence: confirmed
+    source_ids: [anthropic-ghsa-fg94-h982-f3mm]
+    related:
+      campaign_ids: []
+      cve_ids: [CVE-2026-54316]
+      technique_ids: [trusted-domain-exfiltration]
+    detector_coverage:
+      status: not_detected
+      detector_ids: []
+      notes: >-
+        AgentSec does not inspect Claude Code versions, WebFetch allowlists, or
+        network activity. Repository scans cannot rule out this exposure.
+
+  - id: evt-2026-06-gemini-cli-headless-ci-rce
+    event_type: vulnerability
+    title: Gemini CLI and its GitHub Action patched pre-sandbox CI execution
+    summary: >-
+      NVD records that a crafted .gemini/.env file could execute commands on a
+      headless CI host before sandbox initialization. The affected version
+      floors cover both Gemini CLI and the run-gemini-cli GitHub Action.
+    ecosystems: [ci, gemini-cli, github-actions]
+    disclosed_date: "2026-06-24"
+    status: confirmed
+    confidence: confirmed
+    source_ids: [nvd-cve-2026-12537]
+    related:
+      campaign_ids: []
+      cve_ids: [CVE-2026-12537]
+      technique_ids: [pre-sandbox-configuration-execution]
+    detector_coverage:
+      status: not_detected
+      detector_ids: []
+      notes: >-
+        AgentSec does not parse Gemini configuration or GitHub Actions for this
+        execution path. Upgrade both affected components and review CI trust.
+
+  - id: evt-2026-07-mcp-ruby-sdk-five-advisories
+    event_type: vulnerability
+    title: MCP Ruby SDK fixed five transport and resource-exhaustion flaws
+    summary: >-
+      GitHub Advisory Database records five MCP Ruby SDK vulnerabilities fixed
+      in mcp gem 0.23.0. The set covers session ownership, request and line
+      limits, DNS-rebinding protection, and session retention.
+    ecosystems: [mcp, ruby]
+    disclosed_date: "2026-07-30"
+    status: confirmed
+    confidence: confirmed
+    source_ids:
+      - github-advisory-cve-2026-67431
+      - github-advisory-cve-2026-67432
+      - github-advisory-cve-2026-63118
+      - github-advisory-cve-2026-63119
+      - github-advisory-cve-2026-67430
+    related:
+      campaign_ids: []
+      cve_ids:
+        - CVE-2026-67431
+        - CVE-2026-67432
+        - CVE-2026-63118
+        - CVE-2026-63119
+        - CVE-2026-67430
+      technique_ids: [dns-rebinding, resource-exhaustion, session-hijacking]
+    detector_coverage:
+      status: not_detected
+      detector_ids: []
+      notes: >-
+        AgentSec does not inspect Ruby dependency manifests or live MCP
+        transports. The recorded remediation floor is mcp gem 0.23.0.
+
+  - id: evt-2026-08-paperclip-skill-supply-chain
+    event_type: campaign
+    title: Zenity reported delayed payloads in agent-skill typosquats
+    summary: >-
+      Zenity reported Paperclip and Browser Use typosquats that accumulated
+      reputation while clean and later directed agents to fetch external
+      payloads. The reported install count is aggregate and is not a victim
+      count.
+    ecosystems: [agent-skills, pypi, skills-sh]
+    disclosed_date: "2026-08-06"
+    status: monitoring
+    confidence: high
+    source_ids: [zenity-agent-skill-supply-chain-2026]
+    related:
+      campaign_ids: [paperclip-browser-use-2026]
+      cve_ids: []
+      technique_ids: [agent-as-dropper, delayed-payload, typosquatting]
+    detector_coverage:
+      status: not_detected
+      detector_ids: []
+      notes: >-
+        AgentSec does not inspect skills.sh installations, Python packages, or
+        payloads fetched after repository content is read.
+
+  - id: evt-2026-08-ghostjacking-research
+    event_type: disclosure
+    title: Tenet described observability data as an indirect injection channel
+    summary: >-
+      Tenet reports demonstrations where attacker-controlled log and telemetry
+      content influenced agents that held privileged tools. Reported success
+      rates, detection outcomes, and organization counts are Tenet's claims and
+      are not independent measurements by AgentSec.
+    ecosystems: [agent-tools, observability]
+    disclosed_date: "2026-08-09"
+    status: monitoring
+    confidence: review
+    source_ids: [tenet-ghostjacking-2026]
+    related:
+      campaign_ids: []
+      cve_ids: []
+      technique_ids: [indirect-prompt-injection, observability-poisoning]
+    detector_coverage:
+      status: not_detected
+      detector_ids: []
+      notes: >-
+        AgentSec does not read remote telemetry or observe live tool calls.
+        Repository scans cannot establish exposure to this attack path.
+
+  - id: evt-2026-07-numbat-release
+    event_type: remediation
+    title: Perplexity published the Numbat local agent monitor
+    summary: >-
+      Perplexity describes Numbat as a local monitor for supported agent event
+      streams, with 52 CEL rules in the reviewed release and enforcement that
+      must be enabled explicitly.
+    ecosystems: [agent-runtime, developer-tools]
+    disclosed_date: "2026-07-29"
+    status: confirmed
+    confidence: high
+    source_ids: [perplexity-numbat-2026]
+    related:
+      campaign_ids: []
+      cve_ids: []
+      technique_ids: [runtime-monitoring]
+    detector_coverage:
+      status: not_applicable
+      detector_ids: []
+      notes: >-
+        Numbat is a separate runtime control. AgentSec records the source but
+        does not install, invoke, or validate that tool.
+
+  - id: evt-2026-08-agent-skill-dynamic-analysis-tools
+    event_type: remediation
+    title: Zenity and Tenet published agent-security reference tools
+    summary: >-
+      Zenity documents AI Total for dynamic skill evaluation. Tenet publishes
+      agent-jackstop as a public reference repository, but AgentSec found no
+      visible software license and does not classify it as open source.
+    ecosystems: [agent-skills, developer-tools]
+    disclosed_date: "2026-08-09"
+    status: monitoring
+    confidence: review
+    source_ids: [zenity-ai-total-2026, tenet-agent-jackstop-2026]
+    related:
+      campaign_ids: []
+      cve_ids: []
+      technique_ids: [dynamic-analysis, runtime-guardrail]
+    detector_coverage:
+      status: not_applicable
+      detector_ids: []
+      notes: >-
+        These are external controls. AgentSec records their stated scope but
+        does not execute or endorse them.

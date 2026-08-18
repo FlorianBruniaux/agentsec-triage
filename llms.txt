@@ -18,6 +18,7 @@ diagnostics, and incomplete coverage; it does not certify a system as clean.
 - [Security intelligence](https://github.com/FlorianBruniaux/agentsec-triage/blob/main/docs/SECURITY-INTELLIGENCE.md)
 - [Security timeline](https://github.com/FlorianBruniaux/agentsec-triage/blob/main/docs/SECURITY-TIMELINE.md)
 - [Intelligence authoring](https://github.com/FlorianBruniaux/agentsec-triage/blob/main/docs/intelligence-authoring.md)
+- [Threat database update command](https://github.com/FlorianBruniaux/agentsec-triage/blob/main/.claude/commands/update-threat-db.md)
 - [Public security feed](https://github.com/FlorianBruniaux/agentsec-triage/blob/main/exports/security-feed.v1.json)
 
 ## Project governance

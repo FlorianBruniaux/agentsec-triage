@@ -48,13 +48,13 @@ def test_builder_emits_deterministic_valid_public_feed_without_gated_iocs(
     assert payload["schema_version"] == "1"
     assert payload["agentsec"]["version"] == "0.1.0a0"
     assert payload["database"] == {
-        "version": "2.26.0",
-        "updated": "2026-08-06",
+        "version": "2.27.0",
+        "updated": "2026-08-17",
         "record_counts": {
             "attack_techniques": 40,
             "campaigns": 17,
-            "cves": 107,
-            "malicious_skill_records": 89,
+            "cves": 114,
+            "malicious_skill_records": 93,
         },
     }
     assert payload["landing_metrics"] == {
@@ -64,9 +64,9 @@ def test_builder_emits_deterministic_valid_public_feed_without_gated_iocs(
         "malicious_payloads": 76,
         "skills_scanned": 3984,
     }
-    assert payload["intelligence"]["updated"] == "2026-08-07"
-    assert len(payload["intelligence"]["events"]) == 2
-    assert len(payload["intelligence"]["sources"]) == 6
+    assert payload["intelligence"]["updated"] == "2026-08-18"
+    assert len(payload["intelligence"]["events"]) == 9
+    assert len(payload["intelligence"]["sources"]) == 18
     assert [item["id"] for item in payload["detectors"]] == ["shai-hulud-keyv"]
 
     forbidden_keys = {

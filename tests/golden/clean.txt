@@ -1,4 +1,4 @@
-AgentSec 0.1.0a0 | threat database 2.26.0
+AgentSec 0.1.0a0 | threat database 2.27.0
 Complete: yes
 Coverage: files_seen=0 files_inspected=0 bytes_inspected=0
 No applicable detectors; no indicators found in completed checks.

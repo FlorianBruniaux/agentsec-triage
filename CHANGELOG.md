@@ -7,6 +7,12 @@ authorized public release while the licensing decision remains unresolved.
 
 ### Added
 
+- Added threat database 2.27.0 with seven primary-source-verified CVEs, four
+  Paperclip and Browser Use skill or package records, corrected minimum-safe
+  versions, 12 reviewed intelligence sources, seven dated fiches, and an
+  explicit `not_detected` or `not_applicable` coverage statement for every new
+  event. Added the canonical `/update-threat-db` workflow with source promotion,
+  generation, synchronization, and publication gates.
 - Added a schema-validated, deterministic `security-feed.v1.json` containing
   AgentSec versions, factual database counters, sourced landing metrics,
   detector contracts, and reviewed intelligence fiches. Added byte-for-byte
@@ -138,7 +144,7 @@ authorized public release while the licensing decision remains unresolved.
 | --- | --- |
 | Python package | `0.1.0a0` |
 | Intended Git tag | `v0.1.0-alpha` |
-| Threat database | `2.26.0` |
+| Threat database | `2.27.0` |
 | Detector | `shai-hulud-keyv` version `1` |
 | JSON schema | version `1` |
 | Python | 3.11, 3.12, and 3.13 |
@@ -147,8 +153,8 @@ authorized public release while the licensing decision remains unresolved.
 
 - Read-only, offline-by-default repository discovery with bounded traversal,
   diagnostic reporting, and incomplete-scan exit behavior.
-- Schema-validated threat database 2.26.0 import and deterministic runtime JSON
-  build.
+- Schema-validated threat database 2.26.0 import, reviewed 2.27.0 intelligence
+  update, and deterministic runtime JSON build.
 - `shai-hulud-keyv` detector for supported lockfiles, installed package metadata,
   exact payload hashes, and repository-local startup configuration. Local Git
   history is explicitly reported as not scanned until strict confinement exists.

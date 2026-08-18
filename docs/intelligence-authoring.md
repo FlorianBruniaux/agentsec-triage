@@ -102,6 +102,23 @@ Review these generated outputs before committing:
 - `exports/security-feed.v1.json`;
 - the guide and landing feed mirrors.
 
+## Canonical update workflow
+
+The full Claude Code command lives in
+`.claude/commands/update-threat-db.md`. It enforces the same order for manual
+and LLM-assisted updates:
+
+1. Research from the last recorded update date using primary sources first.
+2. Add evidence to `sources.yaml` and dated fiches to `events.yaml`.
+3. Add only exact detector inputs and version floors to `threat-db.yaml`.
+4. Record `not_detected` when no regression test proves detector coverage.
+5. Build AgentSec artifacts before writing either consumer mirror.
+6. Validate the guide and landing mirrors byte for byte against AgentSec.
+
+Run two supervised update cycles before considering scheduled automation. A
+scheduled job may discover candidates, but promotion still requires source
+review, schema validation, and the complete local gate.
+
 ## Publication boundary
 
 The public feed contains project metadata, factual counts, detector contracts,

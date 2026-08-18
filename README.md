@@ -44,6 +44,7 @@ result. In particular, exit code `2` is an incomplete scan, not a pass.
 - [Security intelligence](docs/SECURITY-INTELLIGENCE.md): reviewed sources.
 - [Security timeline](docs/SECURITY-TIMELINE.md): events tracked by AgentSec.
 - [Intelligence authoring](docs/intelligence-authoring.md): add a source, fiche, IOC, or detector.
+- [Threat database update command](.claude/commands/update-threat-db.md): source review, promotion gates, generation, and consumer sync.
 - [Public security feed](exports/security-feed.v1.json): versioned metadata consumed by the guide and landing.
 - [Roadmap](ROADMAP.md): priorities, release gates, and non-goals.
 - [Changelog](CHANGELOG.md): release-specific versions and implemented changes.

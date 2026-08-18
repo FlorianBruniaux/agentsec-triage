@@ -1,6 +1,6 @@
 schema_version: "1"
 kind: sources
-updated: "2026-08-07"
+updated: "2026-08-18"
 sources:
   - id: aikido-keyv-2026
     title: Keyv and Friends Compromised in npm Supply Chain Attack
@@ -72,4 +72,153 @@ sources:
     supports:
       - Community warning and discussion context; not an independent IOC authority.
     reviewed_date: "2026-08-07"
+    status: active
+
+  - id: anthropic-ghsa-fg94-h982-f3mm
+    title: Out-of-Band Data Exfiltration via Pre-Approved HuggingFace Domain in WebFetch
+    publisher: Anthropic
+    url: https://github.com/anthropics/claude-code/security/advisories/GHSA-fg94-h982-f3mm
+    source_type: advisory
+    published_date: "2026-06-13"
+    topics: [claude-code, data-exfiltration, webfetch]
+    supports:
+      - Claude Code versions from 0.2.54 before 2.1.163 allowed covert exfiltration through pre-approved Hugging Face paths.
+      - Version 2.1.163 is the first patched release identified by the maintainer.
+    reviewed_date: "2026-08-18"
+    status: active
+
+  - id: nvd-cve-2026-12537
+    title: CVE-2026-12537 Detail
+    publisher: NIST National Vulnerability Database
+    url: https://nvd.nist.gov/vuln/detail/CVE-2026-12537
+    source_type: database
+    published_date: "2026-06-24"
+    topics: [ci, gemini-cli, github-actions, pre-sandbox-rce]
+    supports:
+      - A crafted .gemini/.env file could execute commands on a headless CI host before sandbox initialization.
+      - Gemini CLI 0.39.1 and run-gemini-cli 0.1.22 are the patched version floors.
+    reviewed_date: "2026-08-18"
+    status: active
+
+  - id: github-advisory-cve-2026-67431
+    title: MCP Ruby SDK Ruby SSE Session Poisoning
+    publisher: GitHub Advisory Database
+    url: https://github.com/advisories/CVE-2026-67431
+    source_type: database
+    published_date: "2026-07-30"
+    topics: [mcp, ruby, session-isolation]
+    supports:
+      - MCP Ruby SDK releases before 0.23.0 did not bind SSE sessions to an owner.
+    reviewed_date: "2026-08-18"
+    status: active
+
+  - id: github-advisory-cve-2026-67432
+    title: MCP Ruby SDK Unbounded JSON-RPC Request Body
+    publisher: GitHub Advisory Database
+    url: https://github.com/advisories/CVE-2026-67432
+    source_type: database
+    published_date: "2026-07-30"
+    topics: [denial-of-service, mcp, ruby]
+    supports:
+      - MCP Ruby SDK releases before 0.23.0 accepted unbounded JSON-RPC request bodies.
+    reviewed_date: "2026-08-18"
+    status: active
+
+  - id: github-advisory-cve-2026-63118
+    title: MCP Ruby SDK Streamable HTTP DNS-Rebinding Protection
+    publisher: GitHub Advisory Database
+    url: https://github.com/advisories/CVE-2026-63118
+    source_type: database
+    published_date: "2026-07-30"
+    topics: [dns-rebinding, mcp, ruby]
+    supports:
+      - MCP Ruby SDK releases before 0.23.0 lacked Host and Origin protection for Streamable HTTP.
+    reviewed_date: "2026-08-18"
+    status: active
+
+  - id: github-advisory-cve-2026-63119
+    title: MCP Ruby SDK Unbounded Stdio Line Buffer
+    publisher: GitHub Advisory Database
+    url: https://github.com/advisories/CVE-2026-63119
+    source_type: database
+    published_date: "2026-07-30"
+    topics: [denial-of-service, mcp, ruby]
+    supports:
+      - MCP Ruby SDK releases before 0.23.0 allowed unbounded stdio line buffering.
+    reviewed_date: "2026-08-18"
+    status: active
+
+  - id: github-advisory-cve-2026-67430
+    title: MCP Ruby SDK Unbounded Session Retention
+    publisher: GitHub Advisory Database
+    url: https://github.com/advisories/CVE-2026-67430
+    source_type: database
+    published_date: "2026-07-30"
+    topics: [denial-of-service, mcp, ruby, sessions]
+    supports:
+      - MCP Ruby SDK releases before 0.23.0 retained unbounded Streamable HTTP sessions.
+    reviewed_date: "2026-08-18"
+    status: active
+
+  - id: zenity-agent-skill-supply-chain-2026
+    title: Attackers Target Agents via The Skill Supply Chain
+    publisher: Zenity Labs
+    url: https://labs.zenity.io/post/attackers-target-agents-via-the-skill-supply-chain
+    source_type: research
+    published_date: "2026-08-06"
+    topics: [agent-skills, paperclip, skills-sh, supply-chain]
+    supports:
+      - Zenity attributed delayed malicious updates and secondary-file instructions to Paperclip and Browser Use typosquats.
+      - Install counters reported by Zenity are aggregate events and do not establish a victim count.
+    reviewed_date: "2026-08-18"
+    status: active
+
+  - id: zenity-ai-total-2026
+    title: AI Total
+    publisher: Zenity Labs
+    url: https://zenity.io/research/ai-total
+    source_type: research
+    published_date: "2026-08-06"
+    topics: [agent-skills, dynamic-analysis, sandbox]
+    supports:
+      - AI Total dynamically evaluates submitted agent skills in an instrumented environment.
+    reviewed_date: "2026-08-18"
+    status: active
+
+  - id: tenet-ghostjacking-2026
+    title: Ghostjacking Attacks and the Agentic Kill Chain
+    publisher: Tenet Security
+    url: https://tenetsecurity.ai/blog/ghostjacking-attacks-agentic-kill-chain/
+    source_type: research
+    published_date: "2026-08-09"
+    topics: [agentjacking, indirect-prompt-injection, observability]
+    supports:
+      - Tenet reports demonstrations where attacker-controlled observability data influenced agents with privileged tools.
+      - Success rates, organization counts, and detection claims remain attributed to Tenet.
+    reviewed_date: "2026-08-18"
+    status: active
+
+  - id: perplexity-numbat-2026
+    title: Securing Agents Across Perplexity's Client Endpoints with Numbat
+    publisher: Perplexity Research
+    url: https://research.perplexity.ai/articles/securing-agents-across-perplexity%E2%80%99s-client-endpoints-with-numbat
+    source_type: maintainer
+    published_date: "2026-07-29"
+    topics: [agent-runtime, local-monitoring, numbat]
+    supports:
+      - Numbat is a local agent activity monitor with an optional enforcement mode.
+      - Perplexity documents 52 built-in CEL rules across 11 behavior categories for the reviewed release.
+    reviewed_date: "2026-08-18"
+    status: active
+
+  - id: tenet-agent-jackstop-2026
+    title: Harden Cursor and Claude Code against prompt injection via untrusted tool output
+    publisher: Tenet Security
+    url: https://github.com/tenet-security/agent-jackstop
+    source_type: maintainer
+    topics: [agentjacking, claude-code, cursor, runtime-guardrail]
+    supports:
+      - Tenet publishes a public reference repository for Cursor and Claude Code controls.
+      - No software license was visible in the reviewed repository, so redistribution rights are not inferred.
+    reviewed_date: "2026-08-18"
     status: active
