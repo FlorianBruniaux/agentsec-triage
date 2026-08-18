@@ -127,9 +127,13 @@ class ShaiHuludDetector:
         diagnostics: list[Diagnostic] = []
         inspected_files = 0
         inspected_bytes = 0
+        oversized_files = 0
 
         for item in context.files:
             category = _file_category(item.relative_path)
+            if item.size > context.limits.max_file_bytes:
+                oversized_files += 1
+                continue
             safety_error = _file_safety_error(item, context)
             if safety_error is not None:
                 diagnostics.append(safety_error)
@@ -155,6 +159,8 @@ class ShaiHuludDetector:
                 break
             inspected_files += 1
             inspected_bytes += len(content)
+            if context.progress is not None and inspected_files % 1_000 == 0:
+                context.progress(inspected_files, inspected_bytes)
 
             digest = hashlib.sha256(content).hexdigest()
             if digest in context.database.hashes:
@@ -210,6 +216,20 @@ class ShaiHuludDetector:
                 diagnostics.extend(analyzer_diagnostics)
                 findings.extend(_startup_findings(hooks, item.relative_path))
 
+        if context.progress is not None and inspected_files % 1_000 != 0:
+            context.progress(inspected_files, inspected_bytes)
+        if oversized_files:
+            noun = "file" if oversized_files == 1 else "files"
+            diagnostics.append(
+                Diagnostic(
+                    DiagnosticKind.ERROR,
+                    context.root,
+                    "Refusing to inspect "
+                    f"{oversized_files} {noun} larger than "
+                    f"max_file_bytes={context.limits.max_file_bytes}; scan incomplete",
+                )
+            )
+
         has_git, git_diagnostic = _git_metadata_state(context.root)
         if git_diagnostic is not None:
             diagnostics.append(git_diagnostic)
@@ -242,14 +262,35 @@ class ShaiHuludDetector:
 def _file_category(path: Path) -> str | None:
     if path.name in _LOCKFILE_NAMES:
         return "lockfile"
-    parts = path.parts
-    if path.name == "package.json" and "node_modules" in parts[:-1]:
+    if path.name == "package.json" and _is_installed_package_manifest(path):
         return "manifest"
     if path.parent == Path(".claude") and path.name in {"settings.json", "settings.local.json"}:
         return "startup"
     if path == Path(".vscode/tasks.json"):
         return "startup"
     return None
+
+
+def _is_installed_package_manifest(path: Path) -> bool:
+    parts = path.parts
+    node_modules_index = max(
+        (index for index, part in enumerate(parts) if part == "node_modules"),
+        default=-1,
+    )
+    if node_modules_index < 0:
+        return False
+    tail = parts[node_modules_index + 1 :]
+    if len(tail) == 2:
+        package, filename = tail
+        return filename == "package.json" and not package.startswith("@")
+    if len(tail) == 3:
+        scope, package, filename = tail
+        return (
+            scope.startswith("@")
+            and bool(package)
+            and filename == "package.json"
+        )
+    return False
 
 
 def _file_safety_error(item: DiscoveredFile, context: ScanContext) -> Diagnostic | None:
@@ -259,11 +300,11 @@ def _file_safety_error(item: DiscoveredFile, context: ScanContext) -> Diagnostic
             item.absolute_path,
             "Refusing to inspect symlinked repository file",
         )
-    if item.size < 0 or item.size > context.limits.max_file_bytes:
+    if item.size < 0:
         return Diagnostic(
             DiagnosticKind.ERROR,
             item.absolute_path,
-            f"File exceeds max_file_bytes={context.limits.max_file_bytes}; scan incomplete",
+            "File reports an invalid negative size; scan incomplete",
         )
     return None
 

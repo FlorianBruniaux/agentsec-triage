@@ -33,6 +33,17 @@ uv venv
 uv pip install --offline -e ".[dev]"
 ```
 
+To expose `agentsec` globally while keeping it in an isolated environment, use
+an editable install from the local checkout:
+
+```bash
+uv tool install --editable --offline /absolute/path/to/agentsec-triage
+agentsec doctor
+```
+
+The checkout must remain at that path. Source changes become visible to the
+global command without publishing or reinstalling the package.
+
 ## Verify the installation
 
 Run both supported entry points:

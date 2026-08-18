@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import os
 import stat
-from collections.abc import Iterator
+from collections.abc import Callable, Iterator
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -10,6 +10,11 @@ from agentsec.models import Diagnostic, DiagnosticKind
 
 _FILE_ATTRIBUTE_REPARSE_POINT = getattr(stat, "FILE_ATTRIBUTE_REPARSE_POINT", 0x400)
 _MAX_SAFE_RECURSION_DEPTH = 256
+_MAX_SAFE_ENTRIES = 1_000_000
+_MAX_SAFE_DIRECTORIES = 100_000
+_PROGRESS_FILE_INTERVAL = 1_000
+
+DiscoveryProgress = Callable[[int, int, int], None]
 
 
 @dataclass(frozen=True, slots=True)
@@ -20,8 +25,8 @@ class DiscoveryLimits:
     max_total_bytes: int = 1_000_000_000
     max_git_commits: int = 10_000
     max_depth: int = 64
-    max_entries: int = 100_000
-    max_directories: int = 10_000
+    max_entries: int = _MAX_SAFE_ENTRIES
+    max_directories: int = _MAX_SAFE_DIRECTORIES
 
     def __post_init__(self) -> None:
         for name, value in (
@@ -40,6 +45,12 @@ class DiscoveryLimits:
             raise ValueError(
                 f"max_depth must not exceed {_MAX_SAFE_RECURSION_DEPTH}"
             )
+        if self.max_entries > _MAX_SAFE_ENTRIES:
+            raise ValueError(f"max_entries must not exceed {_MAX_SAFE_ENTRIES}")
+        if self.max_directories > _MAX_SAFE_DIRECTORIES:
+            raise ValueError(
+                f"max_directories must not exceed {_MAX_SAFE_DIRECTORIES}"
+            )
 
 
 @dataclass(frozen=True, slots=True)
@@ -57,8 +68,14 @@ class _DiagnosticBuffer:
     items: list[Diagnostic] = field(default_factory=list)
     truncated: bool = False
 
-    def add(self, path: Path, message: str) -> None:
-        diagnostic = Diagnostic(DiagnosticKind.ERROR, path, message)
+    def add(
+        self,
+        path: Path,
+        message: str,
+        *,
+        kind: DiagnosticKind = DiagnosticKind.ERROR,
+    ) -> None:
+        diagnostic = Diagnostic(kind, path, message)
         if len(self.items) < self.limit:
             self.items.append(diagnostic)
         else:
@@ -100,11 +117,18 @@ class _DirectoryEntry:
 class _TraversalState:
     entries_seen: int = 0
     directories_opened: int = 0
+    symlinked_paths: int = 0
+    nested_repositories: int = 0
+    next_progress_file_count: int = _PROGRESS_FILE_INTERVAL
     stopped: bool = False
 
 
 def discover(
-    root: Path, limits: DiscoveryLimits, *, resolved_root: Path | None = None
+    root: Path,
+    limits: DiscoveryLimits,
+    *,
+    resolved_root: Path | None = None,
+    progress: DiscoveryProgress | None = None,
 ) -> tuple[tuple[DiscoveredFile, ...], tuple[Diagnostic, ...]]:
     diagnostics = _DiagnosticBuffer(root=root, limit=limits.max_diagnostics)
     scan_root = (
@@ -140,7 +164,34 @@ def discover(
         diagnostics=diagnostics,
         depth=0,
         state=state,
+        progress=progress,
     )
+    if state.symlinked_paths:
+        suffix = "path" if state.symlinked_paths == 1 else "paths"
+        diagnostics.add(
+            scan_root,
+            "Refusing to inspect "
+            f"{state.symlinked_paths} symlinked repository {suffix}; scan incomplete",
+        )
+    if state.nested_repositories:
+        repository = "repository" if state.nested_repositories == 1 else "repositories"
+        instruction = "it" if state.nested_repositories == 1 else "each"
+        diagnostics.add(
+            scan_root,
+            f"Skipped {state.nested_repositories} nested Git {repository}; "
+            f"scan {instruction} separately for coverage",
+            kind=DiagnosticKind.WARNING,
+        )
+    if (
+        progress is not None
+        and discovered
+        and len(discovered) % _PROGRESS_FILE_INTERVAL != 0
+    ):
+        progress(
+            len(discovered),
+            state.directories_opened,
+            state.entries_seen,
+        )
 
     return (
         tuple(sorted(discovered, key=lambda item: item.relative_path.as_posix())),
@@ -177,6 +228,7 @@ def _scan_directory(
     diagnostics: _DiagnosticBuffer,
     depth: int,
     state: _TraversalState,
+    progress: DiscoveryProgress | None,
 ) -> bool:
     if depth > limits.max_depth:
         diagnostics.add(
@@ -211,6 +263,9 @@ def _scan_directory(
     state.directories_opened += 1
 
     try:
+        if depth > 0 and any(entry.name == ".git" for entry in opened.entries):
+            state.nested_repositories += 1
+            return False
         for directory_entry in opened.entries:
             name = directory_entry.name
             if name == ".git":
@@ -247,6 +302,9 @@ def _scan_directory(
                 return False
             if entry_stat is None:
                 continue
+            if _is_link_like(entry_stat):
+                state.symlinked_paths += 1
+                continue
             if stat.S_ISDIR(entry_stat.st_mode) and not _is_link_like(entry_stat):
                 if _scan_directory(
                     candidate,
@@ -259,10 +317,11 @@ def _scan_directory(
                     diagnostics=diagnostics,
                     depth=depth + 1,
                     state=state,
+                    progress=progress,
                 ):
                     return True
                 continue
-            if not _is_link_like(entry_stat) and not stat.S_ISREG(entry_stat.st_mode):
+            if not stat.S_ISREG(entry_stat.st_mode):
                 diagnostics.add(
                     candidate,
                     "special file type is not analyzable; coverage incomplete",
@@ -279,9 +338,18 @@ def _scan_directory(
                     relative_path=candidate.relative_to(scan_root),
                     absolute_path=candidate,
                     size=entry_stat.st_size,
-                    symlink=_is_link_like(entry_stat),
+                    symlink=False,
                 )
             )
+            if len(discovered) >= state.next_progress_file_count:
+                if progress is not None:
+                    progress(
+                        len(discovered),
+                        state.directories_opened,
+                        state.entries_seen,
+                    )
+                while len(discovered) >= state.next_progress_file_count:
+                    state.next_progress_file_count += _PROGRESS_FILE_INTERVAL
     finally:
         if opened.file_descriptor is not None:
             os.close(opened.file_descriptor)

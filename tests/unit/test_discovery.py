@@ -34,11 +34,11 @@ def test_external_symlink_is_reported_but_not_followed(tmp_path: Path):
     outside.write_text("secret")
     (tmp_path / "escape").symlink_to(outside)
     files, diagnostics = discover(tmp_path, LIMITS)
-    assert [item.relative_path.as_posix() for item in files] == ["escape"]
-    assert diagnostics == ()
-    assert files[0].symlink is True
-    assert files[0].absolute_path == tmp_path / "escape"
-    assert files[0].size == (tmp_path / "escape").lstat().st_size
+    assert files == ()
+    assert len(diagnostics) == 1
+    assert diagnostics[0].kind is DiagnosticKind.ERROR
+    assert diagnostics[0].path == tmp_path
+    assert "1 symlinked repository path" in diagnostics[0].message
 
 
 def test_external_directory_symlink_is_reported_but_not_traversed(tmp_path: Path):
@@ -49,9 +49,77 @@ def test_external_directory_symlink_is_reported_but_not_traversed(tmp_path: Path
 
     files, diagnostics = discover(tmp_path, LIMITS)
 
-    assert [item.relative_path.as_posix() for item in files] == ["linked-dir"]
-    assert files[0].symlink is True
-    assert diagnostics == ()
+    assert files == ()
+    assert len(diagnostics) == 1
+    assert diagnostics[0].kind is DiagnosticKind.ERROR
+    assert "1 symlinked repository path" in diagnostics[0].message
+
+
+def test_symlinked_paths_are_aggregated_into_one_incomplete_diagnostic(
+    tmp_path: Path,
+) -> None:
+    outside = tmp_path.parent / "outside-agentsec-symlink-batch"
+    outside.mkdir()
+    for name in ("alpha", "beta", "gamma"):
+        target = outside / f"{name}.txt"
+        target.write_text(name)
+        (tmp_path / name).symlink_to(target)
+
+    files, diagnostics = discover(tmp_path, LIMITS)
+
+    assert files == ()
+    assert len(diagnostics) == 1
+    assert diagnostics[0].kind is DiagnosticKind.ERROR
+    assert diagnostics[0].path == tmp_path
+    assert diagnostics[0].message == (
+        "Refusing to inspect 3 symlinked repository paths; scan incomplete"
+    )
+
+
+def test_nested_git_repository_is_skipped_with_one_warning(tmp_path: Path) -> None:
+    (tmp_path / "root.txt").write_text("root")
+    nested = tmp_path / ".claude" / "worktrees" / "agent-1"
+    nested.mkdir(parents=True)
+    (nested / ".git").write_text("gitdir: /outside/worktrees/agent-1")
+    deep = nested / "node_modules" / ".pnpm" / "package" / "test"
+    deep.mkdir(parents=True)
+    (deep / "payload.txt").write_text("must not be traversed")
+
+    files, diagnostics = discover(tmp_path, LIMITS)
+
+    assert [item.relative_path.as_posix() for item in files] == ["root.txt"]
+    assert len(diagnostics) == 1
+    assert diagnostics[0].kind is DiagnosticKind.WARNING
+    assert diagnostics[0].path == tmp_path
+    assert diagnostics[0].message == (
+        "Skipped 1 nested Git repository; scan it separately for coverage"
+    )
+
+
+def test_nested_git_repositories_are_aggregated_into_one_warning(tmp_path: Path) -> None:
+    for name in ("agent-a", "agent-b", "agent-c"):
+        nested = tmp_path / ".worktrees" / name
+        nested.mkdir(parents=True)
+        (nested / ".git").write_text(f"gitdir: /outside/{name}")
+        (nested / "payload.txt").write_text("not part of the requested root")
+
+    files, diagnostics = discover(tmp_path, LIMITS)
+
+    assert files == ()
+    assert len(diagnostics) == 1
+    assert diagnostics[0].kind is DiagnosticKind.WARNING
+    assert diagnostics[0].path == tmp_path
+    assert diagnostics[0].message == (
+        "Skipped 3 nested Git repositories; scan each separately for coverage"
+    )
+
+
+def test_default_directory_budget_supports_large_monorepositories() -> None:
+    assert LIMITS.max_directories == 100_000
+
+
+def test_default_entry_budget_supports_large_monorepositories() -> None:
+    assert LIMITS.max_entries == 1_000_000
 
 
 def test_windows_reparse_directory_is_reported_but_not_traversed(
@@ -81,9 +149,10 @@ def test_windows_reparse_directory_is_reported_but_not_traversed(
 
     files, diagnostics = discover(tmp_path, LIMITS)
 
-    assert [item.relative_path.as_posix() for item in files] == ["junction"]
-    assert files[0].symlink is True
-    assert diagnostics == ()
+    assert files == ()
+    assert len(diagnostics) == 1
+    assert diagnostics[0].kind is DiagnosticKind.ERROR
+    assert "1 symlinked repository path" in diagnostics[0].message
 
 
 def test_directory_mutated_to_external_symlink_before_open_is_an_error(

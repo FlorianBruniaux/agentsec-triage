@@ -48,6 +48,95 @@ def test_package_module_entrypoint_matches_cli_module() -> None:
     assert package.stderr == cli_module.stderr == ""
 
 
+def test_scan_help_documents_progress_verbosity_and_safe_limits() -> None:
+    completed = _run("scan", "--help")
+
+    assert completed.returncode == 0
+    assert completed.stderr == ""
+    for option in (
+        "--progress [{auto,always,never}]",
+        "-v, --verbose",
+        "--max-file-bytes",
+        "--max-total-bytes",
+        "--max-files",
+        "--max-git-commits",
+        "--max-directories",
+        "--max-entries",
+    ):
+        assert option in completed.stdout
+    assert "Progress is written to stderr" in completed.stdout
+
+
+def test_progress_always_uses_stderr_without_corrupting_json(tmp_path: Path) -> None:
+    completed = _run(
+        "scan",
+        str(tmp_path),
+        "--format",
+        "json",
+        "--progress=always",
+    )
+
+    assert completed.returncode == 0
+    assert json.loads(completed.stdout)["complete"] is True
+    assert "[1/5] Loading threat database" in completed.stderr
+    assert "[2/5] Validating repository" in completed.stderr
+    assert "[3/5] Discovering files" in completed.stderr
+    assert "[4/5] Running detectors" in completed.stderr
+    assert "[5/5] Building report" in completed.stderr
+    assert "[1/5]" not in completed.stdout
+
+
+def test_verbose_progress_reports_bounded_live_counts(tmp_path: Path) -> None:
+    for index in range(1001):
+        (tmp_path / f"file-{index:04d}.txt").write_text("x")
+
+    completed = _run("scan", str(tmp_path), "--format", "json", "--verbose")
+
+    assert completed.returncode == 0
+    assert json.loads(completed.stdout)["complete"] is True
+    assert "Discovered 1000 paths" in completed.stderr
+    assert "Discovered 1001 paths" in completed.stderr
+    assert "Inspected 1000 files" in completed.stderr
+    assert "Inspected 1001 files" in completed.stderr
+    assert str(tmp_path) not in completed.stderr
+
+
+def test_scan_exposes_a_directory_budget_override(tmp_path: Path) -> None:
+    (tmp_path / "a").mkdir()
+    (tmp_path / "b").mkdir()
+
+    completed = _run(
+        "scan",
+        str(tmp_path),
+        "--format",
+        "json",
+        "--max-directories",
+        "1",
+    )
+
+    assert completed.returncode == 2
+    payload = json.loads(completed.stdout)
+    assert any("max_directories=1" in item["message"] for item in payload["diagnostics"])
+
+
+def test_scan_exposes_an_entry_budget_override(tmp_path: Path) -> None:
+    (tmp_path / "a.txt").write_text("a")
+    (tmp_path / "b.txt").write_text("b")
+
+    completed = _run(
+        "scan",
+        str(tmp_path),
+        "--format",
+        "json",
+        "--max-entries",
+        "1",
+    )
+
+    assert completed.returncode == 2
+    payload = json.loads(completed.stdout)
+    assert any("max_entries=1" in item["message"] for item in payload["diagnostics"])
+
+
 def test_scan_missing_root_is_incomplete_json_and_exits_two(tmp_path: Path) -> None:
     completed = _run("scan", str(tmp_path / "missing"), "--format", "json")
 

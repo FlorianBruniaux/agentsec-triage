@@ -612,6 +612,54 @@ def test_payload_only_known_hash_is_detected(tmp_path: Path) -> None:
     assert [item.rule_id for item in result.findings] == ["known-payload-hash"]
 
 
+def test_package_scope_marker_is_hashed_without_manifest_parse_error(
+    tmp_path: Path,
+) -> None:
+    marker = tmp_path / "node_modules" / "package" / "dist" / "esm" / "package.json"
+    marker.parent.mkdir(parents=True)
+    marker.write_text('{"type":"module"}')
+
+    result = _scan(tmp_path)
+
+    assert result.complete is True
+    assert result.coverage.files_inspected == 1
+    assert result.detector_results[0].diagnostics == ()
+
+
+def test_nested_non_dependency_package_json_is_not_an_installed_manifest(
+    tmp_path: Path,
+) -> None:
+    marker = tmp_path / "fixtures" / "package.json"
+    marker.parent.mkdir()
+    marker.write_text("not-json")
+
+    result = _scan(tmp_path)
+
+    assert result.complete is True
+    assert result.coverage.files_inspected == 1
+    assert result.detector_results[0].diagnostics == ()
+
+
+def test_oversized_files_are_aggregated_into_one_diagnostic(tmp_path: Path) -> None:
+    for name in ("a.bin", "b.bin", "c.bin"):
+        (tmp_path / name).write_bytes(b"12345")
+    limits = DiscoveryLimits(
+        max_file_bytes=4,
+        max_files=100,
+        max_diagnostics=100,
+    )
+
+    result = _scan(tmp_path, limits=limits)
+
+    assert result.exit_code() == 2
+    assert result.coverage.files_inspected == 0
+    assert len(result.detector_results[0].diagnostics) == 1
+    assert result.detector_results[0].diagnostics[0].path == tmp_path
+    assert result.detector_results[0].diagnostics[0].message == (
+        "Refusing to inspect 3 files larger than max_file_bytes=4; scan incomplete"
+    )
+
+
 @pytest.mark.parametrize(
     "command",
     [

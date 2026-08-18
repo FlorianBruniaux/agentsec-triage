@@ -13,7 +13,7 @@ from typing import NoReturn
 from agentsec import __version__
 from agentsec.detectors.registry import get_detectors
 from agentsec.engine.discovery import DiscoveryLimits
-from agentsec.engine.runner import run_scan
+from agentsec.engine.runner import ProgressCallback, run_scan
 from agentsec.models import ThreatDatabase
 from agentsec.output.human import render_human
 from agentsec.output.json_output import render_json
@@ -25,6 +25,10 @@ _DEFAULT_MAX_TOTAL_BYTES = 1_000_000_000
 _DEFAULT_MAX_FILES = 1_000_000
 _DEFAULT_MAX_GIT_COMMITS = 10_000
 _DEFAULT_MAX_DIAGNOSTICS = 100
+_DEFAULT_MAX_ENTRIES = 1_000_000
+_DEFAULT_MAX_DIRECTORIES = 100_000
+
+
 class _ArgumentParser(argparse.ArgumentParser):
     def error(self, message: str) -> NoReturn:
         self.print_usage(sys.stderr)
@@ -37,14 +41,77 @@ def build_parser() -> argparse.ArgumentParser:
     commands = parser.add_subparsers(dest="command", required=True)
 
     scan = commands.add_parser("scan", help="scan one repository")
-    scan.add_argument("root", type=Path)
-    scan.add_argument("--detector", action="append", dest="detector_ids")
-    scan.add_argument("--format", choices=("human", "json"), default="human")
-    scan.add_argument("--redact", action="store_true")
-    scan.add_argument("--max-file-bytes", type=_max_file_bytes, default=_DEFAULT_MAX_FILE_BYTES)
-    scan.add_argument("--max-total-bytes", type=_non_negative, default=_DEFAULT_MAX_TOTAL_BYTES)
-    scan.add_argument("--max-files", type=_non_negative, default=_DEFAULT_MAX_FILES)
-    scan.add_argument("--max-git-commits", type=_non_negative, default=_DEFAULT_MAX_GIT_COMMITS)
+    scan.add_argument("root", type=Path, help="repository root to inspect")
+    scan.add_argument(
+        "--detector",
+        action="append",
+        dest="detector_ids",
+        help="run one detector ID; repeat to select more than one",
+    )
+    scan.add_argument(
+        "--format",
+        choices=("human", "json"),
+        default="human",
+        help="final report format written to stdout (default: human)",
+    )
+    scan.add_argument(
+        "--redact",
+        action="store_true",
+        help="replace the absolute scan root and recognized secret-shaped evidence",
+    )
+    scan.add_argument(
+        "--progress",
+        nargs="?",
+        const="always",
+        default="auto",
+        choices=("auto", "always", "never"),
+        help=(
+            "show scan phases (default: auto on terminals). "
+            "Progress is written to stderr"
+        ),
+    )
+    scan.add_argument(
+        "-v",
+        "--verbose",
+        action="store_true",
+        help="show bounded path and byte counters; implies progress unless disabled",
+    )
+    scan.add_argument(
+        "--max-file-bytes",
+        type=_max_file_bytes,
+        default=_DEFAULT_MAX_FILE_BYTES,
+        help="maximum bytes read from one file (maximum: 4000000)",
+    )
+    scan.add_argument(
+        "--max-total-bytes",
+        type=_non_negative,
+        default=_DEFAULT_MAX_TOTAL_BYTES,
+        help="maximum aggregate bytes read during detector execution",
+    )
+    scan.add_argument(
+        "--max-files",
+        type=_non_negative,
+        default=_DEFAULT_MAX_FILES,
+        help="maximum repository paths discovered",
+    )
+    scan.add_argument(
+        "--max-git-commits",
+        type=_non_negative,
+        default=_DEFAULT_MAX_GIT_COMMITS,
+        help="reserved bound for Git history inspection when supported",
+    )
+    scan.add_argument(
+        "--max-entries",
+        type=_max_entries,
+        default=_DEFAULT_MAX_ENTRIES,
+        help="maximum directory entries visited (maximum: 1000000)",
+    )
+    scan.add_argument(
+        "--max-directories",
+        type=_max_directories,
+        default=_DEFAULT_MAX_DIRECTORIES,
+        help="maximum directories opened (maximum: 100000)",
+    )
 
     detectors = commands.add_parser("detectors", help="inspect built-in detectors")
     detector_commands = detectors.add_subparsers(dest="detectors_command", required=True)
@@ -93,7 +160,24 @@ def _max_file_bytes(value: str) -> int:
     return parsed
 
 
+def _max_directories(value: str) -> int:
+    parsed = _non_negative(value)
+    if parsed > _DEFAULT_MAX_DIRECTORIES:
+        raise argparse.ArgumentTypeError("must not exceed 100000 directories")
+    return parsed
+
+
+def _max_entries(value: str) -> int:
+    parsed = _non_negative(value)
+    if parsed > _DEFAULT_MAX_ENTRIES:
+        raise argparse.ArgumentTypeError("must not exceed 1000000 entries")
+    return parsed
+
+
 def _scan(arguments: argparse.Namespace) -> int:
+    progress = _progress_reporter(arguments)
+    if progress is not None:
+        progress(1, "Loading threat database", False)
     database = _load_database(redact=arguments.redact, root=arguments.root)
     if database is None:
         return 2
@@ -108,13 +192,37 @@ def _scan(arguments: argparse.Namespace) -> int:
         max_diagnostics=_DEFAULT_MAX_DIAGNOSTICS,
         max_total_bytes=arguments.max_total_bytes,
         max_git_commits=arguments.max_git_commits,
+        max_entries=arguments.max_entries,
+        max_directories=arguments.max_directories,
     )
-    result = run_scan(arguments.root, detectors, database, limits)
+    result = run_scan(
+        arguments.root,
+        detectors,
+        database,
+        limits,
+        progress=progress,
+    )
     if arguments.format == "json":
         print(render_json(result, redact=arguments.redact), end="")
     else:
         print(render_human(result, redact=arguments.redact), end="")
     return result.exit_code()
+
+
+def _progress_reporter(arguments: argparse.Namespace) -> ProgressCallback | None:
+    mode = arguments.progress
+    enabled = mode == "always" or (
+        mode == "auto" and (arguments.verbose or sys.stderr.isatty())
+    )
+    if mode == "never" or not enabled:
+        return None
+
+    def report(stage: int, message: str, detail: bool) -> None:
+        if detail and not arguments.verbose:
+            return
+        print(f"[{stage}/5] {message}", file=sys.stderr, flush=True)
+
+    return report
 
 
 def _detectors(arguments: argparse.Namespace) -> int:

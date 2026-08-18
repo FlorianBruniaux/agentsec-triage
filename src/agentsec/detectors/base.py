@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Protocol
@@ -32,6 +33,7 @@ class ScanContext:
     files: tuple[DiscoveredFile, ...]
     database: ThreatDatabase
     limits: DiscoveryLimits
+    progress: Callable[[int, int], None] | None = None
 
 
 class Detector(Protocol):

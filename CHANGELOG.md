@@ -7,6 +7,10 @@ authorized public release while the licensing decision remains unresolved.
 
 ### Added
 
+- Added terminal-aware scan progress with `--progress`, forced and disabled
+  modes, plus `--verbose` file, directory, and byte counters. Progress is
+  bounded, contains no target paths or content, and stays on `stderr` so JSON
+  and human reports remain isolated on `stdout`.
 - Added threat database 2.27.0 with seven primary-source-verified CVEs, four
   Paperclip and Browser Use skill or package records, corrected minimum-safe
   versions, 12 reviewed intelligence sources, seven dated fiches, and an
@@ -50,6 +54,14 @@ authorized public release while the licensing decision remains unresolved.
 
 ### Fixed
 
+- Stopped traversing nested Git repositories and worktrees as though they were
+  part of the requested root. They now produce one warning with an instruction
+  to scan the nested repository separately. Symlinks and Windows reparse points
+  remain unread, fail closed, and produce one aggregate diagnostic instead of
+  exhausting the diagnostic budget one path at a time. Full regular-file hash
+  coverage remains enabled for the requested repository. Large monorepositories
+  now receive bounded defaults of 1,000,000 directory entries and 100,000
+  opened directories, with CLI options that can lower both ceilings.
 - Defined the cross-platform test contract. Git checks out tracked text with
   `LF`; runtime schema verification normalizes line endings; redacted root paths
   use a stable delimiter; POSIX descriptor regressions run on POSIX; and Windows

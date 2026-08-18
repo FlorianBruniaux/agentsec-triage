@@ -52,6 +52,22 @@ def test_examples_document_traversal_verdicts_and_self_scan() -> None:
         assert concept in examples
 
 
+def test_docs_explain_progress_and_large_repository_traversal() -> None:
+    readme = _read("README.md").lower()
+    examples = _read("docs/examples.md").lower()
+
+    for concept in ("--progress", "--verbose", "stderr"):
+        assert concept in readme
+        assert concept in examples
+    for concept in (
+        "nested git repositories",
+        "scan it separately",
+        "symlinked paths",
+        "one aggregated diagnostic",
+    ):
+        assert concept in examples
+
+
 def test_public_markdown_links_resolve_locally() -> None:
     for document in (
         "README.md",

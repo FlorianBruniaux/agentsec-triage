@@ -31,6 +31,15 @@ Follow the [installation guide](docs/installation.md), then scan one repository:
 agentsec scan /path/to/repository --format json --redact
 ```
 
+For an interactive scan with phase and bounded counter updates:
+
+```bash
+agentsec scan /path/to/repository --progress --verbose --redact
+```
+
+Progress is written to `stderr`. The human or JSON report remains isolated on
+`stdout`, so local automation can parse it without stripping status lines.
+
 Read the [examples and verdict guide](docs/examples.md) before interpreting the
 result. In particular, exit code `2` is an incomplete scan, not a pass.
 

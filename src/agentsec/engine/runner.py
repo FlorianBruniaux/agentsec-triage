@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import logging
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
 from time import monotonic_ns
@@ -37,6 +37,8 @@ _GLOBAL_NOT_SCANNED = (
     "remote.ci",
     "remote.repositories",
 )
+
+ProgressCallback = Callable[[int, str, bool], None]
 
 
 @dataclass(slots=True)
@@ -87,9 +89,12 @@ def run_scan(
     detectors: Sequence[Detector],
     database: ThreatDatabase,
     limits: DiscoveryLimits,
+    *,
+    progress: ProgressCallback | None = None,
 ) -> ScanResult:
     """Discover a repository once and aggregate isolated detector executions."""
     started_ns = monotonic_ns()
+    _emit_progress(progress, 2, "Validating repository")
     scan_root, root_diagnostics = resolve_scan_root(root, limits)
     context_root = scan_root if scan_root is not None else root.absolute()
     files: tuple[DiscoveredFile, ...]
@@ -97,16 +102,31 @@ def run_scan(
         files = ()
         discovery_diagnostics = root_diagnostics
     else:
+        _emit_progress(progress, 3, "Discovering files")
         files, discovery_diagnostics = discover(
             scan_root,
             limits,
             resolved_root=scan_root,
+            progress=lambda file_count, directory_count, entry_count: _emit_progress(
+                progress,
+                3,
+                "Discovered "
+                f"{file_count} paths across {directory_count} directories "
+                f"({entry_count} entries seen)",
+                detail=True,
+            ),
         )
     context = ScanContext(
         root=context_root,
         files=files,
         database=database,
         limits=limits,
+        progress=lambda file_count, byte_count: _emit_progress(
+            progress,
+            4,
+            f"Inspected {file_count} files ({byte_count} bytes)",
+            detail=True,
+        ),
     )
     diagnostics = _DiagnosticBuffer(root=context_root, limit=limits.max_diagnostics)
     diagnostics.extend(discovery_diagnostics)
@@ -117,7 +137,15 @@ def run_scan(
         for capability in getattr(getattr(detector, "metadata", None), "not_scanned", ())
     }
 
-    for detector in sorted(detectors, key=lambda item: item.id):
+    ordered_detectors = sorted(detectors, key=lambda item: item.id)
+    _emit_progress(progress, 4, "Running detectors")
+    for index, detector in enumerate(ordered_detectors, start=1):
+        _emit_progress(
+            progress,
+            4,
+            f"Running detector {index}/{len(ordered_detectors)}: {detector.id}",
+            detail=True,
+        )
         try:
             applicable = detector.applies(context)
             if not applicable:
@@ -135,6 +163,7 @@ def run_scan(
             )
             detector_results.append(_failed_detector_result(detector.id))
 
+    _emit_progress(progress, 5, "Building report")
     elapsed_ms = (monotonic_ns() - started_ns) // 1_000_000
     return ScanResult(
         tool_version=__version__,
@@ -145,6 +174,17 @@ def run_scan(
         elapsed_ms=elapsed_ms,
         global_not_scanned=tuple(sorted({*_GLOBAL_NOT_SCANNED, *selected_not_scanned})),
     )
+
+
+def _emit_progress(
+    progress: ProgressCallback | None,
+    stage: int,
+    message: str,
+    *,
+    detail: bool = False,
+) -> None:
+    if progress is not None:
+        progress(stage, message, detail)
 
 
 def _not_applicable_result(detector_id: str) -> DetectorResult:

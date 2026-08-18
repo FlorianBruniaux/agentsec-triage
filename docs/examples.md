@@ -17,11 +17,23 @@ agentsec scan /path/to/repository --format json
 # Redact the scan root and recognized secret-shaped values
 agentsec scan /path/to/repository --format json --redact
 
+# Show scan phases on stderr
+agentsec scan /path/to/repository --progress
+
+# Add bounded file, directory, and byte counters
+agentsec scan /path/to/repository --verbose
+
+# Keep stderr silent for non-interactive automation
+agentsec scan /path/to/repository --format json --progress=never
+
 # Run one detector explicitly
 agentsec scan /path/to/repository --detector shai-hulud-keyv
 
 # Lower the aggregate read budget
 agentsec scan /path/to/repository --max-total-bytes 100000000
+
+# Lower traversal budgets for a constrained environment
+agentsec scan /path/to/repository --max-entries 250000 --max-directories 25000
 
 # Inspect local resources and detector registration
 agentsec doctor
@@ -49,10 +61,28 @@ Generated content, dependencies, fixtures, and virtual environments remain in
 scope so a hostile repository cannot hide evidence behind developer-tool ignore
 rules.
 
+Nested Git repositories and worktrees are separate scan roots. AgentSec detects
+their own `.git` marker, skips the nested tree, emits one warning, and tells the
+operator to scan it separately for coverage. This prevents a local
+`.claude/worktrees` directory from multiplying the same repository and its
+dependencies inside one scan. The root repository remains the requested scope.
+
 AgentSec does not follow symlinks or Windows reparse points outside the resolved
-scan root. It does not invoke Git for an untrusted repository. A `.git`
-directory or gitfile produces an incomplete-coverage diagnostic instead of
-allowing reads through object symlinks, alternates, or an external gitdir.
+scan root. Symlinked paths produce one aggregated diagnostic with their total
+count, not one line per alias. Their content remains unread and the result is
+incomplete. AgentSec does not invoke Git for an untrusted repository. A root
+`.git` directory or gitfile produces an incomplete-coverage diagnostic instead
+of allowing reads through object symlinks, alternates, or an external gitdir.
+
+## Progress output
+
+`--progress` prints the five scan phases to `stderr`. The default `auto` mode
+shows them only when `stderr` is a terminal. `--progress=always` forces them and
+`--progress=never` disables them. `--verbose` enables progress in non-terminal
+runs and adds bounded counters every 1,000 discovered or inspected files.
+
+Progress never includes target file content or absolute target paths. JSON and
+human reports remain on `stdout`.
 
 ## Current detector coverage
 
@@ -84,10 +114,16 @@ proof of compromise.
   IOC freshness.
 - Files are limited to 4,000,000 bytes. The aggregate read budget defaults to
   1,000,000,000 bytes and can be lowered with `--max-total-bytes`.
+- Traversal defaults to at most 1,000,000 directory entries and 100,000 opened
+  directories. These hard safety ceilings can only be lowered with
+  `--max-entries` and `--max-directories`.
 - Package manifests and startup configuration have parser-specific 1 MiB caps.
   Lockfiles have a parser-specific 4 MiB cap.
 - Unsupported, unreadable, changed, or budget-exceeding applicable input makes
   the result incomplete instead of silently clean.
+- Nested Git repositories are skipped with a warning and must be scanned as
+  separate roots. Symlinked paths are not followed and make the requested scan
+  incomplete through one aggregated diagnostic.
 - `--redact` reduces disclosure risk but cannot guarantee removal of arbitrary
   sensitive content.
 
