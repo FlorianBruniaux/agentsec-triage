@@ -1,0 +1,59 @@
+docs/intelligence-authoring.md
+  s_0df90997879182::t_5822ad702df244 105-121
+tests/unit/test_security_feed.py
+  s_0df90997879182::t_46bef4e1137703 51-52,56-57,67-69
+README.md
+  s_0df90997879182::t_5822ad702df244 47
+data/intelligence/events.yaml
+  s_0df90997879182::t_867c3c4788ef3b 3,55-228
+tests/integration/test_cli.py
+  s_0df90997879182::t_46bef4e1137703 219,227,230,232,243
+data/threat-db.yaml
+  s_0df90997879182::t_867c3c4788ef3b 5-6
+  s_0df90997879182::t_36369d5e2ab4b1 8-31,1233-1258,2414-2479,2504,2521-2523
+tests/golden/finding.json
+  s_0df90997879182::t_46bef4e1137703 8
+llms.txt
+  s_0df90997879182::t_5822ad702df244 21
+tests/unit/test_intelligence_docs.py
+  s_0df90997879182::t_e7ec2ce2c191fc 76-108
+.claude/commands/update-threat-db.md
+  s_0df90997879182::t_5822ad702df244 1-117
+tests/unit/test_threat_db.py
+  s_0df90997879182::t_46bef4e1137703 21,26,28,44,77-78,109,112,315,533-534
+  s_0df90997879182::t_2e97ae418f75a3 434
+  s_0df90997879182::t_4cb6efbb321c52 61-76,79-97
+CHANGELOG.md
+  s_0df90997879182::t_5822ad702df244 10-15
+  s_0df90997879182::t_f70ea69676d522 147,156-157
+tests/golden/clean.txt
+  s_0df90997879182::t_46bef4e1137703 1
+data/intelligence/sources.yaml
+  s_0df90997879182::t_867c3c4788ef3b 3,76-224
+docs/SECURITY-INTELLIGENCE.md
+  s_0df90997879182::t_83668136c4bec0 5,16-21,23-24,27-28,30-31,52-100,109-126,143-160,168-184
+docs/SECURITY-TIMELINE.md
+  s_0df90997879182::t_b1a912fdcd85a4 5,14-15,17,19-22,26-58,76-91,109-176
+exports/security-feed.v1.json
+  s_0df90997879182::t_2d0502df77c135 16-17,19-20,67-68,72-166,237-369,384-443,464-483,504-522,531-550,553
+src/agentsec/resources/security-intelligence.json
+  s_0df90997879182::t_6748b965460e01 3-61,95-127,163-291,334-443,463-501,540-577,596-633,636
+src/agentsec/resources/threat-db.json
+  s_0df90997879182::t_2b6a5c8633f9c4 8,13,15,199-200
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "2262f3f818a6c86e469e733abb2e17fc8df00a11",
+  "prompts": {},
+  "sessions": {
+    "s_0df90997879182": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019fd73a-588d-7f03-ab50-494ca0e95848",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Florian BRUNIAUX <florian@bruniaux.com>"
+    }
+  }
+}
