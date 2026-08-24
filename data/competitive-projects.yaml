@@ -152,9 +152,9 @@
       "local_directory": "sigil",
       "revision": "0f73627236d5",
       "category": "quarantine_workflow",
-      "evidence_status": "declared",
-      "execution_tier": "static_only",
-      "license": "unverified",
+      "evidence_status": "contradicted",
+      "execution_tier": "offline_sandbox",
+      "license": "Apache-2.0",
       "profile": "docs/competitive-analysis/profiles/sigil.md"
     },
     {
@@ -164,9 +164,9 @@
       "local_directory": "agent-security-scanner-mcp",
       "revision": "79e8779b4eec",
       "category": "broad_mcp",
-      "evidence_status": "declared",
-      "execution_tier": "static_only",
-      "license": "unverified",
+      "evidence_status": "contradicted",
+      "execution_tier": "offline_sandbox",
+      "license": "MIT",
       "profile": "docs/competitive-analysis/profiles/agent-security-scanner-mcp.md"
     },
     {
@@ -176,9 +176,9 @@
       "local_directory": "inkog",
       "revision": "85683e73f2db",
       "category": "agent_application",
-      "evidence_status": "declared",
-      "execution_tier": "static_only",
-      "license": "unverified",
+      "evidence_status": "code_verified",
+      "execution_tier": "manual_review",
+      "license": "Apache-2.0",
       "profile": "docs/competitive-analysis/profiles/inkog.md"
     },
     {
@@ -188,9 +188,9 @@
       "local_directory": "agent-bom",
       "revision": "9ceeb22fff1f",
       "category": "governance_inventory",
-      "evidence_status": "declared",
-      "execution_tier": "static_only",
-      "license": "unverified",
+      "evidence_status": "code_verified",
+      "execution_tier": "offline_sandbox",
+      "license": "Apache-2.0",
       "profile": "docs/competitive-analysis/profiles/agent-bom.md"
     }
   ]
