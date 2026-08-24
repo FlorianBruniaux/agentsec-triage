@@ -1,0 +1,33 @@
+data/competitive-projects.yaml
+  s_0df90997879182::t_f0bd43de05a81c 11-13,23-25,35-37
+  s_0df90997879182::t_edc11cde1687dc 95-97
+docs/competitive-analysis/profiles/cc-audit.md
+  s_0df90997879182::t_f0bd43de05a81c 1-112
+docs/competitive-analysis/profiles/patient-zero.md
+  s_0df90997879182::t_f0bd43de05a81c 1-112
+docs/competitive-analysis/profiles/repo-forensics.md
+  s_0df90997879182::t_f0bd43de05a81c 1-111
+tests/unit/test_competitive_projects.py
+  s_0df90997879182::t_a711d4df79c696 91
+  s_0df90997879182::t_80e87e4b5df7bf 86-90,92
+CHANGELOG.md
+  s_0df90997879182::t_e544462f3c345d 26-29
+docs/competitive-analysis/profiles/aguara.md
+  s_0df90997879182::t_f0bd43de05a81c 1-110
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "4bc0764fba8dc2b465df9ed6b6dff7eb033d6f0f",
+  "prompts": {},
+  "sessions": {
+    "s_0df90997879182": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019fd73a-588d-7f03-ab50-494ca0e95848",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Florian BRUNIAUX <florian@bruniaux.com>"
+    }
+  }
+}
