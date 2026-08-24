@@ -41,6 +41,7 @@ def _validate(
     payload: dict[str, object],
     *,
     create_clone: bool = True,
+    project_root: Path = PROJECT_ROOT,
 ) -> subprocess.CompletedProcess[str]:
     data_path = tmp_path / "competitive-projects.yaml"
     data_path.write_text(json.dumps(payload), encoding="utf-8")
@@ -55,7 +56,7 @@ def _validate(
             "--data",
             str(data_path),
             "--project-root",
-            str(PROJECT_ROOT),
+            str(project_root),
             "--clone-root",
             str(clone_root),
         ],
@@ -167,3 +168,15 @@ def test_profile_path_escape_fails(tmp_path: Path) -> None:
     assert result.returncode == 1
     expected = "projects[0].profile: path must stay under docs/competitive-analysis/profiles"
     assert expected in result.stderr
+
+
+def test_existing_profile_missing_required_sections_fails(tmp_path: Path) -> None:
+    project_root = tmp_path / "project"
+    profile = project_root / "docs/competitive-analysis/profiles/example-tool.md"
+    profile.parent.mkdir(parents=True)
+    profile.write_text("# Example Tool\n\n## Project identity\n", encoding="utf-8")
+
+    result = _validate(tmp_path, _payload(), project_root=project_root)
+
+    assert result.returncode == 1
+    assert "profile: missing section '## Declared promise'" in result.stderr

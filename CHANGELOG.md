@@ -20,6 +20,9 @@ authorized public release while the licensing decision remains unresolved.
   research methodology that separates declared, code-verified, observed,
   contradicted, unsupported, and untested evidence. The standard-library
   validator can also confirm the external clone directories on demand.
+- Added a mandatory competitor profile template and validation for 14 evidence
+  sections. Factual table rows must carry an explicit evidence state before a
+  profile can enter the static comparison.
 - Added a CoSnitch intelligence fiche for `CVE-2026-24301`, sourced from
   Varonis Threat Labs and NVD. The fiche records the one-click Microsoft
   Copilot Personal chain, the 2026-08-18 server-side fix, and Varonis's report

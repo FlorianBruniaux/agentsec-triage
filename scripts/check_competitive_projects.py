@@ -16,6 +16,22 @@ PROJECT_ROOT = Path(__file__).parents[1]
 DEFAULT_DATA = PROJECT_ROOT / "data" / "competitive-projects.yaml"
 DEFAULT_SCHEMA = PROJECT_ROOT / "data" / "competitive-projects.schema.json"
 PROFILE_ROOT = Path("docs/competitive-analysis/profiles")
+PROFILE_SECTIONS = (
+    "## Project identity",
+    "## Declared promise",
+    "## Observed architecture",
+    "## Inspected surfaces",
+    "## Safety boundary",
+    "## Intelligence lifecycle",
+    "## Outputs and integration",
+    "## Distribution",
+    "## Tests and fixtures",
+    "## License",
+    "## Contradictions and unknowns",
+    "## Parity lessons",
+    "## Differentiation lessons",
+    "## Evidence",
+)
 
 ROOT_FIELDS = frozenset({"schema_version", "projects"})
 PROJECT_FIELDS = frozenset(
@@ -98,6 +114,37 @@ def _profile_is_confined(project_root: Path, value: str) -> bool:
     return resolved.parent == expected_root
 
 
+def _is_table_separator(cells: list[str]) -> bool:
+    return bool(cells) and all(re.fullmatch(r":?-{3,}:?", cell) for cell in cells)
+
+
+def _validate_profile(path: Path, label: str) -> list[str]:
+    try:
+        text = path.read_text(encoding="utf-8")
+    except OSError as error:
+        return [f"{label}: unable to read profile: {error}"]
+
+    errors: list[str] = []
+    headings = {line.strip() for line in text.splitlines() if line.startswith("## ")}
+    for section in PROFILE_SECTIONS:
+        if section not in headings:
+            errors.append(f"{label}: missing section '{section}'")
+
+    status_tokens = tuple(f"`{status}`" for status in sorted(EVIDENCE_STATUSES))
+    for line_number, line in enumerate(text.splitlines(), start=1):
+        stripped = line.strip()
+        if not stripped.startswith("|") or not stripped.endswith("|"):
+            continue
+        cells = [cell.strip() for cell in stripped.strip("|").split("|")]
+        if _is_table_separator(cells) or any(cell.casefold() == "state" for cell in cells):
+            continue
+        if not any(token in stripped for token in status_tokens):
+            errors.append(
+                f"{label}:{line_number}: factual table row lacks an evidence state"
+            )
+    return errors
+
+
 def _validate_project(
     project: dict[str, object],
     index: int,
@@ -157,11 +204,16 @@ def _validate_project(
         errors.append(f"projects[{index}].execution_tier: unknown value '{execution_tier}'")
 
     profile = values["profile"]
-    if profile is not None and not _profile_is_confined(project_root, profile):
-        errors.append(
-            f"projects[{index}].profile: path must stay under "
-            "docs/competitive-analysis/profiles"
-        )
+    if profile is not None:
+        if not _profile_is_confined(project_root, profile):
+            errors.append(
+                f"projects[{index}].profile: path must stay under "
+                "docs/competitive-analysis/profiles"
+            )
+        else:
+            profile_path = project_root / profile
+            if profile_path.is_file():
+                errors.extend(_validate_profile(profile_path, f"projects[{index}].profile"))
 
 
 def validate_index(
@@ -218,6 +270,9 @@ def main(arguments: Sequence[str] | None = None) -> int:
         options.project_root.resolve(),
         options.clone_root.resolve() if options.clone_root is not None else None,
     )
+    template_path = options.project_root.resolve() / PROFILE_ROOT / "TEMPLATE.md"
+    if template_path.is_file():
+        errors.extend(_validate_profile(template_path, "profile template"))
     for validation_error in errors:
         print(f"competitive project index: {validation_error}", file=sys.stderr)
     if errors:
