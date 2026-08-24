@@ -1,0 +1,31 @@
+docs/competitive-analysis/profiles/agentsec-debu-sinha.md
+  s_0df90997879182::t_4943fcccf86751 1-112
+data/competitive-projects.yaml
+  s_0df90997879182::t_4943fcccf86751 107-109,119-121,131-133,143-145
+docs/competitive-analysis/profiles/trust-issues.md
+  s_0df90997879182::t_4943fcccf86751 1-109
+docs/competitive-analysis/profiles/cisco-skill-scanner.md
+  s_0df90997879182::t_820916eaca5f93 86
+  s_0df90997879182::t_4943fcccf86751 1-85,87-110
+docs/competitive-analysis/profiles/skillspector.md
+  s_0df90997879182::t_4943fcccf86751 1-51,53-110
+  s_0df90997879182::t_171544573c9e58 52
+CHANGELOG.md
+  s_0df90997879182::t_4943fcccf86751 34-38
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "a98997a4cca8cebdf8e7b92e062034924c9449e6",
+  "prompts": {},
+  "sessions": {
+    "s_0df90997879182": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019fd73a-588d-7f03-ab50-494ca0e95848",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Florian BRUNIAUX <florian@bruniaux.com>"
+    }
+  }
+}
