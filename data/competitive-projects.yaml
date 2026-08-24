@@ -104,9 +104,9 @@
       "local_directory": "skillspector",
       "revision": "698e2bf29c7d",
       "category": "skill_analysis",
-      "evidence_status": "declared",
-      "execution_tier": "static_only",
-      "license": "unverified",
+      "evidence_status": "code_verified",
+      "execution_tier": "offline_sandbox",
+      "license": "Apache-2.0",
       "profile": "docs/competitive-analysis/profiles/skillspector.md"
     },
     {
@@ -116,9 +116,9 @@
       "local_directory": "cisco-skill-scanner",
       "revision": "48f59347a54b",
       "category": "skill_analysis",
-      "evidence_status": "declared",
-      "execution_tier": "static_only",
-      "license": "unverified",
+      "evidence_status": "contradicted",
+      "execution_tier": "offline_sandbox",
+      "license": "Apache-2.0",
       "profile": "docs/competitive-analysis/profiles/cisco-skill-scanner.md"
     },
     {
@@ -128,9 +128,9 @@
       "local_directory": "agentsec-debu-sinha",
       "revision": "3e704ade516f",
       "category": "host_hardening",
-      "evidence_status": "declared",
-      "execution_tier": "static_only",
-      "license": "unverified",
+      "evidence_status": "contradicted",
+      "execution_tier": "offline_sandbox",
+      "license": "Apache-2.0",
       "profile": "docs/competitive-analysis/profiles/agentsec-debu-sinha.md"
     },
     {
@@ -140,9 +140,9 @@
       "local_directory": "trust-issues",
       "revision": "ca53cd030f78",
       "category": "reasoning_review",
-      "evidence_status": "declared",
-      "execution_tier": "static_only",
-      "license": "unverified",
+      "evidence_status": "contradicted",
+      "execution_tier": "offline_sandbox",
+      "license": "MIT",
       "profile": "docs/competitive-analysis/profiles/trust-issues.md"
     },
     {
