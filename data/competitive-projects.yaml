@@ -44,9 +44,9 @@
       "local_directory": "agentshield",
       "revision": "bdad15dd28da",
       "category": "agent_configuration",
-      "evidence_status": "declared",
-      "execution_tier": "static_only",
-      "license": "unverified",
+      "evidence_status": "code_verified",
+      "execution_tier": "offline_sandbox",
+      "license": "MIT",
       "profile": "docs/competitive-analysis/profiles/agentshield.md"
     },
     {
@@ -56,9 +56,9 @@
       "local_directory": "snyk-agent-scan",
       "revision": "891f0b2cc69c",
       "category": "host_inventory",
-      "evidence_status": "declared",
-      "execution_tier": "static_only",
-      "license": "unverified",
+      "evidence_status": "code_verified",
+      "execution_tier": "manual_review",
+      "license": "Apache-2.0",
       "profile": "docs/competitive-analysis/profiles/snyk-agent-scan.md"
     },
     {
@@ -68,9 +68,9 @@
       "local_directory": "agentseal",
       "revision": "7c2a22891465",
       "category": "host_inventory",
-      "evidence_status": "declared",
-      "execution_tier": "static_only",
-      "license": "unverified",
+      "evidence_status": "contradicted",
+      "execution_tier": "offline_sandbox",
+      "license": "FSL-1.1-Apache-2.0",
       "profile": "docs/competitive-analysis/profiles/agentseal.md"
     },
     {
@@ -80,9 +80,9 @@
       "local_directory": "medusa",
       "revision": "5f217edf8b09",
       "category": "broad_repository",
-      "evidence_status": "declared",
-      "execution_tier": "static_only",
-      "license": "unverified",
+      "evidence_status": "code_verified",
+      "execution_tier": "manual_review",
+      "license": "AGPL-3.0-or-later",
       "profile": "docs/competitive-analysis/profiles/medusa.md"
     },
     {
