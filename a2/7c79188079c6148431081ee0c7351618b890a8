@@ -1,0 +1,29 @@
+docs/competitive-analysis/profiles/agent-security-scanner-mcp.md
+  s_0df90997879182::t_0c879502128d67 1-111
+docs/competitive-analysis/profiles/inkog.md
+  s_0df90997879182::t_0c879502128d67 1-111
+docs/competitive-analysis/profiles/agent-bom.md
+  s_0df90997879182::t_0c879502128d67 1-113
+data/competitive-projects.yaml
+  s_0df90997879182::t_0c879502128d67 155-157,167-169,179-181,191-193
+docs/competitive-analysis/profiles/sigil.md
+  s_0df90997879182::t_0c879502128d67 1-111
+CHANGELOG.md
+  s_0df90997879182::t_0c879502128d67 39-42
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "a27c79188079c6148431081ee0c7351618b890a8",
+  "prompts": {},
+  "sessions": {
+    "s_0df90997879182": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019fd73a-588d-7f03-ab50-494ca0e95848",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Florian BRUNIAUX <florian@bruniaux.com>"
+    }
+  }
+}
