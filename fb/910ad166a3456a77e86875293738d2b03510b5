@@ -1,0 +1,43 @@
+data/intelligence/sources.yaml
+  s_59aee4ab612299::t_b02420d1e431ff 225-249
+  s_59aee4ab612299::t_2e285030a0c509 3
+CHANGELOG.md
+  s_0df90997879182::t_5cbb33ff5e3124 10-17
+data/intelligence/events.yaml
+  s_59aee4ab612299::t_a17a91af5a794f 229-259
+  s_59aee4ab612299::t_d2ac507038f0c8 3
+tests/unit/test_security_feed.py
+  s_59aee4ab612299::t_b034bfdf9de4f4 67-69
+docs/SECURITY-INTELLIGENCE.md
+  s_0df90997879182::t_93f5350620173a 5,24,31,120-127,179-187
+docs/SECURITY-TIMELINE.md
+  s_0df90997879182::t_fe39f1436da1e3 5,14,27-43
+exports/security-feed.v1.json
+  s_0df90997879182::t_51feaab5d11f20 67,72-105,508-517,576-585,607
+src/agentsec/resources/security-intelligence.json
+  s_0df90997879182::t_c5b1d96c9d0bef 3-35,516-532,647-666,706
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "fb910ad166a3456a77e86875293738d2b03510b5",
+  "prompts": {},
+  "sessions": {
+    "s_0df90997879182": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019fd73a-588d-7f03-ab50-494ca0e95848",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Florian BRUNIAUX <florian@bruniaux.com>"
+    },
+    "s_59aee4ab612299": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "1a29682d-9283-4a7a-ad39-bee10380f07c",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "Florian BRUNIAUX <florian@bruniaux.com>"
+    }
+  }
+}
