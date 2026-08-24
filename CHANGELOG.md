@@ -23,6 +23,10 @@ authorized public release while the licensing decision remains unresolved.
 - Added a mandatory competitor profile template and validation for 14 evidence
   sections. Factual table rows must carry an explicit evidence state before a
   profile can enter the static comparison.
+- Added pinned static profiles for Aguara, patient-zero, Repo Forensics, and
+  cc-audit. The reviews trace scanner boundaries, intelligence updates, CI
+  behavior, licenses, incomplete-scan handling, and the runtime witnesses that
+  remain blocked behind the benchmark approval gate.
 - Added a CoSnitch intelligence fiche for `CVE-2026-24301`, sourced from
   Varonis Threat Labs and NVD. The fiche records the one-click Microsoft
   Copilot Personal chain, the 2026-08-18 server-side fix, and Varonis's report

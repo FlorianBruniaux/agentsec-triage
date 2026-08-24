@@ -83,7 +83,13 @@ def test_committed_index_matches_public_schema_and_contains_pinned_cohort() -> N
     projects = payload["projects"]
     assert len(projects) == 16
     assert all(project["revision"] for project in projects)
-    assert all(project["execution_tier"] == "static_only" for project in projects)
+    reviewed = {
+        project["id"]: project
+        for project in projects
+        if project["evidence_status"] != "declared"
+    }
+    assert {"aguara", "patient-zero", "repo-forensics", "cc-audit"}.issubset(reviewed)
+    assert reviewed["repo-forensics"]["execution_tier"] == "manual_review"
 
 
 def test_missing_revision_fails(tmp_path: Path) -> None:

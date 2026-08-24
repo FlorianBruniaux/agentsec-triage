@@ -8,9 +8,9 @@
       "local_directory": "aguara",
       "revision": "819eafb5fa66",
       "category": "pre_trust_repository",
-      "evidence_status": "declared",
-      "execution_tier": "static_only",
-      "license": "unverified",
+      "evidence_status": "code_verified",
+      "execution_tier": "offline_sandbox",
+      "license": "Apache-2.0",
       "profile": "docs/competitive-analysis/profiles/aguara.md"
     },
     {
@@ -20,9 +20,9 @@
       "local_directory": "patient-zero",
       "revision": "331320c152aa",
       "category": "campaign_triage",
-      "evidence_status": "declared",
-      "execution_tier": "static_only",
-      "license": "unverified",
+      "evidence_status": "contradicted",
+      "execution_tier": "offline_sandbox",
+      "license": "MIT",
       "profile": "docs/competitive-analysis/profiles/patient-zero.md"
     },
     {
@@ -32,9 +32,9 @@
       "local_directory": "repo-forensics",
       "revision": "eedd6a5f909a",
       "category": "incident_forensics",
-      "evidence_status": "declared",
-      "execution_tier": "static_only",
-      "license": "unverified",
+      "evidence_status": "contradicted",
+      "execution_tier": "manual_review",
+      "license": "PolyForm-Noncommercial-1.0.0",
       "profile": "docs/competitive-analysis/profiles/repo-forensics.md"
     },
     {
@@ -92,9 +92,9 @@
       "local_directory": "cc-audit",
       "revision": "bdb657474624",
       "category": "agent_configuration",
-      "evidence_status": "declared",
-      "execution_tier": "static_only",
-      "license": "unverified",
+      "evidence_status": "contradicted",
+      "execution_tier": "offline_sandbox",
+      "license": "MIT",
       "profile": "docs/competitive-analysis/profiles/cc-audit.md"
     },
     {
