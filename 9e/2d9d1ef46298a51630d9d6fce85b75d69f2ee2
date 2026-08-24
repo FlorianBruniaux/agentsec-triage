@@ -1,0 +1,39 @@
+tests/unit/test_competitive_projects.py
+  s_0df90997879182::t_de8c593bef2b22 9-10,13-14,74-85
+  s_0df90997879182::t_ac02933802e619 1-8,11-12,15-73,86-167
+  s_0df90997879182::t_052ed1fbbb393e 168-169
+data/competitive-projects.schema.json
+  s_0df90997879182::t_a3d563c5c3c413 1-85
+docs/competitive-analysis/METHODOLOGY.md
+  s_0df90997879182::t_a3d563c5c3c413 1-155
+data/competitive-projects.yaml
+  s_0df90997879182::t_a3d563c5c3c413 1-197
+scripts/check_competitive_projects.py
+  s_0df90997879182::t_a3d563c5c3c413 1-211,214-220,223-233
+  s_0df90997879182::t_052ed1fbbb393e 212-213,221-222
+README.md
+  s_0df90997879182::t_0f85fce57eb008 58-59
+docs/COMPETITIVE-ANALYSIS-PLAN.md
+  s_0df90997879182::t_a3d563c5c3c413 1-766
+CHANGELOG.md
+  s_0df90997879182::t_0f85fce57eb008 10-18
+  s_0df90997879182::t_a3d563c5c3c413 19-22
+docs/ECOSYSTEM.md
+  s_0df90997879182::t_6c0fd138aca18b 1-403
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "9e2d9d1ef46298a51630d9d6fce85b75d69f2ee2",
+  "prompts": {},
+  "sessions": {
+    "s_0df90997879182": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019fd73a-588d-7f03-ab50-494ca0e95848",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Florian BRUNIAUX <florian@bruniaux.com>"
+    }
+  }
+}
