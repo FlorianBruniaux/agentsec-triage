@@ -1,0 +1,25 @@
+docs/competitive-analysis/profiles/TEMPLATE.md
+  s_0df90997879182::t_1265690c7c31c3 1-94
+tests/unit/test_competitive_projects.py
+  s_0df90997879182::t_156d8490edcc93 44,59,171-182
+CHANGELOG.md
+  s_0df90997879182::t_1265690c7c31c3 23-25
+scripts/check_competitive_projects.py
+  s_0df90997879182::t_1265690c7c31c3 19-34,117-147,207-216,273-275
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "cadbc4260fffd13c2c9edc1bd36b456930e808a5",
+  "prompts": {},
+  "sessions": {
+    "s_0df90997879182": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019fd73a-588d-7f03-ab50-494ca0e95848",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Florian BRUNIAUX <florian@bruniaux.com>"
+    }
+  }
+}
