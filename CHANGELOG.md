@@ -7,6 +7,19 @@ authorized public release while the licensing decision remains unresolved.
 
 ### Added
 
+- Added a dated scanner-ecosystem inventory covering direct competitors,
+  specialized MCP and skill scanners, supply-chain tools, naming collisions,
+  product gaps, and the first hands-on evaluation queue. The inventory combines
+  the supplied market study, the verified 100,319-repository local corpus, and
+  official README checks without treating project claims as benchmark results.
+- Added a 15-day competitive-analysis plan with pinned static reviews,
+  execution and safety gates, an inert fixture corpus, isolated benchmark
+  requirements, product-decision limits, naming checks, roadmap milestones,
+  validation criteria, commit boundaries, and rollback conditions.
+- Added a schema-validated index for 16 pinned competitor repositories and a
+  research methodology that separates declared, code-verified, observed,
+  contradicted, unsupported, and untested evidence. The standard-library
+  validator can also confirm the external clone directories on demand.
 - Added a CoSnitch intelligence fiche for `CVE-2026-24301`, sourced from
   Varonis Threat Labs and NVD. The fiche records the one-click Microsoft
   Copilot Personal chain, the 2026-08-18 server-side fix, and Varonis's report
