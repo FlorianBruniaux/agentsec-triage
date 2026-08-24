@@ -1,6 +1,39 @@
 {
   "events": [
     {
+      "confidence": "high",
+      "detector_coverage": {
+        "detector_ids": [],
+        "notes": "CoSnitch exploits a hosted, server-side Microsoft Copilot Personal endpoint reached through a crafted URL, not a repository artifact. AgentSec scans a local repository and has no visibility into a vendor's hosted web application; the vendor's own server-side patch is the only applicable remediation.",
+        "status": "not_applicable"
+      },
+      "disclosed_date": "2026-08-18",
+      "ecosystems": [
+        "microsoft-copilot",
+        "agent-runtime"
+      ],
+      "event_type": "vulnerability",
+      "id": "evt-2026-08-cosnitch-copilot-personal",
+      "related": {
+        "campaign_ids": [],
+        "cve_ids": [
+          "CVE-2026-24301"
+        ],
+        "technique_ids": [
+          "url-parameter-autorun",
+          "oauth-connector-exfiltration",
+          "memory-poisoning"
+        ]
+      },
+      "source_ids": [
+        "varonis-cosnitch-2026",
+        "nvd-cve-2026-24301"
+      ],
+      "status": "confirmed",
+      "summary": "Varonis Threat Labs disclosed CVE-2026-24301, a chain of three vulnerabilities in Microsoft Copilot Personal: an undocumented ?autorun=1 URL parameter that executes an attacker-supplied prompt on page load, exfiltration of data from connected OAuth apps through Copilot's own URL-fetch tool, and persistent memory poisoning via web summarization. Microsoft shipped a server-side fix the same day the issue was disclosed. Varonis reports no evidence of pre-patch exploitation.",
+      "title": "CoSnitch one-click data exfiltration chain disclosed in Microsoft Copilot Personal"
+    },
+    {
       "confidence": "review",
       "detector_coverage": {
         "detector_ids": [],
@@ -481,6 +514,23 @@
       "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-12537"
     },
     {
+      "id": "nvd-cve-2026-24301",
+      "published_date": "2026-08-18",
+      "publisher": "NIST NVD",
+      "reviewed_date": "2026-08-24",
+      "source_type": "database",
+      "status": "active",
+      "supports": [
+        "Formal CVE record for the CoSnitch command-injection/information-disclosure chain in Microsoft Copilot Web."
+      ],
+      "title": "CVE-2026-24301 Detail",
+      "topics": [
+        "copilot",
+        "cve"
+      ],
+      "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-24301"
+    },
+    {
       "id": "perplexity-numbat-2026",
       "published_date": "2026-07-29",
       "publisher": "Perplexity Research",
@@ -595,6 +645,26 @@
       "url": "https://thehackernews.com/2026/08/keyv-linked-npm-worm-poisons-hundreds.html"
     },
     {
+      "id": "varonis-cosnitch-2026",
+      "published_date": "2026-08-18",
+      "publisher": "Varonis Threat Labs",
+      "reviewed_date": "2026-08-24",
+      "source_type": "research",
+      "status": "active",
+      "supports": [
+        "Varonis chained three Microsoft Copilot Personal weaknesses (an undocumented ?autorun=1 URL parameter, exfiltration of connected-app data via Copilot's built-in URL fetch, and persistent memory poisoning through page summarization) into one-click data exfiltration, tracked as CVE-2026-24301.",
+        "Varonis reported the issue to Microsoft in December 2025; Microsoft shipped a server-side fix on 2026-08-18, and Varonis states it found no evidence of pre-patch in-the-wild exploitation."
+      ],
+      "title": "CoSnitch: When Your AI Assistant Becomes Its Own Whistleblower",
+      "topics": [
+        "copilot",
+        "indirect-prompt-injection",
+        "memory-poisoning",
+        "oauth"
+      ],
+      "url": "https://www.varonis.com/blog/cosnitch"
+    },
+    {
       "id": "zenity-ai-total-2026",
       "published_date": "2026-08-06",
       "publisher": "Zenity Labs",
@@ -633,5 +703,5 @@
       "url": "https://labs.zenity.io/post/attackers-target-agents-via-the-skill-supply-chain"
     }
   ],
-  "updated": "2026-08-18"
+  "updated": "2026-08-24"
 }

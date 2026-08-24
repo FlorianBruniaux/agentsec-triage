@@ -1,6 +1,6 @@
 schema_version: "1"
 kind: sources
-updated: "2026-08-18"
+updated: "2026-08-24"
 sources:
   - id: aikido-keyv-2026
     title: Keyv and Friends Compromised in npm Supply Chain Attack
@@ -221,4 +221,29 @@ sources:
       - Tenet publishes a public reference repository for Cursor and Claude Code controls.
       - No software license was visible in the reviewed repository, so redistribution rights are not inferred.
     reviewed_date: "2026-08-18"
+    status: active
+
+  - id: varonis-cosnitch-2026
+    title: "CoSnitch: When Your AI Assistant Becomes Its Own Whistleblower"
+    publisher: Varonis Threat Labs
+    url: https://www.varonis.com/blog/cosnitch
+    source_type: research
+    published_date: "2026-08-18"
+    topics: [copilot, indirect-prompt-injection, memory-poisoning, oauth]
+    supports:
+      - "Varonis chained three Microsoft Copilot Personal weaknesses (an undocumented ?autorun=1 URL parameter, exfiltration of connected-app data via Copilot's built-in URL fetch, and persistent memory poisoning through page summarization) into one-click data exfiltration, tracked as CVE-2026-24301."
+      - Varonis reported the issue to Microsoft in December 2025; Microsoft shipped a server-side fix on 2026-08-18, and Varonis states it found no evidence of pre-patch in-the-wild exploitation.
+    reviewed_date: "2026-08-24"
+    status: active
+
+  - id: nvd-cve-2026-24301
+    title: CVE-2026-24301 Detail
+    publisher: NIST NVD
+    url: https://nvd.nist.gov/vuln/detail/CVE-2026-24301
+    source_type: database
+    published_date: "2026-08-18"
+    topics: [copilot, cve]
+    supports:
+      - Formal CVE record for the CoSnitch command-injection/information-disclosure chain in Microsoft Copilot Web.
+    reviewed_date: "2026-08-24"
     status: active

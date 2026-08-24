@@ -1,6 +1,6 @@
 schema_version: "1"
 kind: events
-updated: "2026-08-18"
+updated: "2026-08-24"
 events:
   - id: evt-2026-08-keyv-campaign-disclosure
     event_type: campaign
@@ -226,3 +226,34 @@ events:
       notes: >-
         These are external controls. AgentSec records their stated scope but
         does not execute or endorse them.
+
+  - id: evt-2026-08-cosnitch-copilot-personal
+    event_type: vulnerability
+    title: CoSnitch one-click data exfiltration chain disclosed in Microsoft Copilot Personal
+    summary: >-
+      Varonis Threat Labs disclosed CVE-2026-24301, a chain of three
+      vulnerabilities in Microsoft Copilot Personal: an undocumented
+      ?autorun=1 URL parameter that executes an attacker-supplied prompt on
+      page load, exfiltration of data from connected OAuth apps through
+      Copilot's own URL-fetch tool, and persistent memory poisoning via web
+      summarization. Microsoft shipped a server-side fix the same day the
+      issue was disclosed. Varonis reports no evidence of pre-patch
+      exploitation.
+    ecosystems: [microsoft-copilot, agent-runtime]
+    disclosed_date: "2026-08-18"
+    status: confirmed
+    confidence: high
+    source_ids: [varonis-cosnitch-2026, nvd-cve-2026-24301]
+    related:
+      campaign_ids: []
+      cve_ids: [CVE-2026-24301]
+      technique_ids: [url-parameter-autorun, oauth-connector-exfiltration, memory-poisoning]
+    detector_coverage:
+      status: not_applicable
+      detector_ids: []
+      notes: >-
+        CoSnitch exploits a hosted, server-side Microsoft Copilot Personal
+        endpoint reached through a crafted URL, not a repository artifact.
+        AgentSec scans a local repository and has no visibility into a
+        vendor's hosted web application; the vendor's own server-side patch
+        is the only applicable remediation.

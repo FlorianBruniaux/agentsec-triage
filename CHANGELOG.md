@@ -7,6 +7,14 @@ authorized public release while the licensing decision remains unresolved.
 
 ### Added
 
+- Added a CoSnitch intelligence fiche for `CVE-2026-24301`, sourced from
+  Varonis Threat Labs and NVD. The fiche records the one-click Microsoft
+  Copilot Personal chain, the 2026-08-18 server-side fix, and Varonis's report
+  that it found no pre-patch exploitation. Detector coverage is
+  `not_applicable` because the affected Copilot Web endpoint is hosted by
+  Microsoft and produces no repository artifact for AgentSec to inspect. The
+  public feed now contains 20 sources and 10 events; runtime database and
+  detector counts remain unchanged.
 - Added terminal-aware scan progress with `--progress`, forced and disabled
   modes, plus `--verbose` file, directory, and byte counters. Progress is
   bounded, contains no target content, and stays on `stderr` so JSON and human

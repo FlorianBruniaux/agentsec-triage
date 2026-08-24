@@ -64,9 +64,9 @@ def test_builder_emits_deterministic_valid_public_feed_without_gated_iocs(
         "malicious_payloads": 76,
         "skills_scanned": 3984,
     }
-    assert payload["intelligence"]["updated"] == "2026-08-18"
-    assert len(payload["intelligence"]["events"]) == 9
-    assert len(payload["intelligence"]["sources"]) == 18
+    assert payload["intelligence"]["updated"] == "2026-08-24"
+    assert len(payload["intelligence"]["events"]) == 10
+    assert len(payload["intelligence"]["sources"]) == 20
     assert [item["id"] for item in payload["detectors"]] == ["shai-hulud-keyv"]
 
     forbidden_keys = {
