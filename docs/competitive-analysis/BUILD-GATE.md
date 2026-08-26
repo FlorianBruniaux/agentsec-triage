@@ -1,6 +1,6 @@
 # Competitor image build gate
 
-Status: **toolchain-components recipe ready for renewed build approval**
+Status: **five images built, two builds pending**
 
 Recipe bundle digest:
 `968ca1af5d2095cabeccbada0a27caf2e51f548167a238692f31d7b44309334c`
@@ -80,6 +80,29 @@ image. Regression tests lock the exact builder, target, and ordering. This
 renewed gate authorizes only the `cc-audit` retry and the three builds not yet
 attempted. The three existing image IDs are retained and must be inspected
 again before runtime-plan generation.
+
+## Current build state
+
+Five local images have been constructed and re-inspected. The latest run built
+`cc-audit` and SkillSpector. Cisco Skill Scanner stopped before context loading
+on Docker Hub DNS and token-transfer failures; one identical retry failed at
+the same registry boundary. `agent-bom` was not attempted because the sequence
+stops at the first repeated external failure.
+
+| Project | Status | Verified local image ID |
+| --- | --- | --- |
+| Aguara | built | `sha256:38c057adf78bec20c8e9b084501d8fd686e22dea46705b11c178d90827b0469c` |
+| patient-zero | built | `sha256:f62c6fa1523e3fc5cd95440f7d7923d872a3c01e0f1560249a04cff0e85c2080` |
+| AgentShield | built | `sha256:010bc7821650cd613e835804ceec627498cc0eb395e7f214dd490fbd88a59278` |
+| cc-audit | built | `sha256:ac65cc283d06453b1df426bb773a282d75a6858d77adda90ad9449a76a848c25` |
+| NVIDIA SkillSpector | built | `sha256:6667e9b0429f6060ac5f3142e58c3982d8d136d0bb08933720f2d9d2dfe0d826` |
+| Cisco Skill Scanner | pending retry | none |
+| agent-bom | not attempted | none |
+
+No recipe changed after the approved
+`968ca1af5d2095cabeccbada0a27caf2e51f548167a238692f31d7b44309334c`
+bundle. The same digest governs the Cisco retry and subsequent `agent-bom`
+build. No competitor CLI or fixture scan has run.
 
 ## Build boundary
 
