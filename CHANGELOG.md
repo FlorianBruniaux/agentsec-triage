@@ -125,8 +125,9 @@ authorized public release while the licensing decision remains unresolved.
   controlled build attempt and its three immutable image IDs are recorded in
   the renewed build gate. Follow-up corrections align the immutable Rust
   builder image with the repository's exact tracked Rust 1.93.0 toolchain so
-  the source build can remain network-disabled. No competitor scanner was
-  executed.
+  the source build can remain network-disabled, then resolve its declared
+  rustup components in the dependency stage before source copy. No competitor
+  scanner was executed.
 - Stopped traversing nested Git repositories and worktrees as though they were
   part of the requested root. They now produce one warning with an instruction
   to scan the nested repository separately. Symlinks and Windows reparse points

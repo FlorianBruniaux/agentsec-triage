@@ -3,6 +3,7 @@
 FROM rust:1.93.0-bookworm@sha256:d0a4aa3ca2e1088ac0c81690914a0d810f2eee188197034edf366ed010a2b382 AS dependencies
 WORKDIR /build
 COPY Cargo.toml Cargo.lock ./
+COPY rust-toolchain.toml ./rust-toolchain.toml
 COPY xtask/Cargo.toml ./xtask/Cargo.toml
 COPY benches/scan_benchmark.rs ./benches/scan_benchmark.rs
 RUN mkdir -p src xtask/src \

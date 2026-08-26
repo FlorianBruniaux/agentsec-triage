@@ -69,6 +69,14 @@ def test_cc_audit_builder_matches_pinned_rust_toolchain() -> None:
     assert CC_AUDIT_RUST_IMAGE in dockerfile
 
 
+def test_cc_audit_dependency_stage_resolves_toolchain_components() -> None:
+    dockerfile = CC_AUDIT_DOCKERFILE.read_text(encoding="utf-8")
+    toolchain_copy = "COPY rust-toolchain.toml ./rust-toolchain.toml"
+
+    assert toolchain_copy in dockerfile
+    assert dockerfile.index(toolchain_copy) < dockerfile.index("cargo fetch --locked")
+
+
 def test_validator_rejects_unpinned_from_image(tmp_path: Path) -> None:
     checker = _load_checker()
     dockerfile = tmp_path / "Dockerfile"

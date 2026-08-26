@@ -1,9 +1,9 @@
 # Competitor image build gate
 
-Status: **exact-toolchain recipe ready for renewed build approval**
+Status: **toolchain-components recipe ready for renewed build approval**
 
 Recipe bundle digest:
-`5670d1ad098fa3b6e33b1361cc01954e523a5b31a4fccf559dcb39396c82eae8`
+`968ca1af5d2095cabeccbada0a27caf2e51f548167a238692f31d7b44309334c`
 
 This gate covers image construction only. It does not authorize a competitor
 scan. Runtime plans receive separate approval after every local image ID is
@@ -29,7 +29,7 @@ to mutable registry state instead of the reviewed revision.
 All eight clones were clean and at the listed commit when this gate was
 prepared on 2026-08-26.
 
-## First build attempt
+## Build attempts
 
 The build authorized with the previous bundle digest stopped at the first
 failure, as required. No competitor CLI or fixture scan ran.
@@ -64,11 +64,22 @@ Rustup again tried to resolve `1.93.0` after source copy and the
 network-disabled build stopped before compilation. No image was produced and
 the three later builds were not attempted.
 
-The recipe now uses the immutable official `1.93.0-bookworm` image. A second
-regression test locks the exact patch-level alignment. This renewed gate
-authorizes only the `cc-audit` retry and the three builds not yet attempted.
-The three existing image IDs are retained and must be inspected again before
-runtime-plan generation.
+The exact-patch attempt then exposed a separate component boundary. The
+[official image recipe](https://github.com/rust-lang/docker-rust/blob/37d9b1d21b5332c4ca4013bb492e18f68971594c/stable/bookworm/Dockerfile)
+installs Rust with rustup's `minimal` profile, while the tracked
+`rust-toolchain.toml` also requires `rustfmt`, `clippy`, and
+`llvm-tools-preview`. Rustup tried to resolve those components only after the
+source copy, when networking was disabled. A transient Docker Hub layer failure
+occurred on the first pull; one identical retry completed the pull and
+reproduced the component failure before source compilation.
+
+The recipe now copies only the tracked `rust-toolchain.toml` into the dependency
+stage before `cargo fetch --locked`. Rustup can resolve its declared components
+while dependency networking is allowed, before project source enters the
+image. Regression tests lock the exact builder, target, and ordering. This
+renewed gate authorizes only the `cc-audit` retry and the three builds not yet
+attempted. The three existing image IDs are retained and must be inspected
+again before runtime-plan generation.
 
 ## Build boundary
 

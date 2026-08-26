@@ -31,10 +31,12 @@ new local validator.
   manifest-declared benchmark target from its dependency stage. A second retry
   exposed a Rust 1.90 versus tracked Rust 1.93 toolchain mismatch before source
   compilation. A third attempt proved the minor-version image did not provide a
-  toolchain installed under the exact tracked `1.93.0` name. Both defects now
-  have regression tests; the exact-patch recipe and three pending builds await
-  a new digest approval. Sigil remains blocked because the pinned revision has
-  no tracked `Cargo.lock`.
+  toolchain installed under the exact tracked `1.93.0` name. The exact-patch
+  image then exposed missing declared components from its minimal rustup
+  profile. The dependency stage now resolves the tracked toolchain components
+  before source copy. All three recipe defects have regression tests; its retry
+  and three pending builds await a new digest approval. Sigil remains blocked
+  because the pinned revision has no tracked `Cargo.lock`.
 - No competitor CLI has scanned a fixture.
 - Runtime observations, deep teardowns, product decisions, naming, roadmap
   changes, and main-branch integration remain pending.
