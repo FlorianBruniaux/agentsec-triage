@@ -123,7 +123,9 @@ authorized public release while the licensing decision remains unresolved.
 - Corrected the `cc-audit` benchmark image dependency stage to include its
   manifest-declared benchmark target before `cargo fetch --locked`. The first
   controlled build attempt and its three immutable image IDs are recorded in
-  the renewed build gate; no competitor scanner was executed.
+  the renewed build gate. A second correction aligns the immutable Rust builder
+  image with the repository's tracked Rust 1.93 toolchain so the source build
+  can remain network-disabled. No competitor scanner was executed.
 - Stopped traversing nested Git repositories and worktrees as though they were
   part of the requested root. They now produce one warning with an instruction
   to scan the nested repository separately. Symlinks and Windows reparse points

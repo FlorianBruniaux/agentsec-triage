@@ -14,6 +14,11 @@ BUILD_GATE_PATH = PROJECT_ROOT / "docs" / "competitive-analysis" / "BUILD-GATE.m
 CC_AUDIT_DOCKERFILE = (
     PROJECT_ROOT / "research" / "competitive-images" / "cc-audit" / "Dockerfile"
 )
+CC_AUDIT_RUST_IMAGE = (
+    "FROM rust:1.93-bookworm@sha256:"
+    "7c4ae649a84014c467d79319bbf17ce2632ae8b8be123ac2fb2ea5be46823f31"
+    " AS dependencies"
+)
 
 
 def _load_checker() -> ModuleType:
@@ -56,6 +61,12 @@ def test_cc_audit_dependency_stage_includes_declared_benchmark_target() -> None:
 
     assert benchmark_copy in dockerfile
     assert dockerfile.index(benchmark_copy) < dockerfile.index("cargo fetch --locked")
+
+
+def test_cc_audit_builder_matches_pinned_rust_toolchain() -> None:
+    dockerfile = CC_AUDIT_DOCKERFILE.read_text(encoding="utf-8")
+
+    assert CC_AUDIT_RUST_IMAGE in dockerfile
 
 
 def test_validator_rejects_unpinned_from_image(tmp_path: Path) -> None:

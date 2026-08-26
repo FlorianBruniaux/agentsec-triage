@@ -28,10 +28,11 @@ new local validator.
   host-side benchmark runner.
 - Task 11 is at its renewed safety gate. Aguara, patient-zero, and AgentShield
   images are built. The first attempt stopped when `cc-audit` omitted a
-  manifest-declared benchmark target from its dependency stage. The recipe and
-  regression test are corrected; its retry and three pending builds await a
-  new digest approval. Sigil remains blocked because the pinned revision has
-  no tracked `Cargo.lock`.
+  manifest-declared benchmark target from its dependency stage. A second retry
+  exposed a Rust 1.90 versus tracked Rust 1.93 toolchain mismatch before source
+  compilation. Both defects now have regression tests; the toolchain-aligned
+  recipe and three pending builds await a new digest approval. Sigil remains
+  blocked because the pinned revision has no tracked `Cargo.lock`.
 - No competitor CLI has scanned a fixture.
 - Runtime observations, deep teardowns, product decisions, naming, roadmap
   changes, and main-branch integration remain pending.
