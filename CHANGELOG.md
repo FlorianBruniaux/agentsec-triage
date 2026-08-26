@@ -44,6 +44,11 @@ authorized public release while the licensing decision remains unresolved.
   job, safety, coverage honesty, intelligence, distribution, and maintenance.
   The matrix proposes an eight-tool offline benchmark cohort and records why
   the other projects remain excluded from the first controlled run.
+- Added a validated corpus of 12 inert competitive fixtures covering clean,
+  confirmed, contested, near-miss, hook, editor startup, delayed skill, MCP,
+  CI, unsupported lockfile, renamed-content, and symlink-confinement cases.
+  The validator rejects executable bits, archives, secret-shaped content,
+  undeclared files, unconfined paths, and malformed source attribution.
 - Added a CoSnitch intelligence fiche for `CVE-2026-24301`, sourced from
   Varonis Threat Labs and NVD. The fiche records the one-click Microsoft
   Copilot Personal chain, the 2026-08-18 server-side fix, and Varonis's report

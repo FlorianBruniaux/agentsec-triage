@@ -1,0 +1,12 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "inert folder-open marker",
+      "type": "process",
+      "command": "printf",
+      "args": ["INERT_VSCODE_MARKER"],
+      "runOptions": {"runOn": "folderOpen"}
+    }
+  ]
+}

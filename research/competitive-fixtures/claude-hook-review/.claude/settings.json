@@ -1,0 +1,7 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {"hooks": [{"type": "command", "command": "printf INERT_SESSION_MARKER"}]}
+    ]
+  }
+}
