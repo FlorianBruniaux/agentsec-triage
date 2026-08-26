@@ -1,0 +1,59 @@
+CHANGELOG.md
+  s_0df90997879182::t_f9b8c7e08bcce5 58-63
+tests/unit/test_competitive_benchmark.py
+  s_0df90997879182::t_96bc35925d55c1 147-156
+  s_0df90997879182::t_df85a1b0869e4b 177
+research/competitive-images/cisco-skill-scanner/Dockerfile
+  s_0df90997879182::t_c53b566ae0c2fb 1-18
+research/competitive-images/agent-bom/Dockerfile
+  s_0df90997879182::t_c53b566ae0c2fb 1-17
+scripts/check_competitive_images.py
+  s_0df90997879182::t_c0bd75a2d343a0 208-209
+  s_0df90997879182::t_4519cdedbd1f18 1-5,8-63,65,69,72-167,193-207,210-213,215-223
+  s_0df90997879182::t_21970fdada943c 7
+  s_0df90997879182::t_98dca0521c42c4 6,168-192,214
+  s_0df90997879182::t_fd1392dfaed565 64,66-68,70-71
+docs/COMPETITIVE-ANALYSIS-PLAN.md
+  s_0df90997879182::t_ac9973023c01d2 24-36
+  s_0df90997879182::t_f9b8c7e08bcce5 95-97,516,529-531
+research/competitive-images/cc-audit/Dockerfile
+  s_0df90997879182::t_c53b566ae0c2fb 1-19
+docs/competitive-analysis/BENCHMARK-DESIGN.md
+  s_0df90997879182::t_f9b8c7e08bcce5 3,58-60,78-79,149-153
+research/competitive-images/agentshield/Dockerfile
+  s_0df90997879182::t_c53b566ae0c2fb 1-13
+docs/competitive-analysis/BUILD-GATE.md
+  s_0df90997879182::t_f9b8c7e08bcce5 1-123
+scripts/run_competitive_benchmark.py
+  s_0df90997879182::t_c3cf46e6c61862 50-53,192-195
+research/competitive-images/patient-zero/Dockerfile
+  s_0df90997879182::t_c53b566ae0c2fb 1-15
+research/competitive-images/sigil/README.md
+  s_0df90997879182::t_c53b566ae0c2fb 1-17
+research/competitive-images/aguara/Dockerfile
+  s_0df90997879182::t_c53b566ae0c2fb 1-16
+tests/unit/test_competitive_images.py
+  s_0df90997879182::t_532be0f8233721 1-12,14-35,41-102
+  s_0df90997879182::t_1ef112c4064855 36-39
+  s_0df90997879182::t_0f7e9a1828361e 13,40
+research/competitive-images/manifest.yaml
+  s_0df90997879182::t_4519cdedbd1f18 1-83
+research/competitive-images/skillspector/Dockerfile
+  s_0df90997879182::t_c53b566ae0c2fb 1-17
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "357b228bb5aec03ed73d54a6823e20e66ec5660f",
+  "prompts": {},
+  "sessions": {
+    "s_0df90997879182": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019fd73a-588d-7f03-ab50-494ca0e95848",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Florian BRUNIAUX <florian@bruniaux.com>"
+    }
+  }
+}
