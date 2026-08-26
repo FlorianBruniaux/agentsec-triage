@@ -15,8 +15,8 @@ CC_AUDIT_DOCKERFILE = (
     PROJECT_ROOT / "research" / "competitive-images" / "cc-audit" / "Dockerfile"
 )
 CC_AUDIT_RUST_IMAGE = (
-    "FROM rust:1.93-bookworm@sha256:"
-    "7c4ae649a84014c467d79319bbf17ce2632ae8b8be123ac2fb2ea5be46823f31"
+    "FROM rust:1.93.0-bookworm@sha256:"
+    "d0a4aa3ca2e1088ac0c81690914a0d810f2eee188197034edf366ed010a2b382"
     " AS dependencies"
 )
 

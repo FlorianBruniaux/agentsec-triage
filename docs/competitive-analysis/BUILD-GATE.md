@@ -1,9 +1,9 @@
 # Competitor image build gate
 
-Status: **toolchain-aligned recipe ready for renewed build approval**
+Status: **exact-toolchain recipe ready for renewed build approval**
 
 Recipe bundle digest:
-`d5997fa44ea05afc9b4789222b9608c36b1dc5bea996912fe65337eb71988c4b`
+`5670d1ad098fa3b6e33b1361cc01954e523a5b31a4fccf559dcb39396c82eae8`
 
 This gate covers image construction only. It does not authorize a competitor
 scan. Runtime plans receive separate approval after every local image ID is
@@ -58,11 +58,17 @@ compilation because the source's tracked `rust-toolchain.toml` requires Rust
 toolchain in the network-disabled source-build step. No image was produced and
 the three later builds were not attempted.
 
-The recipe now uses the immutable official Rust 1.93 image that matches the
-tracked toolchain. A second regression test locks that alignment. This renewed
-gate authorizes only the `cc-audit` retry and the three builds not yet
-attempted. The three existing image IDs are retained and must be inspected
-again before runtime-plan generation.
+The third attempt showed that the moving `1.93-bookworm` tag did not provide a
+toolchain installed under the exact `1.93.0` name required by the source.
+Rustup again tried to resolve `1.93.0` after source copy and the
+network-disabled build stopped before compilation. No image was produced and
+the three later builds were not attempted.
+
+The recipe now uses the immutable official `1.93.0-bookworm` image. A second
+regression test locks the exact patch-level alignment. This renewed gate
+authorizes only the `cc-audit` retry and the three builds not yet attempted.
+The three existing image IDs are retained and must be inspected again before
+runtime-plan generation.
 
 ## Build boundary
 
@@ -94,7 +100,7 @@ digests in their reviewed Dockerfiles.
 | Input | Immutable index digest |
 | --- | --- |
 | `node:22-bookworm-slim` | `sha256:83f487e0a63425e5b4d146fb5e5be574bcbe1b7b843d3ebafdd95eaf7767a7e5` |
-| `rust:1.93-bookworm` | `sha256:7c4ae649a84014c467d79319bbf17ce2632ae8b8be123ac2fb2ea5be46823f31` |
+| `rust:1.93.0-bookworm` | `sha256:d0a4aa3ca2e1088ac0c81690914a0d810f2eee188197034edf366ed010a2b382` |
 | `debian:bookworm-slim` | `sha256:88200866dfff7ea7f5cbcb6ec7c8a701889efe6fe859fe64d6990e4b07ea4171` |
 | `python:3.12-slim-bookworm` | `sha256:8a7e7cc04fd3e2bd787f7f24e22d5d119aa590d429b50c95dfe12b3abe52f48b` |
 | `ghcr.io/astral-sh/uv:0.10.9` | `sha256:10902f58a1606787602f303954cea099626a4adb02acbac4c69920fe9d278f82` |
