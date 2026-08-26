@@ -1,0 +1,34 @@
+CHANGELOG.md
+  s_0df90997879182::t_f0bb21bcc5cb10 52-57
+scripts/check_competitive_fixtures.py
+  s_0df90997879182::t_ecd0421173d31c 311-312
+research/competitive-runs/.gitignore
+  s_0df90997879182::t_f0bb21bcc5cb10 1-4
+scripts/run_competitive_benchmark.py
+  s_0df90997879182::t_ecd0421173d31c 73,215-221,477-478,510-511,525-528
+  s_0df90997879182::t_8f248c13ee79bb 311-316
+  s_0df90997879182::t_cd3e09d488db58 1-72,74-214,222-310,317-476,479-509,512-524,529-650
+docs/competitive-analysis/BENCHMARK-DESIGN.md
+  s_0df90997879182::t_f0bb21bcc5cb10 1-147
+research/competitive-runs/README.md
+  s_0df90997879182::t_f0bb21bcc5cb10 1-46
+tests/unit/test_competitive_benchmark.py
+  s_0df90997879182::t_36a98694122fcb 1-265
+  s_0df90997879182::t_06dcb6b1721f02 266-269
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "9a99cbb09cedd190869fb5ce5de624c604466264",
+  "prompts": {},
+  "sessions": {
+    "s_0df90997879182": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019fd73a-588d-7f03-ab50-494ca0e95848",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Florian BRUNIAUX <florian@bruniaux.com>"
+    }
+  }
+}
