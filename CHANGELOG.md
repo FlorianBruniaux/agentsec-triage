@@ -40,6 +40,10 @@ authorized public release while the licensing decision remains unresolved.
   and agent-bom. The reviews cover quarantine workflows, broad MCP scanning,
   hosted source analysis, governance inventory, network boundaries, traversal
   omissions, and fail-closed evidence contracts.
+- Added a static comparison matrix for all 16 pinned projects, split by product
+  job, safety, coverage honesty, intelligence, distribution, and maintenance.
+  The matrix proposes an eight-tool offline benchmark cohort and records why
+  the other projects remain excluded from the first controlled run.
 - Added a CoSnitch intelligence fiche for `CVE-2026-24301`, sourced from
   Varonis Threat Labs and NVD. The fiche records the one-click Microsoft
   Copilot Personal chain, the 2026-08-18 server-side fix, and Varonis's report
