@@ -1,0 +1,23 @@
+docs/COMPETITIVE-ANALYSIS-PLAN.md
+  s_0df90997879182::t_ffc219827d2c27 29-31,41-45
+docs/competitive-analysis/BUILD-GATE.md
+  s_0df90997879182::t_ffc219827d2c27 3,86-90,99-100,104-130,214-215,223-224
+CHANGELOG.md
+  s_0df90997879182::t_ffc219827d2c27 64-68
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "08ef2a21b55bcad5b0e66535614e27ef017055bc",
+  "prompts": {},
+  "sessions": {
+    "s_0df90997879182": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019fd73a-588d-7f03-ab50-494ca0e95848",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Florian BRUNIAUX <florian@bruniaux.com>"
+    }
+  }
+}
