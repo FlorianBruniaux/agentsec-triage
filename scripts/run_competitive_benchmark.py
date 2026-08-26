@@ -47,7 +47,10 @@ PLAN_FIELDS = frozenset(
     }
 )
 NETWORK_FIELDS = frozenset({"mode", "allowlist", "approved"})
-IMAGE_DIGEST = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._/-]*@sha256:[0-9a-f]{64}$")
+REGISTRY_IMAGE_DIGEST = re.compile(
+    r"^[A-Za-z0-9][A-Za-z0-9._/-]*@sha256:[0-9a-f]{64}$"
+)
+LOCAL_IMAGE_ID = re.compile(r"^sha256:[0-9a-f]{64}$")
 REVISION = re.compile(r"^[0-9a-f]{12}$")
 DESTINATION = re.compile(r"^[A-Za-z0-9.-]+:[1-9][0-9]{0,4}$")
 SECRET_PATTERNS = (
@@ -186,8 +189,10 @@ def validate_plan(
     elif fixture is not None and fixture.get("inert") is not True:
         errors.append("fixture_id: fixture is not marked inert")
 
-    if image is not None and not IMAGE_DIGEST.fullmatch(image):
-        errors.append("image: expected a sha256-pinned image reference")
+    if image is not None and not (
+        REGISTRY_IMAGE_DIGEST.fullmatch(image) or LOCAL_IMAGE_ID.fullmatch(image)
+    ):
+        errors.append("image: expected a registry digest or local sha256 image ID")
 
     if source_path is not None and project is not None:
         expected_source = (clone_root / str(project.get("local_directory"))).resolve()

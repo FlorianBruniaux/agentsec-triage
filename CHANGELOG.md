@@ -55,6 +55,12 @@ authorized public release while the licensing decision remains unresolved.
   scratch write inventory, output digests, local raw-record isolation, and a
   competitor-free self-test. The design records current measurement and
   normalization limits instead of claiming unsupported containment evidence.
+- Added seven locked competitor image recipes, a schema-level recipe validator,
+  immutable local image ID support, exact runtime command arrays, fixture
+  subsets, and a separate build approval gate. The gate keeps dependency
+  retrieval ahead of source copies, disables network for source-present build
+  steps, and blocks Sigil before build because the reviewed revision has no
+  tracked `Cargo.lock`.
 - Added a CoSnitch intelligence fiche for `CVE-2026-24301`, sourced from
   Varonis Threat Labs and NVD. The fiche records the one-click Microsoft
   Copilot Personal chain, the 2026-08-18 server-side fix, and Varonis's report

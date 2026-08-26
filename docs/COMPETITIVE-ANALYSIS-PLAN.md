@@ -21,6 +21,19 @@ new local validator.
 
 **Spec:** `docs/ECOSYSTEM.md`
 
+## Execution status on 2026-08-26
+
+- Tasks 1 through 10 are complete: isolated worktree, methodology, 16 static
+  profiles, comparison matrix, approved cohort, 12 inert fixtures, and the
+  host-side benchmark runner.
+- Task 11 is at its first safety gate. Seven image recipes are validated and
+  await explicit build approval. Sigil is blocked before build because the
+  pinned revision has no tracked `Cargo.lock`.
+- No competitor image has been built and no competitor CLI has scanned a
+  fixture.
+- Runtime observations, deep teardowns, product decisions, naming, roadmap
+  changes, and main-branch integration remain pending.
+
 ## Global constraints
 
 - Treat every cloned competitor repository as untrusted.
@@ -79,6 +92,9 @@ The work stops at four explicit gates:
 | `research/competitive-runs/README.md` | Raw-run format and privacy boundary; raw local results remain ignored |
 | `research/competitive-runs/.gitignore` | Prevents third-party output and machine paths from entering Git |
 | `docs/competitive-analysis/BENCHMARK-DESIGN.md` | Fixture truth table, commands, isolation policy, and metrics |
+| `docs/competitive-analysis/BUILD-GATE.md` | Pinned image recipes, build boundary, blockers, and approval digest |
+| `research/competitive-images/manifest.yaml` | Exact build status, runtime commands, and fixture subsets for the selected cohort |
+| `scripts/check_competitive_images.py` | Recipe, base-image pin, and source-build network validator |
 | `docs/competitive-analysis/BENCHMARK-RESULTS.md` | Redacted observations and reproducible result summary |
 | `docs/competitive-analysis/PRODUCT-DECISIONS.md` | Parity features, differentiation bets, rejected work, and evidence |
 | `docs/NAMING.md` | Naming brief, candidates, collision checks, and decision record |
@@ -497,7 +513,7 @@ third-party tool to write results into the product repository.
 
   Commit with `test(research): add isolated competitor benchmark runner`.
 
-### Task 11: Run the eight-tool controlled benchmark
+### Task 11: Run the controlled benchmark
 
 **Files:**
 
@@ -510,8 +526,9 @@ third-party tool to write results into the product repository.
 
 - [ ] **Step 1: Review every exact command before execution**
 
-  Confirm the pinned revision, documented mode, sandbox image digest, fixture
-  subset, network policy, and timeout.
+  Confirm the pinned revision, documented mode, sandbox image digest or local
+  image ID, fixture subset, network policy, and timeout. A tool that cannot
+  meet the build-provenance contract is recorded as blocked and is not run.
 
 - [ ] **Step 2: Run clean and near-miss controls first**
 

@@ -144,6 +144,16 @@ def test_valid_plan_returns_approval_digest_and_docker_preview(tmp_path: Path) -
     assert any(value.endswith(":/fixture:ro") for value in command)
 
 
+def test_local_immutable_image_id_is_accepted(tmp_path: Path) -> None:
+    result = _validate(
+        tmp_path, lambda payload: payload.__setitem__("image", "sha256:" + "b" * 64)
+    )
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["docker_argv"][-4] == "sha256:" + "b" * 64
+
+
 def test_shell_command_string_is_rejected(tmp_path: Path) -> None:
     result = _validate(tmp_path, lambda payload: payload.__setitem__("command", "scan /fixture"))
 
@@ -164,7 +174,7 @@ def test_unpinned_image_is_rejected(tmp_path: Path) -> None:
     )
 
     assert result.returncode == 1
-    assert "image: expected a sha256-pinned image reference" in result.stderr
+    assert "image: expected a registry digest or local sha256 image ID" in result.stderr
 
 
 def test_home_mount_is_rejected(tmp_path: Path) -> None:

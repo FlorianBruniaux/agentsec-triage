@@ -1,6 +1,6 @@
 # Controlled competitor benchmark design
 
-Status: **infrastructure validated, competitor execution not approved**
+Status: **image recipes validated, build and competitor execution not approved**
 
 This design converts the static shortlist into reproducible observations while
 keeping third-party code away from the host and real repositories. It does not
@@ -55,7 +55,9 @@ One plan describes one project and one fixture. Required fields are:
 
 - pinned project ID and 12-character revision from the cohort index;
 - fixture ID and exact direct-child paths below the approved roots;
-- image reference pinned with `@sha256:<64 lowercase hex characters>`;
+- image reference pinned with either a registry digest
+  `name@sha256:<64 lowercase hex characters>` or a local immutable Docker image
+  ID `sha256:<64 lowercase hex characters>`;
 - read-only source and fixture mount declarations;
 - argument vector as an array, never a shell string;
 - network mode, allowlist, and explicit approval state;
@@ -73,7 +75,8 @@ Execution requires the same digest. Any field change invalidates approval.
 
 Every run uses:
 
-- an image pinned by immutable SHA-256 digest with `--pull=never`;
+- an image pinned by immutable registry digest or local image ID with
+  `--pull=never`;
 - a non-root `65532:65532` user;
 - network disabled;
 - a read-only root filesystem;
@@ -143,5 +146,8 @@ Docker availability or competitor behavior.
 .venv/bin/python scripts/run_competitive_benchmark.py self-test
 ```
 
-Image construction and the eight sets of exact plan digests form the next
-safety gate. No competitor command runs before that review.
+Seven image recipes and their exact source revisions are recorded in
+`BUILD-GATE.md`. Sigil stopped before build because its pinned source has no
+tracked `Cargo.lock`. The recipe bundle and each resulting local image ID form
+the next safety gate. No image build or competitor command runs before the
+corresponding review.
