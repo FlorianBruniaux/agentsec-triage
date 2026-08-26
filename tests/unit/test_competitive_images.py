@@ -11,6 +11,9 @@ PROJECT_ROOT = Path(__file__).parents[2]
 CHECKER_PATH = PROJECT_ROOT / "scripts" / "check_competitive_images.py"
 MANIFEST_PATH = PROJECT_ROOT / "research" / "competitive-images" / "manifest.yaml"
 BUILD_GATE_PATH = PROJECT_ROOT / "docs" / "competitive-analysis" / "BUILD-GATE.md"
+CC_AUDIT_DOCKERFILE = (
+    PROJECT_ROOT / "research" / "competitive-images" / "cc-audit" / "Dockerfile"
+)
 
 
 def _load_checker() -> ModuleType:
@@ -45,6 +48,14 @@ def test_local_image_id_is_the_only_runtime_reference_before_build() -> None:
 
     for recipe in payload["recipes"]:
         assert "image" not in recipe
+
+
+def test_cc_audit_dependency_stage_includes_declared_benchmark_target() -> None:
+    dockerfile = CC_AUDIT_DOCKERFILE.read_text(encoding="utf-8")
+    benchmark_copy = "COPY benches/scan_benchmark.rs ./benches/scan_benchmark.rs"
+
+    assert benchmark_copy in dockerfile
+    assert dockerfile.index(benchmark_copy) < dockerfile.index("cargo fetch --locked")
 
 
 def test_validator_rejects_unpinned_from_image(tmp_path: Path) -> None:

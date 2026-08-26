@@ -4,6 +4,7 @@ FROM rust:1.90-bookworm@sha256:3914072ca0c3b8aad871db9169a651ccfce30cf58303e5d6f
 WORKDIR /build
 COPY Cargo.toml Cargo.lock ./
 COPY xtask/Cargo.toml ./xtask/Cargo.toml
+COPY benches/scan_benchmark.rs ./benches/scan_benchmark.rs
 RUN mkdir -p src xtask/src \
     && printf 'fn main() {}\n' > src/main.rs \
     && printf 'fn main() {}\n' > xtask/src/main.rs \

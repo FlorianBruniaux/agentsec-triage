@@ -1,9 +1,9 @@
 # Competitor image build gate
 
-Status: **ready for explicit build approval**
+Status: **corrected recipe ready for renewed build approval**
 
 Recipe bundle digest:
-`6caee7d6b10ffb156057320139ba217efa40cc6d0aaa80d5ce5cc58137b4d01f`
+`38c7b1a8aef7a956cfd0a358cde0fe280da868cd9fa58e06243291a56bd174a0`
 
 This gate covers image construction only. It does not authorize a competitor
 scan. Runtime plans receive separate approval after every local image ID is
@@ -28,6 +28,31 @@ to mutable registry state instead of the reviewed revision.
 
 All eight clones were clean and at the listed commit when this gate was
 prepared on 2026-08-26.
+
+## First build attempt
+
+The build authorized with the previous bundle digest stopped at the first
+failure, as required. No competitor CLI or fixture scan ran.
+
+| Project | Result | Local image ID or evidence |
+| --- | --- | --- |
+| Aguara | built | `sha256:38c057adf78bec20c8e9b084501d8fd686e22dea46705b11c178d90827b0469c` |
+| patient-zero | built | `sha256:f62c6fa1523e3fc5cd95440f7d7923d872a3c01e0f1560249a04cff0e85c2080` |
+| AgentShield | built with dependency warnings | `sha256:010bc7821650cd613e835804ceec627498cc0eb395e7f214dd490fbd88a59278` |
+| cc-audit | failed before source compilation | `cargo fetch --locked` could not find the declared `scan_benchmark` target |
+| NVIDIA SkillSpector | not attempted | stopped after the `cc-audit` failure |
+| Cisco Skill Scanner | not attempted | stopped after the `cc-audit` failure |
+| agent-bom | not attempted | stopped after the `cc-audit` failure |
+
+AgentShield's locked dependency install reported deprecated
+`node-domexception@1.0.0` and `glob@11.1.0` packages. The benchmark recipe does
+not alter competitor dependencies, so these warnings remain build evidence.
+
+The `cc-audit` dependency stage now copies its tracked
+`benches/scan_benchmark.rs` target before `cargo fetch --locked`. A regression
+test enforces the ordering. This renewed gate authorizes only the `cc-audit`
+retry and the three builds not yet attempted. The three existing image IDs are
+retained and must be inspected again before runtime-plan generation.
 
 ## Build boundary
 

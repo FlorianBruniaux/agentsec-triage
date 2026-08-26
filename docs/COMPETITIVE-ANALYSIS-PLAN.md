@@ -26,11 +26,13 @@ new local validator.
 - Tasks 1 through 10 are complete: isolated worktree, methodology, 16 static
   profiles, comparison matrix, approved cohort, 12 inert fixtures, and the
   host-side benchmark runner.
-- Task 11 is at its first safety gate. Seven image recipes are validated and
-  await explicit build approval. Sigil is blocked before build because the
-  pinned revision has no tracked `Cargo.lock`.
-- No competitor image has been built and no competitor CLI has scanned a
-  fixture.
+- Task 11 is at its renewed safety gate. Aguara, patient-zero, and AgentShield
+  images are built. The first attempt stopped when `cc-audit` omitted a
+  manifest-declared benchmark target from its dependency stage. The recipe and
+  regression test are corrected; its retry and three pending builds await a
+  new digest approval. Sigil remains blocked because the pinned revision has
+  no tracked `Cargo.lock`.
+- No competitor CLI has scanned a fixture.
 - Runtime observations, deep teardowns, product decisions, naming, roadmap
   changes, and main-branch integration remain pending.
 
