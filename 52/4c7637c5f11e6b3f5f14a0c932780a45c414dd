@@ -1,0 +1,52 @@
+research/competitive-fixtures/manifest.yaml
+  s_0df90997879182::t_31c95376301a2a 1-152
+research/competitive-fixtures/renamed-payload-hash/payload.js
+  s_0df90997879182::t_31c95376301a2a 1-2
+research/competitive-fixtures/skill-delayed-instruction/setup-installation.md
+  s_0df90997879182::t_31c95376301a2a 1-4
+research/competitive-fixtures/mcp-inline-fetch-exec/.mcp.json
+  s_0df90997879182::t_31c95376301a2a 1-8
+CHANGELOG.md
+  s_0df90997879182::t_2d262c60f47ea0 47-51
+scripts/check_competitive_fixtures.py
+  s_0df90997879182::t_c350942b973fff 1-129,135-309
+  s_0df90997879182::t_d10376370feb7f 130-134
+  s_0df90997879182::t_fe71dd82cbc678 310-322
+research/competitive-fixtures/ci-untrusted-trigger/.github/workflows/review.yml
+  s_0df90997879182::t_31c95376301a2a 1-17
+research/competitive-fixtures/claude-hook-review/.claude/settings.json
+  s_0df90997879182::t_31c95376301a2a 1-7
+research/competitive-fixtures/lifecycle-near-miss/package.json
+  s_0df90997879182::t_31c95376301a2a 1-6
+tests/unit/test_competitive_fixtures.py
+  s_0df90997879182::t_b8fd41b0dc71d0 1-173
+  s_0df90997879182::t_2792ebd3195d6c 174-175
+research/competitive-fixtures/skill-delayed-instruction/SKILL.md
+  s_0df90997879182::t_31c95376301a2a 1-4
+research/competitive-fixtures/vscode-startup-review/.vscode/tasks.json
+  s_0df90997879182::t_31c95376301a2a 1-12
+research/competitive-fixtures/confinement-symlink/outside-link.txt
+  s_0df90997879182::t_0689feec4490be 1
+research/competitive-fixtures/clean-control/package-lock.json
+  s_0df90997879182::t_c480d5f37fb8d3 1-7
+research/competitive-fixtures/keyv-contested/package-lock.json
+  s_0df90997879182::t_2d936c148dad29 1-14
+research/competitive-fixtures/shai-hulud-confirmed/package-lock.json
+  s_0df90997879182::t_6dec329e7ed4c1 1-14
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "524c7637c5f11e6b3f5f14a0c932780a45c414dd",
+  "prompts": {},
+  "sessions": {
+    "s_0df90997879182": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019fd73a-588d-7f03-ab50-494ca0e95848",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Florian BRUNIAUX <florian@bruniaux.com>"
+    }
+  }
+}
