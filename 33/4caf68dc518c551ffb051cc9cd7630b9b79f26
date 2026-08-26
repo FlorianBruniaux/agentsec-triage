@@ -1,0 +1,28 @@
+CHANGELOG.md
+  s_0df90997879182::t_c1bd74c2274d74 126-128
+tests/unit/test_competitive_images.py
+  s_0df90997879182::t_86d559bb638730 17-21,66-69
+  s_0df90997879182::t_71df8695c0d5e9 70-71
+docs/COMPETITIVE-ANALYSIS-PLAN.md
+  s_0df90997879182::t_c1bd74c2274d74 31-35
+docs/competitive-analysis/BUILD-GATE.md
+  s_0df90997879182::t_c1bd74c2274d74 3,6,51,53-65,97
+research/competitive-images/cc-audit/Dockerfile
+  s_0df90997879182::t_84838794b0a359 3
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "334caf68dc518c551ffb051cc9cd7630b9b79f26",
+  "prompts": {},
+  "sessions": {
+    "s_0df90997879182": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019fd73a-588d-7f03-ab50-494ca0e95848",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Florian BRUNIAUX <florian@bruniaux.com>"
+    }
+  }
+}
