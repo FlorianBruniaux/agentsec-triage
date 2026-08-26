@@ -308,8 +308,8 @@ def main(arguments: Sequence[str] | None = None) -> int:
         print(error, file=sys.stderr)
         return 1
     errors = validate_manifest(payload, options.manifest.resolve().parent)
-    for error in errors:
-        print(f"competitive fixtures: {error}", file=sys.stderr)
+    for validation_error in errors:
+        print(f"competitive fixtures: {validation_error}", file=sys.stderr)
     if errors:
         return 1
     fixtures = cast(list[object], payload["fixtures"])

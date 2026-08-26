@@ -49,6 +49,12 @@ authorized public release while the licensing decision remains unresolved.
   CI, unsupported lockfile, renamed-content, and symlink-confinement cases.
   The validator rejects executable bits, archives, secret-shaped content,
   undeclared files, unconfined paths, and malformed source attribution.
+- Added a host-side competitive benchmark runner with exact-plan digests,
+  immutable image requirements, read-only inputs, disabled network, non-root
+  execution, dropped capabilities, resource limits, bounded output capture,
+  scratch write inventory, output digests, local raw-record isolation, and a
+  competitor-free self-test. The design records current measurement and
+  normalization limits instead of claiming unsupported containment evidence.
 - Added a CoSnitch intelligence fiche for `CVE-2026-24301`, sourced from
   Varonis Threat Labs and NVD. The fiche records the one-click Microsoft
   Copilot Personal chain, the 2026-08-18 server-side fix, and Varonis's report
