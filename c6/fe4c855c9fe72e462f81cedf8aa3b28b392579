@@ -1,0 +1,21 @@
+CHANGELOG.md
+  s_0df90997879182::t_f5afdeefeaa87a 43-46
+docs/competitive-analysis/STATIC-MATRIX.md
+  s_0df90997879182::t_f5afdeefeaa87a 1-148
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "c6fe4c855c9fe72e462f81cedf8aa3b28b392579",
+  "prompts": {},
+  "sessions": {
+    "s_0df90997879182": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019fd73a-588d-7f03-ab50-494ca0e95848",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Florian BRUNIAUX <florian@bruniaux.com>"
+    }
+  }
+}
