@@ -26,8 +26,9 @@ new local validator.
 - Tasks 1 through 10 are complete: isolated worktree, methodology, 16 static
   profiles, comparison matrix, approved cohort, 12 inert fixtures, and the
   host-side benchmark runner.
-- Task 11 remains at its build safety gate. Aguara, patient-zero, AgentShield,
-  `cc-audit`, and SkillSpector images are built and re-inspected. The first
+- Task 11 passed its build safety gate. Aguara, patient-zero, AgentShield,
+  `cc-audit`, SkillSpector, Cisco Skill Scanner, and `agent-bom` images are
+  built and re-inspected. The first
   attempt stopped when `cc-audit` omitted a
   manifest-declared benchmark target from its dependency stage. A second retry
   exposed a Rust 1.90 versus tracked Rust 1.93 toolchain mismatch before source
@@ -37,8 +38,11 @@ new local validator.
   profile. The dependency stage now resolves the tracked toolchain components
   before source copy, and the corrected image built successfully. Cisco Skill
   Scanner then failed twice at the Docker Hub registry boundary before context
-  loading. Its unchanged retry and the unattempted `agent-bom` build remain.
-  Sigil remains blocked because the pinned revision has no tracked `Cargo.lock`.
+  loading. Its unchanged retry passed after registry recovery, followed by a
+  successful `agent-bom` build. Sigil remains blocked because the pinned
+  revision has no tracked `Cargo.lock`.
+- Seven exact `clean-control` plans are validated locally with immutable image
+  IDs and separate approval digests. Their execution is not approved.
 - No competitor CLI has scanned a fixture.
 - Runtime observations, deep teardowns, product decisions, naming, roadmap
   changes, and main-branch integration remain pending.

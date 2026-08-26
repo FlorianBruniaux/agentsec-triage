@@ -61,10 +61,11 @@ authorized public release while the licensing decision remains unresolved.
   retrieval ahead of source copies, disables network for source-present build
   steps, and blocks Sigil before build because the reviewed revision has no
   tracked `Cargo.lock`.
-- Recorded five verified local competitor image IDs. The controlled sequence
-  built Aguara, patient-zero, AgentShield, `cc-audit`, and SkillSpector without
-  running their CLIs. Cisco Skill Scanner remains pending after repeated Docker
-  Hub registry failures before context loading; `agent-bom` remains unattempted.
+- Recorded seven verified local competitor image IDs. The controlled sequence
+  built Aguara, patient-zero, AgentShield, `cc-audit`, SkillSpector, Cisco Skill
+  Scanner, and `agent-bom` without running their CLIs. Seven ignored local
+  `clean-control` plans now have exact runtime arguments, resource policies,
+  and approval digests for the next owner gate.
 - Added a CoSnitch intelligence fiche for `CVE-2026-24301`, sourced from
   Varonis Threat Labs and NVD. The fiche records the one-click Microsoft
   Copilot Personal chain, the 2026-08-18 server-side fix, and Varonis's report

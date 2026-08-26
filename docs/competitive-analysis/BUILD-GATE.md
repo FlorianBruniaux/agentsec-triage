@@ -1,6 +1,6 @@
 # Competitor image build gate
 
-Status: **five images built, two builds pending**
+Status: **seven images built, runtime execution not approved**
 
 Recipe bundle digest:
 `968ca1af5d2095cabeccbada0a27caf2e51f548167a238692f31d7b44309334c`
@@ -83,11 +83,11 @@ again before runtime-plan generation.
 
 ## Current build state
 
-Five local images have been constructed and re-inspected. The latest run built
-`cc-audit` and SkillSpector. Cisco Skill Scanner stopped before context loading
-on Docker Hub DNS and token-transfer failures; one identical retry failed at
-the same registry boundary. `agent-bom` was not attempted because the sequence
-stops at the first repeated external failure.
+Seven local images have been constructed and re-inspected. The authorized
+retry built Cisco Skill Scanner after the Docker registry recovered, confirming
+that the previous DNS and token-transfer failures were external to its build
+context. The sequence then built `agent-bom`. Both Python project installs ran
+with `--network=none` after locked dependency retrieval.
 
 | Project | Status | Verified local image ID |
 | --- | --- | --- |
@@ -96,13 +96,38 @@ stops at the first repeated external failure.
 | AgentShield | built | `sha256:010bc7821650cd613e835804ceec627498cc0eb395e7f214dd490fbd88a59278` |
 | cc-audit | built | `sha256:ac65cc283d06453b1df426bb773a282d75a6858d77adda90ad9449a76a848c25` |
 | NVIDIA SkillSpector | built | `sha256:6667e9b0429f6060ac5f3142e58c3982d8d136d0bb08933720f2d9d2dfe0d826` |
-| Cisco Skill Scanner | pending retry | none |
-| agent-bom | not attempted | none |
+| Cisco Skill Scanner | built | `sha256:fb23cf7938fcb8d691f9cec24d0a6acc61f22e7b958ca0948fb915ae09de0ab5` |
+| agent-bom | built | `sha256:bcfe775915c08faac83dce749f4ce890528fd80b56415d7cb7e38d851f915e03` |
 
 No recipe changed after the approved
 `968ca1af5d2095cabeccbada0a27caf2e51f548167a238692f31d7b44309334c`
-bundle. The same digest governs the Cisco retry and subsequent `agent-bom`
-build. No competitor CLI or fixture scan has run.
+bundle. No competitor CLI or fixture scan has run.
+
+## Clean-control runtime gate
+
+The next gate is limited to one inert `clean-control` run per built image. It
+does not authorize the remaining positive, near-miss, unsupported, or safety
+fixtures. Every plan uses network mode `none`, read-only source and fixture
+mounts, a read-only container filesystem, user `65532:65532`, all capabilities
+dropped, `no-new-privileges`, 30 seconds, 512 MB, 64 processes, one CPU, and a
+1,000,000-byte limit per output stream.
+
+Exact plans remain local under
+`research/competitive-runs/local/plans/` because they contain absolute host
+paths. The runner validated each plan and produced these approval digests:
+
+| Project | Exact image ID | Runtime arguments | Approval digest |
+| --- | --- | --- | --- |
+| Aguara | `sha256:38c057adf78bec20c8e9b084501d8fd686e22dea46705b11c178d90827b0469c` | `scan /fixture --format json --no-update-check --project-policy ignore` | `4f4160fa140ff3114367be5b6d1ad476154de1f37e5f5b1f146281e001cc3c52` |
+| patient-zero | `sha256:f62c6fa1523e3fc5cd95440f7d7923d872a3c01e0f1560249a04cff0e85c2080` | `scan --dir /fixture --depth 8 --offline --no-github --json` | `72cf075c5232a7bd4b11e7eb20480dea40f85620a7756388b3bd8fbb5fdc5622` |
+| AgentShield | `sha256:010bc7821650cd613e835804ceec627498cc0eb395e7f214dd490fbd88a59278` | `scan --path /fixture --format json` | `3d79cdda7c1498f031763d7bdbf0f4972e1b339ca8c51303ec65be3e91421273` |
+| cc-audit | `sha256:ac65cc283d06453b1df426bb773a282d75a6858d77adda90ad9449a76a848c25` | `check --format json /fixture` | `dc2c663dd6330efbc4b47225435396f859fb8fd565eadabf124447cc8812d909` |
+| NVIDIA SkillSpector | `sha256:6667e9b0429f6060ac5f3142e58c3982d8d136d0bb08933720f2d9d2dfe0d826` | `scan /fixture --no-llm --format json --fail-on-incomplete` | `2fe9bb3c485c58d3a4ea69c743f9ff99d96e99732a8f54c87e8f7ff58ffc7328` |
+| Cisco Skill Scanner | `sha256:fb23cf7938fcb8d691f9cec24d0a6acc61f22e7b958ca0948fb915ae09de0ab5` | `scan /fixture --format json --compact` | `761be60ffe89e7a66b1c354dfb42b83bc4c2e70921b780e92b519cd767ed9fde` |
+| agent-bom | `sha256:bcfe775915c08faac83dce749f4ce890528fd80b56415d7cb7e38d851f915e03` | `scan --project /fixture --no-discover --offline --format json --output - --reproducible --quiet` | `83b5f6f809dc01c83cc7c6fb42f821439c88ba700480c41499284798faa939fd` |
+
+These digests authorize nothing by themselves. Each `execute` call still
+requires the matching digest to be supplied explicitly after owner approval.
 
 ## Build boundary
 
@@ -186,8 +211,8 @@ steps execute inside BuildKit containers. The reviewed source is present only
 during network-disabled project build steps, except for Node projects where no
 project build step runs.
 
-No competitor CLI or fixture scan runs in this gate. After the seven builds,
-the next review records:
+No competitor CLI or fixture scan ran in the build gate. The completed review
+records:
 
 - the seven local image IDs;
 - build success or failure and Dockerfile digest;
@@ -195,4 +220,5 @@ the next review records:
 - the runtime approval digest generated by
   `scripts/run_competitive_benchmark.py validate`.
 
-Only that second approval can start `docker run` against a fixture.
+Only a separate approval of the clean-control digests can start `docker run`
+against a fixture.
