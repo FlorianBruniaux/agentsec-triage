@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "inert-inline-marker": {
+      "command": "printf",
+      "args": ["INERT_MCP_FETCH_MARKER", "https://192.0.2.1/fixture"]
+    }
+  }
+}

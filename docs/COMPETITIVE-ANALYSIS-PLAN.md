@@ -21,6 +21,32 @@ new local validator.
 
 **Spec:** `docs/ECOSYSTEM.md`
 
+## Execution status on 2026-08-26
+
+- Tasks 1 through 10 are complete: isolated worktree, methodology, 16 static
+  profiles, comparison matrix, approved cohort, 12 inert fixtures, and the
+  host-side benchmark runner.
+- Task 11 passed its build safety gate. Aguara, patient-zero, AgentShield,
+  `cc-audit`, SkillSpector, Cisco Skill Scanner, and `agent-bom` images are
+  built and re-inspected. The first
+  attempt stopped when `cc-audit` omitted a
+  manifest-declared benchmark target from its dependency stage. A second retry
+  exposed a Rust 1.90 versus tracked Rust 1.93 toolchain mismatch before source
+  compilation. A third attempt proved the minor-version image did not provide a
+  toolchain installed under the exact tracked `1.93.0` name. The exact-patch
+  image then exposed missing declared components from its minimal rustup
+  profile. The dependency stage now resolves the tracked toolchain components
+  before source copy, and the corrected image built successfully. Cisco Skill
+  Scanner then failed twice at the Docker Hub registry boundary before context
+  loading. Its unchanged retry passed after registry recovery, followed by a
+  successful `agent-bom` build. Sigil remains blocked because the pinned
+  revision has no tracked `Cargo.lock`.
+- Seven exact `clean-control` plans are validated locally with immutable image
+  IDs and separate approval digests. Their execution is not approved.
+- No competitor CLI has scanned a fixture.
+- Runtime observations, deep teardowns, product decisions, naming, and roadmap
+  changes remain pending.
+
 ## Global constraints
 
 - Treat every cloned competitor repository as untrusted.
@@ -79,6 +105,9 @@ The work stops at four explicit gates:
 | `research/competitive-runs/README.md` | Raw-run format and privacy boundary; raw local results remain ignored |
 | `research/competitive-runs/.gitignore` | Prevents third-party output and machine paths from entering Git |
 | `docs/competitive-analysis/BENCHMARK-DESIGN.md` | Fixture truth table, commands, isolation policy, and metrics |
+| `docs/competitive-analysis/BUILD-GATE.md` | Pinned image recipes, build boundary, blockers, and approval digest |
+| `research/competitive-images/manifest.yaml` | Exact build status, runtime commands, and fixture subsets for the selected cohort |
+| `scripts/check_competitive_images.py` | Recipe, base-image pin, and source-build network validator |
 | `docs/competitive-analysis/BENCHMARK-RESULTS.md` | Redacted observations and reproducible result summary |
 | `docs/competitive-analysis/PRODUCT-DECISIONS.md` | Parity features, differentiation bets, rejected work, and evidence |
 | `docs/NAMING.md` | Naming brief, candidates, collision checks, and decision record |
@@ -205,7 +234,8 @@ revision, category, evidence state, execution tier, license, and profile path.
 
 - [ ] **Step 6: Run validator and Markdown checks**
 
-  Run `.venv/bin/python scripts/check_competitive_projects.py`,
+  Run `.venv/bin/python scripts/check_competitive_projects.py --clone-root
+  /Users/florianbruniaux/Sites/divers-test/agent-security-ecosystem`,
   `.venv/bin/pytest tests/unit/test_competitive_projects.py -q`, and
   `.venv/bin/python scripts/check_markdown_style.py .`.
 
@@ -496,7 +526,7 @@ third-party tool to write results into the product repository.
 
   Commit with `test(research): add isolated competitor benchmark runner`.
 
-### Task 11: Run the eight-tool controlled benchmark
+### Task 11: Run the controlled benchmark
 
 **Files:**
 
@@ -509,8 +539,9 @@ third-party tool to write results into the product repository.
 
 - [ ] **Step 1: Review every exact command before execution**
 
-  Confirm the pinned revision, documented mode, sandbox image digest, fixture
-  subset, network policy, and timeout.
+  Confirm the pinned revision, documented mode, sandbox image digest or local
+  image ID, fixture subset, network policy, and timeout. A tool that cannot
+  meet the build-provenance contract is recorded as blocked and is not run.
 
 - [ ] **Step 2: Run clean and near-miss controls first**
 

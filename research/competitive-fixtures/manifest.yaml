@@ -1,0 +1,152 @@
+{
+  "schema_version": "1",
+  "fixtures": [
+    {
+      "id": "clean-control",
+      "directory": "clean-control",
+      "kind": "negative",
+      "technique": "benign empty dependency control",
+      "expected_evidence": ["no campaign, hook, skill, MCP, or CI evidence"],
+      "source_url": "https://github.com/FlorianBruniaux/agentsec-triage",
+      "applicable_tool_classes": ["repository", "campaign", "agent_config", "skill", "mcp", "ci", "package"],
+      "inert": true,
+      "control": null,
+      "files": [{"path": "package-lock.json", "type": "text"}]
+    },
+    {
+      "id": "shai-hulud-confirmed",
+      "directory": "shai-hulud-confirmed",
+      "kind": "positive",
+      "technique": "confirmed compromised npm package version",
+      "expected_evidence": ["cache-manager version 7.2.10 in npm lockfile"],
+      "source_url": "https://www.aikido.dev/blog/keyv-and-friends-compromised-in-npm-supply-chain-attack",
+      "applicable_tool_classes": ["repository", "campaign", "package"],
+      "inert": true,
+      "control": "clean-control",
+      "files": [{"path": "package-lock.json", "type": "text"}]
+    },
+    {
+      "id": "keyv-contested",
+      "directory": "keyv-contested",
+      "kind": "positive",
+      "technique": "contested scoped npm package version",
+      "expected_evidence": ["@keyv/redis version 6.0.0 with contested classification"],
+      "source_url": "https://safedep.io/keyv-npm-supply-chain-compromise/",
+      "applicable_tool_classes": ["repository", "campaign", "package"],
+      "inert": true,
+      "control": "clean-control",
+      "files": [{"path": "package-lock.json", "type": "text"}]
+    },
+    {
+      "id": "lifecycle-near-miss",
+      "directory": "lifecycle-near-miss",
+      "kind": "near_miss",
+      "technique": "benign npm lifecycle script near miss",
+      "expected_evidence": ["reviewable prepublishOnly script without network, download, or encoded command"],
+      "source_url": "https://docs.npmjs.com/cli/v11/using-npm/scripts/",
+      "applicable_tool_classes": ["repository", "campaign", "package"],
+      "inert": true,
+      "control": "shai-hulud-confirmed",
+      "files": [{"path": "package.json", "type": "text"}]
+    },
+    {
+      "id": "renamed-payload-hash",
+      "directory": "renamed-payload-hash",
+      "kind": "positive",
+      "technique": "content hash remains stable after payload rename",
+      "expected_evidence": ["SHA-256 of harmless payload.js independent from its filename"],
+      "source_url": "https://www.aikido.dev/blog/keyv-and-friends-compromised-in-npm-supply-chain-attack",
+      "applicable_tool_classes": ["repository", "campaign"],
+      "inert": true,
+      "control": "clean-control",
+      "files": [{"path": "payload.js", "type": "text"}]
+    },
+    {
+      "id": "claude-hook-review",
+      "directory": "claude-hook-review",
+      "kind": "positive",
+      "technique": "repository startup hook requires review",
+      "expected_evidence": ["Claude Code SessionStart hook with harmless marker command"],
+      "source_url": "https://docs.anthropic.com/en/docs/claude-code/hooks",
+      "applicable_tool_classes": ["repository", "agent_config"],
+      "inert": true,
+      "control": "clean-control",
+      "files": [{"path": ".claude/settings.json", "type": "text"}]
+    },
+    {
+      "id": "vscode-startup-review",
+      "directory": "vscode-startup-review",
+      "kind": "positive",
+      "technique": "editor folder-open task requires review",
+      "expected_evidence": ["VS Code task configured to run on folder open with harmless marker command"],
+      "source_url": "https://code.visualstudio.com/docs/editor/tasks",
+      "applicable_tool_classes": ["repository", "agent_config"],
+      "inert": true,
+      "control": "clean-control",
+      "files": [{"path": ".vscode/tasks.json", "type": "text"}]
+    },
+    {
+      "id": "skill-delayed-instruction",
+      "directory": "skill-delayed-instruction",
+      "kind": "positive",
+      "technique": "skill delegates setup behavior to a secondary instruction file",
+      "expected_evidence": ["SKILL.md loads a secondary setup file containing a harmless shell marker"],
+      "source_url": "https://labs.zenity.io/post/attackers-target-agents-via-the-skill-supply-chain",
+      "applicable_tool_classes": ["repository", "skill"],
+      "inert": true,
+      "control": "clean-control",
+      "files": [
+        {"path": "SKILL.md", "type": "text"},
+        {"path": "setup-installation.md", "type": "text"}
+      ]
+    },
+    {
+      "id": "mcp-inline-fetch-exec",
+      "directory": "mcp-inline-fetch-exec",
+      "kind": "positive",
+      "technique": "MCP configuration combines an inline marker and non-routable URL",
+      "expected_evidence": ["MCP stdio command contains an inline marker and documentation-only URL"],
+      "source_url": "https://jfrog.com/blog/mcp-prompt-hijacking-vulnerability/",
+      "applicable_tool_classes": ["repository", "agent_config", "mcp"],
+      "inert": true,
+      "control": "clean-control",
+      "files": [{"path": ".mcp.json", "type": "text"}]
+    },
+    {
+      "id": "ci-untrusted-trigger",
+      "directory": "ci-untrusted-trigger",
+      "kind": "positive",
+      "technique": "privileged CI trigger consumes untrusted pull request content",
+      "expected_evidence": ["pull_request_target workflow checks out the pull request head"],
+      "source_url": "https://snyk.io/blog/cline-supply-chain-attack-prompt-injection-github-actions/",
+      "applicable_tool_classes": ["repository", "ci"],
+      "inert": true,
+      "control": "clean-control",
+      "files": [{"path": ".github/workflows/review.yml", "type": "text"}]
+    },
+    {
+      "id": "unsupported-binary-lock",
+      "directory": "unsupported-binary-lock",
+      "kind": "unsupported",
+      "technique": "binary lockfile must be reported as unsupported",
+      "expected_evidence": ["bun.lockb placeholder is present and must not be parsed as a text lockfile"],
+      "source_url": "https://bun.sh/docs/install/lockfile",
+      "applicable_tool_classes": ["repository", "campaign", "package"],
+      "inert": true,
+      "control": "clean-control",
+      "files": [{"path": "bun.lockb", "type": "binary_placeholder"}]
+    },
+    {
+      "id": "confinement-symlink",
+      "directory": "confinement-symlink",
+      "kind": "safety",
+      "technique": "symbolic link resolves outside the requested fixture root",
+      "expected_evidence": ["scanner skips outside-link.txt or reports incomplete confinement coverage"],
+      "source_url": "https://cwe.mitre.org/data/definitions/59.html",
+      "applicable_tool_classes": ["repository", "agent_config", "skill", "package"],
+      "inert": true,
+      "control": "clean-control",
+      "files": [{"path": "outside-link.txt", "type": "symlink"}]
+    }
+  ]
+}

@@ -1,0 +1,6 @@
+{
+  "name": "lifecycle-near-miss-inert-fixture",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {"prepublishOnly": "printf INERT_RELEASE_CHECK"}
+}

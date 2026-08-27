@@ -1,0 +1,83 @@
+{
+  "schema_version": "1",
+  "platform": "linux/arm64",
+  "recipes": [
+    {
+      "project_id": "aguara",
+      "revision": "819eafb5fa66",
+      "status": "ready",
+      "dockerfile": "research/competitive-images/aguara/Dockerfile",
+      "tag": "agentsec-bench/aguara:819eafb5fa66",
+      "runtime_command": ["scan", "/fixture", "--format", "json", "--no-update-check", "--project-policy", "ignore"],
+      "fixtures": ["clean-control", "shai-hulud-confirmed", "keyv-contested", "lifecycle-near-miss", "renamed-payload-hash", "claude-hook-review", "vscode-startup-review", "skill-delayed-instruction", "mcp-inline-fetch-exec", "ci-untrusted-trigger", "unsupported-binary-lock", "confinement-symlink"],
+      "build_network": "dependencies_only"
+    },
+    {
+      "project_id": "patient-zero",
+      "revision": "331320c152aa",
+      "status": "ready",
+      "dockerfile": "research/competitive-images/patient-zero/Dockerfile",
+      "tag": "agentsec-bench/patient-zero:331320c152aa",
+      "runtime_command": ["scan", "--dir", "/fixture", "--depth", "8", "--offline", "--no-github", "--json"],
+      "fixtures": ["clean-control", "shai-hulud-confirmed", "keyv-contested", "lifecycle-near-miss", "renamed-payload-hash", "unsupported-binary-lock", "confinement-symlink"],
+      "build_network": "dependencies_only"
+    },
+    {
+      "project_id": "agentshield",
+      "revision": "bdad15dd28da",
+      "status": "ready",
+      "dockerfile": "research/competitive-images/agentshield/Dockerfile",
+      "tag": "agentsec-bench/agentshield:bdad15dd28da",
+      "runtime_command": ["scan", "--path", "/fixture", "--format", "json"],
+      "fixtures": ["clean-control", "claude-hook-review", "vscode-startup-review", "skill-delayed-instruction", "mcp-inline-fetch-exec", "ci-untrusted-trigger", "confinement-symlink"],
+      "build_network": "dependencies_only"
+    },
+    {
+      "project_id": "cc-audit",
+      "revision": "bdb657474624",
+      "status": "ready",
+      "dockerfile": "research/competitive-images/cc-audit/Dockerfile",
+      "tag": "agentsec-bench/cc-audit:bdb657474624",
+      "runtime_command": ["check", "--format", "json", "/fixture"],
+      "fixtures": ["clean-control", "claude-hook-review", "skill-delayed-instruction", "mcp-inline-fetch-exec", "confinement-symlink"],
+      "build_network": "dependencies_only"
+    },
+    {
+      "project_id": "skillspector",
+      "revision": "698e2bf29c7d",
+      "status": "ready",
+      "dockerfile": "research/competitive-images/skillspector/Dockerfile",
+      "tag": "agentsec-bench/skillspector:698e2bf29c7d",
+      "runtime_command": ["scan", "/fixture", "--no-llm", "--format", "json", "--fail-on-incomplete"],
+      "fixtures": ["clean-control", "skill-delayed-instruction", "mcp-inline-fetch-exec", "confinement-symlink"],
+      "build_network": "dependencies_only"
+    },
+    {
+      "project_id": "cisco-skill-scanner",
+      "revision": "48f59347a54b",
+      "status": "ready",
+      "dockerfile": "research/competitive-images/cisco-skill-scanner/Dockerfile",
+      "tag": "agentsec-bench/cisco-skill-scanner:48f59347a54b",
+      "runtime_command": ["scan", "/fixture", "--format", "json", "--compact"],
+      "fixtures": ["clean-control", "skill-delayed-instruction", "mcp-inline-fetch-exec", "confinement-symlink"],
+      "build_network": "dependencies_only"
+    },
+    {
+      "project_id": "sigil",
+      "revision": "0f73627236d5",
+      "status": "blocked",
+      "blocker": "The pinned source has no tracked Cargo.lock, so dependency resolution is mutable.",
+      "evidence": "research/competitive-images/sigil/README.md"
+    },
+    {
+      "project_id": "agent-bom",
+      "revision": "9ceeb22fff1f",
+      "status": "ready",
+      "dockerfile": "research/competitive-images/agent-bom/Dockerfile",
+      "tag": "agentsec-bench/agent-bom:9ceeb22fff1f",
+      "runtime_command": ["scan", "--project", "/fixture", "--no-discover", "--offline", "--format", "json", "--output", "-", "--reproducible", "--quiet"],
+      "fixtures": ["clean-control", "shai-hulud-confirmed", "keyv-contested", "unsupported-binary-lock", "skill-delayed-instruction", "mcp-inline-fetch-exec", "ci-untrusted-trigger", "confinement-symlink"],
+      "build_network": "dependencies_only"
+    }
+  ]
+}

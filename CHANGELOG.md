@@ -23,6 +23,56 @@ authorized public release while the licensing decision remains unresolved.
   Also fixed the human renderer silently dropping each finding's
   `remediation_url`, a field the JSON report already exposed; it now prints
   as `(remediation: <url>)` after the finding's evidence.
+- Added a schema-validated index for 16 pinned competitor repositories and a
+  research methodology that separates declared, code-verified, observed,
+  contradicted, unsupported, and untested evidence. The standard-library
+  validator can also confirm the external clone directories on demand.
+- Added a mandatory competitor profile template and validation for 14 evidence
+  sections. Factual table rows must carry an explicit evidence state before a
+  profile can enter the static comparison.
+- Added pinned static profiles for Aguara, patient-zero, Repo Forensics, and
+  cc-audit. The reviews trace scanner boundaries, intelligence updates, CI
+  behavior, licenses, incomplete-scan handling, and the runtime witnesses that
+  remain blocked behind the benchmark approval gate.
+- Added pinned static profiles for AgentShield, Snyk Agent Scan, AgentSeal, and
+  Medusa. The reviews separate static repository checks from host inventory,
+  hosted analysis, MCP execution, registry traffic, external linters, and
+  target-owned configuration.
+- Added pinned static profiles for NVIDIA SkillSpector, Cisco Skill Scanner,
+  AgentSec by debu-sinha, and Trust Issues. The reviews cover skill-specific
+  analyzers, completeness accounting, host hardening, package gates, manual
+  reasoning, naming collision, and three documented fail-open or evidence-drift
+  cases.
+- Added pinned static profiles for Sigil, agent-security-scanner-mcp, Inkog,
+  and agent-bom. The reviews cover quarantine workflows, broad MCP scanning,
+  hosted source analysis, governance inventory, network boundaries, traversal
+  omissions, and fail-closed evidence contracts.
+- Added a static comparison matrix for all 16 pinned projects, split by product
+  job, safety, coverage honesty, intelligence, distribution, and maintenance.
+  The matrix proposes an eight-tool offline benchmark cohort and records why
+  the other projects remain excluded from the first controlled run.
+- Added a validated corpus of 12 inert competitive fixtures covering clean,
+  confirmed, contested, near-miss, hook, editor startup, delayed skill, MCP,
+  CI, unsupported lockfile, renamed-content, and symlink-confinement cases.
+  The validator rejects executable bits, archives, secret-shaped content,
+  undeclared files, unconfined paths, and malformed source attribution.
+- Added a host-side competitive benchmark runner with exact-plan digests,
+  immutable image requirements, read-only inputs, disabled network, non-root
+  execution, dropped capabilities, resource limits, bounded output capture,
+  scratch write inventory, output digests, local raw-record isolation, and a
+  competitor-free self-test. The design records current measurement and
+  normalization limits instead of claiming unsupported containment evidence.
+- Added seven locked competitor image recipes, a schema-level recipe validator,
+  immutable local image ID support, exact runtime command arrays, fixture
+  subsets, and a separate build approval gate. The gate keeps dependency
+  retrieval ahead of source copies, disables network for source-present build
+  steps, and blocks Sigil before build because the reviewed revision has no
+  tracked `Cargo.lock`.
+- Recorded seven verified local competitor image IDs. The controlled sequence
+  built Aguara, patient-zero, AgentShield, `cc-audit`, SkillSpector, Cisco Skill
+  Scanner, and `agent-bom` without running their CLIs. Seven ignored local
+  `clean-control` plans now have exact runtime arguments, resource policies,
+  and approval digests for the next owner gate.
 - Added a CoSnitch intelligence fiche for `CVE-2026-24301`, sourced from
   Varonis Threat Labs and NVD. The fiche records the one-click Microsoft
   Copilot Personal chain, the 2026-08-18 server-side fix, and Varonis's report
@@ -82,6 +132,14 @@ authorized public release while the licensing decision remains unresolved.
 
 ### Fixed
 
+- Corrected the `cc-audit` benchmark image dependency stage to include its
+  manifest-declared benchmark target before `cargo fetch --locked`. The first
+  controlled build attempt and its three immutable image IDs are recorded in
+  the renewed build gate. Follow-up corrections align the immutable Rust
+  builder image with the repository's exact tracked Rust 1.93.0 toolchain so
+  the source build can remain network-disabled, then resolve its declared
+  rustup components in the dependency stage before source copy. No competitor
+  scanner was executed.
 - Stopped traversing nested Git repositories and worktrees as though they were
   part of the requested root. They now produce one warning with an instruction
   to scan the nested repository separately. Symlinks and Windows reparse points
