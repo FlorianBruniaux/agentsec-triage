@@ -268,11 +268,40 @@ def test_scan_git_repository_reports_unscanned_history_and_exits_two(tmp_path: P
 
 
 def test_scan_non_applicable_repository_is_completed_not_clean(tmp_path: Path) -> None:
-    completed = _run("scan", str(tmp_path), "--format", "human")
+    completed = _run("scan", str(tmp_path), "--format", "human", "--color", "never")
 
     assert completed.returncode == 0
     assert completed.stderr == ""
     assert completed.stdout == (GOLDEN / "clean.txt").read_text(encoding="utf-8")
+
+
+def test_scan_color_defaults_to_always_without_a_flag(tmp_path: Path) -> None:
+    completed = _run("scan", str(tmp_path), "--format", "human")
+
+    assert completed.returncode == 0
+    assert "\x1b[91mcritical\x1b[0m: none" in completed.stdout
+    assert "\x1b[38;5;208mhigh\x1b[0m: none" in completed.stdout
+    assert "\x1b[33mmedium\x1b[0m: none" in completed.stdout
+    assert "\x1b[34mlow\x1b[0m: none" in completed.stdout
+    assert "\x1b[35minfo\x1b[0m: none" in completed.stdout
+
+
+def test_scan_color_always_emits_ansi_severity_codes(tmp_path: Path) -> None:
+    completed = _run("scan", str(tmp_path), "--format", "human", "--color", "always")
+
+    assert completed.returncode == 0
+    assert "\x1b[91mcritical\x1b[0m: none" in completed.stdout
+    assert "\x1b[38;5;208mhigh\x1b[0m: none" in completed.stdout
+    assert "\x1b[33mmedium\x1b[0m: none" in completed.stdout
+    assert "\x1b[34mlow\x1b[0m: none" in completed.stdout
+    assert "\x1b[35minfo\x1b[0m: none" in completed.stdout
+
+
+def test_scan_color_auto_stays_plain_when_stdout_is_not_a_terminal(tmp_path: Path) -> None:
+    completed = _run("scan", str(tmp_path), "--format", "human", "--color", "auto")
+
+    assert completed.returncode == 0
+    assert "\x1b[" not in completed.stdout
 
 
 def test_scan_positive_fixture_exits_one_and_names_exact_package_version(tmp_path: Path) -> None:

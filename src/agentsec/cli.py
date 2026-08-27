@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
 import sys
 from collections.abc import Sequence
@@ -58,6 +59,16 @@ def build_parser() -> argparse.ArgumentParser:
         "--redact",
         action="store_true",
         help="replace the absolute scan root and recognized secret-shaped evidence",
+    )
+    scan.add_argument(
+        "--color",
+        choices=("auto", "always", "never"),
+        default="always",
+        help=(
+            "colorize severity labels in human output (default: always). "
+            "Use auto to color only on a terminal and honor NO_COLOR, "
+            "or never to disable, e.g. before redirecting to a file"
+        ),
     )
     scan.add_argument(
         "--progress",
@@ -207,8 +218,17 @@ def _scan(arguments: argparse.Namespace) -> int:
     if arguments.format == "json":
         print(render_json(result, redact=arguments.redact), end="")
     else:
-        print(render_human(result, redact=arguments.redact), end="")
+        color = _color_enabled(arguments.color)
+        print(render_human(result, redact=arguments.redact, color=color), end="")
     return result.exit_code()
+
+
+def _color_enabled(mode: str) -> bool:
+    if mode == "always":
+        return True
+    if mode == "never":
+        return False
+    return sys.stdout.isatty() and "NO_COLOR" not in os.environ
 
 
 def _database_progress_summary(database: ThreatDatabase) -> str:

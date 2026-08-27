@@ -16,8 +16,18 @@ _SEVERITIES = (
     Severity.INFO.value,
 )
 
+_RESET = "\x1b[0m"
 
-def render_human(result: ScanResult, *, redact: bool) -> str:
+_SEVERITY_COLOR = {
+    Severity.CRITICAL.value: "\x1b[91m",  # red
+    Severity.HIGH.value: "\x1b[38;5;208m",  # orange
+    Severity.MEDIUM.value: "\x1b[33m",  # yellow
+    Severity.LOW.value: "\x1b[34m",  # blue
+    Severity.INFO.value: "\x1b[35m",  # purple
+}
+
+
+def render_human(result: ScanResult, *, redact: bool, color: bool = False) -> str:
     """Render scan results in a stable order without calling an incomplete scan clean."""
     payload = result.to_dict()
     if redact:
@@ -49,11 +59,12 @@ def render_human(result: ScanResult, *, redact: bool) -> str:
 
     lines.append("Findings:")
     for severity in _SEVERITIES:
+        label = _colorize(severity, severity, color=color)
         items = [item for item in findings if item["severity"] == severity]
         if not items:
-            lines.append(f"  {severity}: none")
+            lines.append(f"  {label}: none")
             continue
-        lines.extend(f"  {severity}: {_format_finding(item)}" for item in items)
+        lines.extend(f"  {label}: {_format_finding(item)}" for item in items)
 
     if diagnostics:
         lines.append("Diagnostics:")
@@ -74,7 +85,17 @@ def _format_finding(finding: Mapping[str, object]) -> str:
     location = str(finding["path"])
     if finding["line"] is not None:
         location = f"{location}:{finding['line']}"
-    return (
+    text = (
         f"{finding['detector_id']}/{finding['rule_id']} "
         f"[{finding['confidence']}] {location}: {finding['evidence']}"
     )
+    remediation_url = finding.get("remediation_url")
+    if remediation_url:
+        text = f"{text} (remediation: {remediation_url})"
+    return text
+
+
+def _colorize(severity: str, text: str, *, color: bool) -> str:
+    if not color:
+        return text
+    return f"{_SEVERITY_COLOR[severity]}{text}{_RESET}"

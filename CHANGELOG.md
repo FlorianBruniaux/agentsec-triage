@@ -7,6 +7,22 @@ authorized public release while the licensing decision remains unresolved.
 
 ### Added
 
+- Added a dated scanner-ecosystem inventory covering direct competitors,
+  specialized MCP and skill scanners, supply-chain tools, naming collisions,
+  product gaps, and the first hands-on evaluation queue. The inventory combines
+  the supplied market study, the verified 100,319-repository local corpus, and
+  official README checks without treating project claims as benchmark results.
+- Added a 15-day competitive-analysis plan with pinned static reviews,
+  execution and safety gates, an inert fixture corpus, isolated benchmark
+  requirements, product-decision limits, naming checks, roadmap milestones,
+  validation criteria, commit boundaries, and rollback conditions.
+- Added a `--color {auto,always,never}` flag and ANSI severity colors to the
+  human report (`critical` red, `high` orange, `medium` yellow, `low` blue,
+  `info` purple). Defaults to `always`; use `auto` to color only on a
+  terminal and honor `NO_COLOR`, or `never` before redirecting to a file.
+  Also fixed the human renderer silently dropping each finding's
+  `remediation_url`, a field the JSON report already exposed; it now prints
+  as `(remediation: <url>)` after the finding's evidence.
 - Added a CoSnitch intelligence fiche for `CVE-2026-24301`, sourced from
   Varonis Threat Labs and NVD. The fiche records the one-click Microsoft
   Copilot Personal chain, the 2026-08-18 server-side fix, and Varonis's report
