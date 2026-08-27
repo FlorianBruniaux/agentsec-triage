@@ -1,0 +1,64 @@
+tests/integration/test_cli.py
+  s_59aee4ab612299::t_85e56f7c43661f 271
+  s_59aee4ab612299::t_a0fd224ab4fa1f 289-300,302-306
+  s_59aee4ab612299::t_cf66f61fa969b6 278-288,301
+docs/ECOSYSTEM.md
+  s_0df90997879182::t_a8a0c3bb4ee07c 364-366,368-385
+  s_0df90997879182::t_7ed7532b8832b7 1-363,367,386-403
+src/agentsec/output/human.py
+  s_59aee4ab612299::t_19f620173fc2b2 19,21-30
+  s_59aee4ab612299::t_e03ae80afcd308 62,65,67
+  s_59aee4ab612299::t_884650aff6815c 88,92-100
+  s_59aee4ab612299::t_27527ae61dbd89 101
+README.md
+  s_0df90997879182::t_45864dd371744d 59
+  s_0df90997879182::t_7ed7532b8832b7 58
+CHANGELOG.md
+  s_0df90997879182::t_7ed7532b8832b7 10-14
+  s_59aee4ab612299::t_22ea23f6a091db 21-22
+  s_59aee4ab612299::t_f9bed1a4e17ffd 19-20,23-25
+  s_0df90997879182::t_45864dd371744d 15-18
+docs/COMPETITIVE-ANALYSIS-PLAN.md
+  s_0df90997879182::t_0fbfa23dcf9ac0 32,566-567
+  s_0df90997879182::t_45864dd371744d 1-31,33-565,568-765
+tests/unit/test_human_output.py
+  s_59aee4ab612299::t_c4004337d6f5e8 1-89
+src/agentsec/cli.py
+  s_59aee4ab612299::t_7618a69ca719ce 221-222,226-231
+  s_59aee4ab612299::t_892ed8cd32bf8b 64-65,67,71-72
+  s_59aee4ab612299::t_1db882a7bca43c 66,68-70
+  s_59aee4ab612299::t_1fc20a80ba1701 5
+  s_958cad3948f5dd::t_23a4d73b1d9537 63,232-233
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "75f33226202ec3ec34cad9ad31035c14ab90342b",
+  "prompts": {},
+  "sessions": {
+    "s_0df90997879182": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019fd73a-588d-7f03-ab50-494ca0e95848",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Florian BRUNIAUX <florian@bruniaux.com>"
+    },
+    "s_59aee4ab612299": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "1a29682d-9283-4a7a-ad39-bee10380f07c",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "Florian BRUNIAUX <florian@bruniaux.com>"
+    },
+    "s_958cad3948f5dd": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "53b15b1a-d8dd-4dd4-b9b6-3db1b9882465",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "Florian BRUNIAUX <florian@bruniaux.com>"
+    }
+  }
+}
