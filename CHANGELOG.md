@@ -140,6 +140,9 @@ while the data-licensing decision remains unresolved.
 - Updated official `actions/checkout` and `actions/setup-python` workflow
   dependencies to their Node 24-based v7 majors after validating the previous
   matrix and its Node 20 deprecation annotations.
+- Recorded the first fully executed green Python 3.11–3.13 matrix across
+  Linux, macOS, and Windows, plus the successful guide and landing feed-mirror
+  check, and closed the corresponding P0 issue.
 - Updated the README, installation guide, roadmap, licensing decision, and
   evidence inventory for the repository's 2026-08-30 public visibility. The
   MIT scope remains limited to project-owned code and original documentation;

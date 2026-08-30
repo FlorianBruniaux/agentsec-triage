@@ -21,7 +21,8 @@ Implemented in the current alpha codebase:
 - `shai-hulud-keyv` detector for supported npm, pnpm, Yarn, and text Bun
   lockfiles, installed package metadata, payload hashes, and repository startup
   configuration;
-- cross-platform Python 3.11–3.13 CI configuration;
+- a fully executed Python 3.11–3.13 GitHub Actions matrix on Linux, macOS,
+  and Windows, plus guide and landing feed-mirror validation;
 - source, package, safety, integration, and golden regression tests.
 
 Git history, host state, remote repositories, remote CI, network traffic,
@@ -29,10 +30,14 @@ credential stores, and automatic remediation remain explicitly out of scope.
 
 ## Public work tracking
 
+Completed infrastructure work:
+
+- [#1: restore actual GitHub Actions execution](https://github.com/FlorianBruniaux/agentsec-triage/issues/1),
+  verified by [run #33320781608](https://github.com/FlorianBruniaux/agentsec-triage/actions/runs/33320781608).
+
 The remaining release and product work is tracked with acceptance criteria:
 
 - [#6: resolve the public-source and gated-data license boundary](https://github.com/FlorianBruniaux/agentsec-triage/issues/6);
-- [#1: restore actual GitHub Actions execution](https://github.com/FlorianBruniaux/agentsec-triage/issues/1);
 - [#3: run seven digest-approved clean-control benchmarks](https://github.com/FlorianBruniaux/agentsec-triage/issues/3);
 - [#4: run the fixture matrix with an AgentSec baseline](https://github.com/FlorianBruniaux/agentsec-triage/issues/4);
 - [#7: publish benchmark results and top-three teardowns](https://github.com/FlorianBruniaux/agentsec-triage/issues/7);
@@ -47,8 +52,6 @@ The remaining release and product work is tracked with acceptance criteria:
 - Resolve the code and threat-data review in `LICENSE-DECISION.md`.
 - Select compatible code and data licenses with SPDX metadata and attribution.
 - Keep the fully verified alpha history on local `main` before any release tag.
-- Restore GitHub Actions execution after the account billing or spending-limit
-  blocker is cleared, then run the full cross-platform matrix.
 - Fix failures found outside the local macOS environment.
 - Create the annotated `v0.1.0-alpha` tag only after every release gate passes.
 - Publish checksums and a signed provenance statement with release artifacts.

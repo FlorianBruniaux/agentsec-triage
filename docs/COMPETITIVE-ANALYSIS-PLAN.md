@@ -702,8 +702,9 @@ decision but does not perform the rename.
 
 Tracked across [#2](https://github.com/FlorianBruniaux/agentsec-triage/issues/2),
 [#5](https://github.com/FlorianBruniaux/agentsec-triage/issues/5), and the
-release blockers [#6](https://github.com/FlorianBruniaux/agentsec-triage/issues/6)
-and [#1](https://github.com/FlorianBruniaux/agentsec-triage/issues/1).
+release blocker [#6](https://github.com/FlorianBruniaux/agentsec-triage/issues/6).
+The CI recovery tracked in
+[#1](https://github.com/FlorianBruniaux/agentsec-triage/issues/1) is complete.
 
 **Files:**
 
