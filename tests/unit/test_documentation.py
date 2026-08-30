@@ -118,14 +118,36 @@ def test_changelog_has_unreleased_and_alpha_headings() -> None:
     assert "## [0.1.0-alpha]" in changelog
 
 
-def test_license_decision_blocks_public_release_and_tagging() -> None:
+def test_public_repository_docs_preserve_the_data_license_boundary() -> None:
+    readme = _read("README.md").lower()
+    data_license = _read("LICENSE-DATA.md").lower()
+    roadmap = _read("ROADMAP.md").lower()
+    normalized_data_license = re.sub(r"\s+", " ", data_license)
+
+    assert "public source repository" in readme
+    assert "repository must remain private" not in readme
+    assert "public repository visibility does not grant" in normalized_data_license
+    assert "configure the public git remote" not in roadmap
+
+
+def test_license_decision_blocks_package_release_and_tagging() -> None:
     decision = _read("LICENSE-DECISION.md").lower()
 
-    assert "public release is blocked" in decision
+    assert "package release is blocked" in decision
     assert "cc by-sa 4.0" in decision
     assert "do not publish" in decision
     assert "do not tag" in decision
     assert "license-file" in decision
+
+
+def test_competitive_docs_reflect_the_completed_image_build_gate() -> None:
+    design = _read("docs/competitive-analysis/BENCHMARK-DESIGN.md").lower()
+    gate = _read("docs/competitive-analysis/BUILD-GATE.md").lower()
+
+    assert "seven images built" in design
+    assert "runtime execution not approved" in design
+    assert "build and competitor execution not approved" not in design
+    assert "seven images built" in gate
 
 
 def test_ci_is_cross_platform_and_runs_every_alpha_gate() -> None:

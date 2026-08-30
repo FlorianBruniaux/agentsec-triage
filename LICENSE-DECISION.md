@@ -1,14 +1,18 @@
-# Data license review required before public release
+# Data license review required before package release
 
 ## Status
 
-**Public release is blocked.** Do not publish this package to PyPI, create a
+**Package release is blocked.** Do not publish this package to PyPI, create a
 package or source release artifact, or redistribute a source archive. Do not tag
 `v0.1.0-alpha` while this decision is unresolved.
 
+The source repository became publicly visible on 2026-08-30. That owner action
+does not grant a separate license for the gated data paths and does not clear
+the package, tag, archive, or GitHub release gate.
+
 The generated integration feed has one narrow publication exception recorded in
-`LICENSE-DATA.md`. That exception does not clear this package or repository
-release gate.
+`LICENSE-DATA.md`. That exception does not clear the package, tag, archive, or
+GitHub release gate.
 
 The project owner selected MIT for project-owned source code and original
 documentation on 2026-08-15. The grant and its scope are recorded in
@@ -20,7 +24,7 @@ owner decisions are tracked in [`docs/LICENSE-INVENTORY.md`](docs/LICENSE-INVENT
 That inventory is a decision aid, not permission to publish.
 
 `pyproject.toml` deliberately retains
-`License decision pending before public release` for the distribution package.
+`License decision pending before package release` for the distribution package.
 The built package contains data whose review is incomplete, so declaring the
 whole distribution MIT would be inaccurate. The placeholder is a release gate,
 not permission to redistribute the package.
@@ -42,7 +46,7 @@ rights, or share-alike questions.
 
 ## Required review and recorded decision
 
-Before public distribution or tagging:
+Before package, archive, GitHub release, or tag distribution:
 
 1. Inventory the imported database's relevant contribution history and identify
    the owners of code, schema, data selection, descriptions, and later edits.
@@ -57,8 +61,7 @@ Before public distribution or tagging:
 6. Add the data license to package metadata and use the final SPDX expression
    for the combined distribution.
 7. Rerun the complete release gate, commit the data-license decision, and only
-   then consider public repository visibility or an annotated
-   `v0.1.0-alpha` tag.
+   then create an annotated `v0.1.0-alpha` tag or publish release artifacts.
 
 Until these steps are completed, local review in the authorized working copy
 does not establish a right to publish or redistribute it.

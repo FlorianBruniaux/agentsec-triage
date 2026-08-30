@@ -1,11 +1,16 @@
 # Changelog
 
-All notable changes to AgentSec Triage are recorded here. The project has no
-authorized public release while the licensing decision remains unresolved.
+All notable changes to AgentSec Triage are recorded here. The source repository
+is public, but no package, tag, source archive, or GitHub release is authorized
+while the data-licensing decision remains unresolved.
 
 ## [Unreleased]
 
 ### Added
+
+- Added documentation tests that keep public repository visibility distinct
+  from gated-data redistribution rights and that require competitive benchmark
+  documentation to reflect the completed seven-image build gate.
 
 - Added a dated scanner-ecosystem inventory covering direct competitors,
   specialized MCP and skill scanners, supply-chain tools, naming collisions,
@@ -129,6 +134,22 @@ authorized public release while the licensing decision remains unresolved.
   blocked pending explicit owner decisions and prose review.
 - Added deterministic generation and wheel packaging of the public scan-result
   schema digest.
+
+### Changed
+
+- Updated the README, installation guide, roadmap, licensing decision, and
+  evidence inventory for the repository's 2026-08-30 public visibility. The
+  MIT scope remains limited to project-owned code and original documentation;
+  package, tag, archive, GitHub release, and gated-data publication remain
+  blocked pending the recorded data review.
+- Reconciled the competitive benchmark design and static matrix with the seven
+  verified local images. Competitor runtime execution remains blocked until an
+  exact clean-control plan digest receives explicit owner approval.
+- Linked the roadmap and competitive implementation plan to seven public
+  GitHub issues covering licensing, CI, controlled runtime evidence, fixture
+  coverage, teardowns, product decisions, and naming. Tasks 1 through 10 now
+  carry completed checkboxes that match their recorded execution status.
+- Ignored macOS `.DS_Store` metadata at every repository depth.
 
 ### Fixed
 

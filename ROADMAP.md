@@ -17,6 +17,7 @@ Implemented in the current alpha codebase:
 - console-script and `python -m agentsec` entry points;
 - an opt-in redacted local benchmark without published performance claims;
 - a factual license evidence inventory that preserves the publication gate;
+- a public source repository with a separate unresolved gated-data license;
 - `shai-hulud-keyv` detector for supported npm, pnpm, Yarn, and text Bun
   lockfiles, installed package metadata, payload hashes, and repository startup
   configuration;
@@ -26,6 +27,18 @@ Implemented in the current alpha codebase:
 Git history, host state, remote repositories, remote CI, network traffic,
 credential stores, and automatic remediation remain explicitly out of scope.
 
+## Public work tracking
+
+The remaining release and product work is tracked with acceptance criteria:
+
+- [#6: resolve the public-source and gated-data license boundary](https://github.com/FlorianBruniaux/agentsec-triage/issues/6);
+- [#1: restore actual GitHub Actions execution](https://github.com/FlorianBruniaux/agentsec-triage/issues/1);
+- [#3: run seven digest-approved clean-control benchmarks](https://github.com/FlorianBruniaux/agentsec-triage/issues/3);
+- [#4: run the fixture matrix with an AgentSec baseline](https://github.com/FlorianBruniaux/agentsec-triage/issues/4);
+- [#7: publish benchmark results and top-three teardowns](https://github.com/FlorianBruniaux/agentsec-triage/issues/7);
+- [#2: convert competitive evidence into product decisions](https://github.com/FlorianBruniaux/agentsec-triage/issues/2);
+- [#5: select a collision-resistant product name](https://github.com/FlorianBruniaux/agentsec-triage/issues/5).
+
 ## P0: Make the alpha releasable
 
 - Complete the 28-field third-party prose review recorded in
@@ -34,7 +47,8 @@ credential stores, and automatic remediation remain explicitly out of scope.
 - Resolve the code and threat-data review in `LICENSE-DECISION.md`.
 - Select compatible code and data licenses with SPDX metadata and attribution.
 - Keep the fully verified alpha history on local `main` before any release tag.
-- Configure the public Git remote and run the full GitHub Actions matrix.
+- Restore GitHub Actions execution after the account billing or spending-limit
+  blocker is cleared, then run the full cross-platform matrix.
 - Fix failures found outside the local macOS environment.
 - Create the annotated `v0.1.0-alpha` tag only after every release gate passes.
 - Publish checksums and a signed provenance statement with release artifacts.

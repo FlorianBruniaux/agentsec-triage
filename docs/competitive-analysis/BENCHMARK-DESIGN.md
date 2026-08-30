@@ -1,6 +1,6 @@
 # Controlled competitor benchmark design
 
-Status: **image recipes validated, build and competitor execution not approved**
+Status: **seven images built, runtime execution not approved**
 
 This design converts the static shortlist into reproducible observations while
 keeping third-party code away from the host and real repositories. It does not
@@ -21,8 +21,9 @@ The owner approved these eight projects for benchmark design:
 | Sigil | `0f73627236d5` | `offline_sandbox` | Does a fresh network-blocked scan expose missing feeds and skipped reads? |
 | agent-bom | `9ceeb22fff1f` | `offline_sandbox` | Does its evidence ledger preserve every relevant omission? |
 
-This approval authorizes design and inert fixture preparation. It does not
-authorize image builds or competitor execution.
+The cohort approval authorized design and inert fixture preparation. A later
+digest-bound gate authorized and completed seven image builds. It did not
+authorize competitor execution.
 
 ## Fixture truth table
 
@@ -146,8 +147,8 @@ Docker availability or competitor behavior.
 .venv/bin/python scripts/run_competitive_benchmark.py self-test
 ```
 
-Seven image recipes and their exact source revisions are recorded in
-`BUILD-GATE.md`. Sigil stopped before build because its pinned source has no
-tracked `Cargo.lock`. The recipe bundle and each resulting local image ID form
-the next safety gate. No image build or competitor command runs before the
-corresponding review.
+Seven image recipes, their exact source revisions, and their verified local
+image IDs are recorded in `BUILD-GATE.md`. Sigil stopped before build because
+its pinned source has no tracked `Cargo.lock`. Seven images built without
+running a competitor CLI. The exact clean-control plans and approval digests
+form the next safety gate, so runtime execution is not approved.

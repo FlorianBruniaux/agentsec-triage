@@ -1,7 +1,7 @@
 # Installing AgentSec Triage
 
-AgentSec Triage is currently reviewed and run from its source checkout. No PyPI
-package or public release is authorized.
+AgentSec Triage is currently reviewed and run from its public source checkout.
+No PyPI package, tag, source archive, or GitHub release is authorized.
 
 ## Requirements
 

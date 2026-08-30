@@ -173,22 +173,22 @@ Do not use a single total score. Publish matrices by job and safety property.
 **Produces:** A clean branch where analysis files cannot stage or overwrite the
 existing CLI color-output work.
 
-- [ ] **Step 1: Inspect the current state**
+- [x] **Step 1: Inspect the current state**
 
   Run `rtk git status --short --branch` from the AgentSec repository.
 
-- [ ] **Step 2: Confirm the dirty paths are user-owned**
+- [x] **Step 2: Confirm the dirty paths are user-owned**
 
   Require the existing `CHANGELOG.md`, `src/agentsec/cli.py`,
   `src/agentsec/output/human.py`, `tests/integration/test_cli.py`, and
   `tests/unit/test_human_output.py` changes to remain untouched.
 
-- [ ] **Step 3: Create an isolated worktree**
+- [x] **Step 3: Create an isolated worktree**
 
   Use the `superpowers:using-git-worktrees` skill. Base the worktree on the
   current committed `main`, not on the dirty checkout.
 
-- [ ] **Step 4: Verify isolation**
+- [x] **Step 4: Verify isolation**
 
   Run `rtk git status --short --branch` in both checkouts. The research
   worktree must be clean and the original checkout must retain its changes.
@@ -207,39 +207,39 @@ existing CLI color-output work.
 **Produces:** A validated index with project ID, name, URL, local path,
 revision, category, evidence state, execution tier, license, and profile path.
 
-- [ ] **Step 1: Write validator tests for required project fields**
+- [x] **Step 1: Write validator tests for required project fields**
 
   Cover missing revision, duplicate project ID, invalid URL, missing local
   directory, unknown evidence status, unknown execution tier, and profile path
   escape.
 
-- [ ] **Step 2: Run the targeted test and observe failure**
+- [x] **Step 2: Run the targeted test and observe failure**
 
   Run `.venv/bin/pytest tests/unit/test_competitive_projects.py -q`.
 
-- [ ] **Step 3: Add the schema and minimal validator**
+- [x] **Step 3: Add the schema and minimal validator**
 
   Accept execution tiers `static_only`, `offline_sandbox`,
   `networked_sandbox`, and `manual_review`. Reject unknown fields.
 
-- [ ] **Step 4: Seed all 16 pinned projects**
+- [x] **Step 4: Seed all 16 pinned projects**
 
   Copy the exact revisions recorded in `docs/ECOSYSTEM.md`. Do not resolve a
   moving branch name during validation.
 
-- [ ] **Step 5: Write the methodology**
+- [x] **Step 5: Write the methodology**
 
   Include the global constraints, evidence vocabulary, comparison axes,
   selection gates, and citation format `path:line@revision`.
 
-- [ ] **Step 6: Run validator and Markdown checks**
+- [x] **Step 6: Run validator and Markdown checks**
 
   Run `.venv/bin/python scripts/check_competitive_projects.py --clone-root
   /Users/florianbruniaux/Sites/divers-test/agent-security-ecosystem`,
   `.venv/bin/pytest tests/unit/test_competitive_projects.py -q`, and
   `.venv/bin/python scripts/check_markdown_style.py .`.
 
-- [ ] **Step 7: Commit the methodology unit**
+- [x] **Step 7: Commit the methodology unit**
 
   Commit explicit paths with
   `docs(research): define competitor evaluation protocol`.
@@ -254,26 +254,26 @@ revision, category, evidence state, execution tier, license, and profile path.
 
 **Produces:** One mandatory structure for every static audit.
 
-- [ ] **Step 1: Add a failing test for missing profile sections**
+- [x] **Step 1: Add a failing test for missing profile sections**
 
   Require project identity, declared promise, observed architecture, surfaces,
   safety boundary, intelligence, outputs, distribution, tests, license,
   contradictions, parity lessons, differentiation lessons, and evidence.
 
-- [ ] **Step 2: Run the targeted test and observe failure**
+- [x] **Step 2: Run the targeted test and observe failure**
 
   Run `.venv/bin/pytest tests/unit/test_competitive_projects.py -q`.
 
-- [ ] **Step 3: Add the profile template and section validator**
+- [x] **Step 3: Add the profile template and section validator**
 
   Require every factual row to include `declared`, `code_verified`,
   `observed`, `contradicted`, `not_applicable`, or `not_tested`.
 
-- [ ] **Step 4: Run tests and Markdown validation**
+- [x] **Step 4: Run tests and Markdown validation**
 
   Run the targeted pytest file and the Markdown checker.
 
-- [ ] **Step 5: Commit the template unit**
+- [x] **Step 5: Commit the template unit**
 
   Commit with `docs(research): standardize competitor profiles`.
 
@@ -287,27 +287,27 @@ revision, category, evidence state, execution tier, license, and profile path.
 
 **Produces:** Static evidence for the closest product and safety competitors.
 
-- [ ] **Step 1: Inspect only tracked files at each pinned revision**
+- [x] **Step 1: Inspect only tracked files at each pinned revision**
 
   Read README, license, security policy, package metadata, entrypoints,
   detector/rule directories, output model, updater, CI workflows, tests, and
   representative fixtures.
 
-- [ ] **Step 2: Trace three high-value claims per project into code**
+- [x] **Step 2: Trace three high-value claims per project into code**
 
   Prioritize campaign coverage, repository confinement, intelligence updates,
   incomplete-scan behavior, SARIF, and CI.
 
-- [ ] **Step 3: Record contradictions and unknowns**
+- [x] **Step 3: Record contradictions and unknowns**
 
   Do not infer that an undocumented behavior is absent. Mark it `not_tested`
   until code evidence or a controlled run exists.
 
-- [ ] **Step 4: Validate all four profiles**
+- [x] **Step 4: Validate all four profiles**
 
   Run the competitive-project validator and Markdown checker.
 
-- [ ] **Step 5: Commit the batch**
+- [x] **Step 5: Commit the batch**
 
   Commit with `docs(research): audit campaign triage competitors`.
 
@@ -322,19 +322,19 @@ revision, category, evidence state, execution tier, license, and profile path.
 **Produces:** Static evidence for agent discovery, configuration, execution,
 host scope, and the naming collision.
 
-- [ ] **Step 1: Inspect the same canonical files as Task 4**
+- [x] **Step 1: Inspect the same canonical files as Task 4**
 
-- [ ] **Step 2: Trace MCP execution and network behavior**
+- [x] **Step 2: Trace MCP execution and network behavior**
 
   Record whether configured servers are started, which data leaves the host,
   whether consent exists, and which mode is safe for an untrusted repository.
 
-- [ ] **Step 3: Trace distribution and enterprise integration claims**
+- [x] **Step 3: Trace distribution and enterprise integration claims**
 
   Verify binary signing, package installation, GitHub Action, background mode,
   and output stability from official files.
 
-- [ ] **Step 4: Validate and commit**
+- [x] **Step 4: Validate and commit**
 
   Run the documentation gates and commit with
   `docs(research): audit agent configuration competitors`.
@@ -350,16 +350,16 @@ host scope, and the naming collision.
 **Produces:** Static evidence for broad feature claims, LLM reasoning,
 quarantine workflows, and large rule catalogues.
 
-- [ ] **Step 1: Inspect architecture, rules, prompts, tests, and output paths**
+- [x] **Step 1: Inspect architecture, rules, prompts, tests, and output paths**
 
-- [ ] **Step 2: Separate deterministic findings from model-generated findings**
+- [x] **Step 2: Separate deterministic findings from model-generated findings**
 
-- [ ] **Step 3: Verify whether advertised features exist in released code**
+- [x] **Step 3: Verify whether advertised features exist in released code**
 
   Mark unpublished, stubbed, example-only, or externally hosted surfaces
   explicitly.
 
-- [ ] **Step 4: Validate and commit**
+- [x] **Step 4: Validate and commit**
 
   Commit with `docs(research): audit broad agent security competitors`.
 
@@ -374,13 +374,13 @@ quarantine workflows, and large rule catalogues.
 **Produces:** Static evidence for skill analysis, governance, SBOM, and
 control-plane approaches.
 
-- [ ] **Step 1: Inspect supported formats and analysis engines**
+- [x] **Step 1: Inspect supported formats and analysis engines**
 
-- [ ] **Step 2: Trace optional online, model, OSV, and enterprise components**
+- [x] **Step 2: Trace optional online, model, OSV, and enterprise components**
 
-- [ ] **Step 3: Record techniques worth integrating and platform work to defer**
+- [x] **Step 3: Record techniques worth integrating and platform work to defer**
 
-- [ ] **Step 4: Validate and commit**
+- [x] **Step 4: Validate and commit**
 
   Commit with `docs(research): audit skill and governance competitors`.
 
@@ -395,33 +395,33 @@ control-plane approaches.
 **Produces:** A matrix of code-verified capabilities and a justified execution
 shortlist of at most eight projects.
 
-- [ ] **Step 1: Build matrices by product job**
+- [x] **Step 1: Build matrices by product job**
 
   Create separate tables for pre-trust, campaign response, CI, incident
   explanation, safety, coverage honesty, intelligence, distribution, and
   maintainability.
 
-- [ ] **Step 2: List contradictions independently**
+- [x] **Step 2: List contradictions independently**
 
   Do not bury README-to-code contradictions inside a total score.
 
-- [ ] **Step 3: Select execution candidates**
+- [x] **Step 3: Select execution candidates**
 
   Require meaningful overlap, runnable pinned code, a safe isolation path, and
   a question that static inspection cannot answer.
 
-- [ ] **Step 4: Assign execution tiers**
+- [x] **Step 4: Assign execution tiers**
 
   Use `offline_sandbox` for tools that can run without network or credentials,
   `networked_sandbox` for tools requiring APIs or updates, and `manual_review`
   for tools that execute MCP servers or cannot be safely automated.
 
-- [ ] **Step 5: Review the static gate**
+- [x] **Step 5: Review the static gate**
 
   Obtain explicit owner approval for the shortlist and exclusion reasons before
   running third-party code.
 
-- [ ] **Step 6: Validate and commit**
+- [x] **Step 6: Validate and commit**
 
   Commit with `docs(research): select controlled benchmark cohort`.
 
@@ -447,32 +447,32 @@ shortlist of at most eight projects.
 **Produces:** Twelve inert, source-attributed fixture classes with expected
 surface, expected evidence, applicable tools, and near-miss controls.
 
-- [ ] **Step 1: Write manifest validation tests**
+- [x] **Step 1: Write manifest validation tests**
 
   Require fixture ID, technique, expected evidence, source URL, applicable tool
   classes, absence of secrets, and `inert: true`.
 
-- [ ] **Step 2: Observe validator failure**
+- [x] **Step 2: Observe validator failure**
 
   Run `.venv/bin/pytest tests/unit/test_competitive_fixtures.py -q`.
 
-- [ ] **Step 3: Add inert fixtures one class at a time**
+- [x] **Step 3: Add inert fixtures one class at a time**
 
   Use non-routable domains, dummy commands stored as text, synthetic hashes,
   and fake package identities where exact real IOCs are not required to test
   the parser contract.
 
-- [ ] **Step 4: Add near-miss controls**
+- [x] **Step 4: Add near-miss controls**
 
   Each positive heuristic fixture needs a structurally close benign control.
 
-- [ ] **Step 5: Prove no fixture is executable by the test suite**
+- [x] **Step 5: Prove no fixture is executable by the test suite**
 
   Reject executable permission bits, archive files, binaries other than the
   intentionally inert unsupported-lock placeholder, and recognized
   secret-shaped strings.
 
-- [ ] **Step 6: Validate and commit**
+- [x] **Step 6: Validate and commit**
 
   Commit with `test(research): add inert competitor benchmark corpus`.
 
@@ -489,44 +489,47 @@ surface, expected evidence, applicable tools, and near-miss controls.
 **Produces:** A host-side runner that records observations without allowing a
 third-party tool to write results into the product repository.
 
-- [ ] **Step 1: Write tests for command allowlisting and output redaction**
+- [x] **Step 1: Write tests for command allowlisting and output redaction**
 
   Reject shell strings, unresolved revisions, host home mounts, writable
   fixture mounts, missing timeouts, unapproved network, and output containing
   absolute user paths or secret-shaped values.
 
-- [ ] **Step 2: Observe test failure**
+- [x] **Step 2: Observe test failure**
 
   Run `.venv/bin/pytest tests/unit/test_competitive_benchmark.py -q`.
 
-- [ ] **Step 3: Implement the host-side result envelope**
+- [x] **Step 3: Implement the host-side result envelope**
 
   Record project ID, revision, fixture ID, exact argument vector, image digest,
   network policy, exit code, timeout, duration, maximum RSS when available,
   stdout digest, stderr digest, normalized findings, files written, and network
   attempts.
 
-- [ ] **Step 4: Enforce sandbox defaults**
+- [x] **Step 4: Enforce sandbox defaults**
 
   Use a disposable container or virtual machine, non-root user, empty home,
   read-only fixture mount, read-only competitor source mount, writable scratch
   mount, dropped capabilities, process and memory limits, and network disabled.
 
-- [ ] **Step 5: Keep raw results local**
+- [x] **Step 5: Keep raw results local**
 
   Store raw JSON Lines below `research/competitive-runs/local/`, ignored by
   Git. Only redacted aggregate observations may enter documentation.
 
-- [ ] **Step 6: Validate the runner without a competitor tool**
+- [x] **Step 6: Validate the runner without a competitor tool**
 
   Use a local inert echo fixture to prove argument handling, timeout, write
   inventory, network policy, and redaction.
 
-- [ ] **Step 7: Commit the benchmark infrastructure**
+- [x] **Step 7: Commit the benchmark infrastructure**
 
   Commit with `test(research): add isolated competitor benchmark runner`.
 
 ### Task 11: Run the controlled benchmark
+
+Tracked in [#3](https://github.com/FlorianBruniaux/agentsec-triage/issues/3)
+and [#4](https://github.com/FlorianBruniaux/agentsec-triage/issues/4).
 
 **Files:**
 
@@ -574,6 +577,8 @@ third-party tool to write results into the product repository.
 
 ### Task 12: Deep teardown of the top three competitors
 
+Tracked in [#7](https://github.com/FlorianBruniaux/agentsec-triage/issues/7).
+
 **Files:**
 
 - Modify the selected three profiles
@@ -607,6 +612,8 @@ highest combination of overlap, maturity, and observed effectiveness.
   Commit with `docs(research): trace competitor detection pipelines`.
 
 ### Task 13: Make product decisions
+
+Tracked in [#2](https://github.com/FlorianBruniaux/agentsec-triage/issues/2).
 
 **Files:**
 
@@ -649,6 +656,8 @@ highest combination of overlap, maturity, and observed effectiveness.
 
 ### Task 14: Select the new name
 
+Tracked in [#5](https://github.com/FlorianBruniaux/agentsec-triage/issues/5).
+
 **Files:**
 
 - Create: `docs/NAMING.md`
@@ -690,6 +699,11 @@ decision but does not perform the rename.
   Commit with `docs(brand): select public project name`.
 
 ### Task 15: Rebase the roadmap on evidence
+
+Tracked across [#2](https://github.com/FlorianBruniaux/agentsec-triage/issues/2),
+[#5](https://github.com/FlorianBruniaux/agentsec-triage/issues/5), and the
+release blockers [#6](https://github.com/FlorianBruniaux/agentsec-triage/issues/6)
+and [#1](https://github.com/FlorianBruniaux/agentsec-triage/issues/1).
 
 **Files:**
 

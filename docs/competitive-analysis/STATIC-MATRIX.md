@@ -113,9 +113,12 @@ static review cannot answer.
 | Sigil | `offline_sandbox` | Does a network-blocked fresh scan report missing feeds and skipped reads? | Quarantine and approval workflow comparison |
 | agent-bom | `offline_sandbox` | Does offline mode preserve a complete evidence ledger for all inert omissions? | Strongest fail-closed and governance reference |
 
-This shortlist is proposed, not approved. No command may run until the owner
-approves the cohort and the next document records the exact image digest,
-argument vectors, read-only mounts, disabled network, timeouts, and limits.
+This shortlist was approved for benchmark design and image construction. Seven
+images were built and re-inspected under the separate gate recorded in
+`BUILD-GATE.md`; Sigil remains blocked. No competitor command may run until the
+owner approves the matching clean-control plan digest. Each plan records the
+exact image ID, argument vector, read-only mounts, disabled network, timeout,
+and resource limits.
 
 ## Exclusions from the first controlled run
 

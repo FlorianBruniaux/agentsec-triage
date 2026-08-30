@@ -5,6 +5,11 @@
 **Public redistribution of the data listed below is not authorized yet, except
 for the narrow integration feed described below.**
 
+The source repository has been publicly visible since 2026-08-30. Public
+repository visibility does not grant a separate license for the data paths
+listed in this file and does not authorize package, source-archive, or release
+redistribution.
+
 The intended license is [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/)
 after the documented prose, attribution, ownership, and database-rights review
 is complete. This file records that intent and the affected paths. It is not a
@@ -48,7 +53,8 @@ GitHub release.
 
 ## Required review
 
-Before applying CC BY-SA 4.0 or making the repository public:
+Before granting CC BY-SA 4.0 for the gated data or publishing package and
+source-archive artifacts:
 
 1. Classify the 28 imported `notes:` and `description:` fields recorded in
    [the license evidence inventory](docs/LICENSE-INVENTORY.md).
@@ -60,4 +66,4 @@ Before applying CC BY-SA 4.0 or making the repository public:
 
 Until that review is complete, the MIT grant in [`LICENSE`](LICENSE) does not
 cover these paths. [`LICENSE-DECISION.md`](LICENSE-DECISION.md) remains the
-publication gate.
+package and gated-data publication gate.

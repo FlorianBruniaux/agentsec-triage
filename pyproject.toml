@@ -8,7 +8,7 @@ version = "0.1.0a0"
 description = "Deterministic repository triage for documented developer and coding-agent attacks"
 readme = "README.md"
 requires-python = ">=3.11"
-license = { text = "License decision pending before public release" }
+license = { text = "License decision pending before package release" }
 license-files = []
 authors = [{ name = "Florian Bruniaux" }]
 dependencies = []

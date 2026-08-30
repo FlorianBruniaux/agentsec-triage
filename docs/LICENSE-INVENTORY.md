@@ -4,9 +4,10 @@
 
 This document is a factual decision aid, not a legal conclusion or a data
 license grant. It records evidence available in the local repositories on
-2026-08-11 and the owner's code-license decision from 2026-08-15. Public
-visibility, tagging, release archives, and PyPI publication remain blocked by
-[`LICENSE-DECISION.md`](../LICENSE-DECISION.md).
+2026-08-11 and the owner's code-license decision from 2026-08-15. The source
+repository became publicly visible on 2026-08-30. That visibility is not a data
+license grant. Tagging, release archives, and PyPI publication remain blocked
+by [`LICENSE-DECISION.md`](../LICENSE-DECISION.md).
 
 ## Threat-data provenance
 
@@ -135,7 +136,7 @@ After the reviewed data scope is explicitly approved:
 | Data license | CC BY-SA 4.0 is the candidate | Approve after prose review |
 | Third-party prose | 28 fields require classification | Complete and record the review |
 | Attribution packaging | Not implemented | Define notices and artifact inclusion |
-| Public release | Blocked | Open only after every item above is complete |
+| Package and gated-data release | Blocked | Open only after every item above is complete |
 
-Until the remaining data decisions and reviews are recorded, publication
-remains blocked.
+Until the remaining data decisions and reviews are recorded, package, tag,
+archive, and gated-data publication remain blocked.

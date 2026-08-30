@@ -21,7 +21,7 @@ inputs, and limits reported by that run.
 | What does it return? | Human-readable or versioned `JSON` output with **findings**, **coverage**, **diagnostics**, remediation links, and completion status. |
 | What do exit codes mean? | `0`: completed checks found nothing; `1`: findings require action or review; `2`: the scan is incomplete or failed. |
 | What does it not do? | It does not certify a repository as **clean** and does not replace antivirus, `EDR`, `SAST`, dependency, or secret scanning. |
-| What is the current status? | **Alpha**, source-only use, and **no authorized public package release**. See the [changelog](CHANGELOG.md). |
+| What is the current status? | **Alpha**, public source repository, and **no authorized package or tagged release**. See the [changelog](CHANGELOG.md). |
 
 ## Try it from source
 
@@ -81,5 +81,7 @@ Project-owned code and original documentation are licensed under the
 until their separate rights and CC BY-SA 4.0 review is complete. The narrow
 public-feed exception and excluded fields are recorded in that file.
 
-The repository must remain private. Do not publish a package, tag, archive, or
-public release while [LICENSE-DECISION.md](LICENSE-DECISION.md) is unresolved.
+The source repository is publicly visible. That visibility does not grant a
+separate license for the gated data paths. Do not publish a package, tag,
+source archive, or GitHub release while
+[LICENSE-DECISION.md](LICENSE-DECISION.md) is unresolved.
