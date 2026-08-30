@@ -7,7 +7,7 @@ import hashlib
 import json
 import re
 import sys
-from pathlib import Path
+from pathlib import Path, PurePath
 from typing import cast
 
 PROJECT_ROOT = Path(__file__).parents[1]
@@ -165,6 +165,20 @@ def validate_manifest(
     return errors
 
 
+def _bundle_entry(relative: PurePath, data: bytes) -> bytes:
+    canonical_data = data.replace(b"\r\n", b"\n").replace(b"\r", b"\n")
+    return b"".join(
+        (
+            relative.as_posix().encode("utf-8"),
+            b"\0",
+            str(len(canonical_data)).encode("ascii"),
+            b"\0",
+            canonical_data,
+            b"\0",
+        )
+    )
+
+
 def bundle_digest(payload: dict[str, object], root: Path, manifest: Path) -> str:
     paths = {manifest}
     recipes = payload.get("recipes")
@@ -180,13 +194,7 @@ def bundle_digest(payload: dict[str, object], root: Path, manifest: Path) -> str
     digest = hashlib.sha256()
     for path in sorted(paths, key=lambda value: str(value)):
         relative = path.relative_to(root)
-        data = path.read_bytes()
-        digest.update(str(relative).encode("utf-8"))
-        digest.update(b"\0")
-        digest.update(str(len(data)).encode("ascii"))
-        digest.update(b"\0")
-        digest.update(data)
-        digest.update(b"\0")
+        digest.update(_bundle_entry(relative, path.read_bytes()))
     return digest.hexdigest()
 
 

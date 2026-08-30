@@ -125,6 +125,16 @@ def test_progress_redacts_repository_and_resource_paths(tmp_path: Path) -> None:
     assert "resource=<REDACTED_PATH>" in completed.stderr
 
 
+def test_database_progress_redacts_resource_without_relying_on_home_path() -> None:
+    summary = cli._database_progress_summary(
+        load_bundled_database(),
+        redact=True,
+    )
+
+    assert "resource=<REDACTED_PATH>" in summary
+    assert str(PROJECT_ROOT) not in summary
+
+
 def test_progress_confirms_repository_validation_failure(tmp_path: Path) -> None:
     missing = tmp_path / "missing"
 

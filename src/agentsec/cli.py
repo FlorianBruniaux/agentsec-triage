@@ -193,7 +193,12 @@ def _scan(arguments: argparse.Namespace) -> int:
     if database is None:
         return 2
     if progress is not None:
-        progress(1, _database_progress_summary(database), False, None)
+        progress(
+            1,
+            _database_progress_summary(database, redact=arguments.redact),
+            False,
+            None,
+        )
     try:
         detectors = get_detectors(arguments.detector_ids)
     except ValueError as error:
@@ -231,7 +236,11 @@ def _color_enabled(mode: str) -> bool:
     return sys.stdout.isatty() and "NO_COLOR" not in os.environ
 
 
-def _database_progress_summary(database: ThreatDatabase) -> str:
+def _database_progress_summary(
+    database: ThreatDatabase,
+    *,
+    redact: bool = False,
+) -> str:
     package_records = sum(
         len(versions)
         for mapping in (
@@ -242,7 +251,9 @@ def _database_progress_summary(database: ThreatDatabase) -> str:
         )
         for versions in mapping.values()
     )
-    resource = resources.files("agentsec.resources").joinpath("threat-db.json")
+    resource: object = "<REDACTED_PATH>" if redact else resources.files(
+        "agentsec.resources"
+    ).joinpath("threat-db.json")
     return (
         "Threat database ready: "
         f"version={database.version} updated={database.updated} "

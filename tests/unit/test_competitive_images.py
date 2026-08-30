@@ -4,7 +4,7 @@ import importlib.util
 import json
 import subprocess
 import sys
-from pathlib import Path
+from pathlib import Path, PurePosixPath, PureWindowsPath
 from types import ModuleType
 
 PROJECT_ROOT = Path(__file__).parents[2]
@@ -46,6 +46,18 @@ def test_committed_image_manifest_is_valid() -> None:
     assert payload["recipes"] == 8
     assert len(payload["bundle_digest"]) == 64
     assert payload["bundle_digest"] in BUILD_GATE_PATH.read_text(encoding="utf-8")
+
+
+def test_bundle_entry_is_stable_across_platform_paths_and_line_endings() -> None:
+    checker = _load_checker()
+
+    posix = checker._bundle_entry(PurePosixPath("recipes/tool/Dockerfile"), b"a\nb\n")
+    windows = checker._bundle_entry(
+        PureWindowsPath(r"recipes\tool\Dockerfile"),
+        b"a\r\nb\r\n",
+    )
+
+    assert windows == posix
 
 
 def test_local_image_id_is_the_only_runtime_reference_before_build() -> None:

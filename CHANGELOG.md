@@ -153,6 +153,10 @@ while the data-licensing decision remains unresolved.
 
 ### Fixed
 
+- Redacted the bundled threat-database resource path explicitly when
+  `--redact` is active, including on Windows CI paths outside a user home.
+- Canonicalized competitor image bundle paths and line endings before hashing,
+  so the recorded approval digest is identical on Windows, macOS, and Linux.
 - Corrected the `cc-audit` benchmark image dependency stage to include its
   manifest-declared benchmark target before `cargo fetch --locked`. The first
   controlled build attempt and its three immutable image IDs are recorded in
