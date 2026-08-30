@@ -1,0 +1,23 @@
+CHANGELOG.md
+  s_0df90997879182::t_20e4685750b08b 140-142
+tests/unit/test_documentation.py
+  s_0df90997879182::t_b20c3f75bf531b 180-188
+.github/workflows/tests.yml
+  s_0df90997879182::t_20e4685750b08b 23,26,151
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "00d6f3856feba9272d0bfe96a43119aa4d84a445",
+  "prompts": {},
+  "sessions": {
+    "s_0df90997879182": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019fd73a-588d-7f03-ab50-494ca0e95848",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Florian BRUNIAUX <florian@bruniaux.com>"
+    }
+  }
+}
