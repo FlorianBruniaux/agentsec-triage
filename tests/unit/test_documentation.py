@@ -177,6 +177,15 @@ def test_ci_is_cross_platform_and_runs_every_alpha_gate() -> None:
     assert 'item["path"].replace("\\\\", "/").endswith(' in workflow
 
 
+def test_ci_uses_current_node24_action_majors() -> None:
+    workflow = _read(".github/workflows/tests.yml")
+
+    assert "actions/checkout@v7" in workflow
+    assert "actions/setup-python@v7" in workflow
+    assert "actions/checkout@v4" not in workflow
+    assert "actions/setup-python@v5" not in workflow
+
+
 def test_project_config_enforces_coverage_threshold() -> None:
     configuration = tomllib.loads(_read("pyproject.toml"))
 

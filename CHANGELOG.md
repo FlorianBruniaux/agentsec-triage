@@ -137,6 +137,9 @@ while the data-licensing decision remains unresolved.
 
 ### Changed
 
+- Updated official `actions/checkout` and `actions/setup-python` workflow
+  dependencies to their Node 24-based v7 majors after validating the previous
+  matrix and its Node 20 deprecation annotations.
 - Updated the README, installation guide, roadmap, licensing decision, and
   evidence inventory for the repository's 2026-08-30 public visibility. The
   MIT scope remains limited to project-owned code and original documentation;
