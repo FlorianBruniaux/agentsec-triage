@@ -1,0 +1,60 @@
+CHANGELOG.md
+  s_0df90997879182::t_64e1fd711bcc64 11-18
+README.md
+  s_0df90997879182::t_64e1fd711bcc64 22,74
+docs/examples.md
+  s_0df90997879182::t_64e1fd711bcc64 297-316
+CONTRIBUTING.md
+  s_0df90997879182::t_64e1fd711bcc64 122-136,143,149
+tests/integration/test_cli.py
+  s_0df90997879182::t_259209a98c6946 718
+src/agentsec/detectors/base.py
+  s_0df90997879182::t_4d9785752fba9e 46
+.github/workflows/tests.yml
+  s_0df90997879182::t_64e1fd711bcc64 42-47
+tests/unit/test_documentation.py
+  s_0df90997879182::t_259209a98c6946 94-104,178,181
+src/agentsec/detectors/clawhavoc_skill.py
+  s_0df90997879182::t_94c53d42bf902f 36
+  s_0df90997879182::t_4d9785752fba9e 37-39
+data/response-playbooks.json
+  s_0df90997879182::t_41e170f36ae5b4 33
+  s_0df90997879182::t_93de8edcda915a 1-32,34-183
+schemas/response-playbooks-v1.schema.json
+  s_0df90997879182::t_4d9785752fba9e 1-120
+tests/unit/test_response_playbooks.py
+  s_0df90997879182::t_b1b333828b9c95 1-139
+ROADMAP.md
+  s_0df90997879182::t_64e1fd711bcc64 22-24,119-120
+src/agentsec/detectors/shai_hulud.py
+  s_0df90997879182::t_94c53d42bf902f 83
+scripts/build_response_playbooks.py
+  s_0df90997879182::t_64e1fd711bcc64 175,181
+  s_0df90997879182::t_84b9efbee57f84 1-174,176-180,182-323
+AGENTS.md
+  s_0df90997879182::t_64e1fd711bcc64 130,142,176,182
+docs/response-playbooks/README.md
+  s_0df90997879182::t_3a2ae15d122091 1-30
+docs/response-playbooks/clawhavoc-skill-v1.md
+  s_0df90997879182::t_89dbc784511a01 1-71
+docs/response-playbooks/shai-hulud-keyv-v1.md
+  s_0df90997879182::t_9a50ffaa4371d0 1-78
+src/agentsec/resources/response-playbooks.json
+  s_0df90997879182::t_62922ca34e5a13 1-183
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "57355ed301978743f94ede13d89e562937d8a9c1",
+  "prompts": {},
+  "sessions": {
+    "s_0df90997879182": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019fd73a-588d-7f03-ab50-494ca0e95848",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Florian BRUNIAUX <florian@bruniaux.com>"
+    }
+  }
+}
