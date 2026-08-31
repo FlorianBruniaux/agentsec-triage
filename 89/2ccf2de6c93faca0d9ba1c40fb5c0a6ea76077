@@ -1,0 +1,23 @@
+docs/NAMING.md
+  s_0df90997879182::t_93c2fed522f3e9 47-48,54,93-94
+  s_0df90997879182::t_309f7fb3647910 5-8,28-35,37,39-46,49-53,55-77,90-92,96,98-101,116-118
+docs/naming-comprehension-test-kit.md
+  s_0df90997879182::t_309f7fb3647910 1-64,66-96
+  s_0df90997879182::t_a8d8a3dbeea9f7 65
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "892ccf2de6c93faca0d9ba1c40fb5c0a6ea76077",
+  "prompts": {},
+  "sessions": {
+    "s_0df90997879182": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019fd73a-588d-7f03-ab50-494ca0e95848",
+        "model": "gpt-5.6-terra"
+      },
+      "human_author": "Florian BRUNIAUX <florian@bruniaux.com>"
+    }
+  }
+}
