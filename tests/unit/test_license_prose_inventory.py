@@ -110,6 +110,47 @@ def test_extractor_rejects_duplicate_yaml_keys_without_writing_an_inventory(tmp_
     assert not output.exists()
 
 
+def test_extractor_rejects_non_textual_prose_without_writing_an_inventory(
+    tmp_path: Path,
+) -> None:
+    source = tmp_path / "threat-db.yaml"
+    output = tmp_path / "inventory.json"
+    source.write_text(
+        "sources: []\n"
+        "records:\n"
+        "  - id: numeric-note\n"
+        "    notes: 42\n",
+        encoding="utf-8",
+    )
+
+    result = _run("--source", str(source), "--output", str(output))
+
+    assert result.returncode == 1
+    assert result.stderr == "error: records[id=numeric-note].notes must be text\n"
+    assert not output.exists()
+
+
+def test_extractor_rejects_yaml_merge_keys_without_writing_an_inventory(tmp_path: Path) -> None:
+    source = tmp_path / "threat-db.yaml"
+    output = tmp_path / "inventory.json"
+    source.write_text(
+        "sources: []\n"
+        "defaults: &defaults\n"
+        "  notes: inherited value\n"
+        "records:\n"
+        "  - id: merged-note\n"
+        "    <<: *defaults\n"
+        "    notes: local value\n",
+        encoding="utf-8",
+    )
+
+    result = _run("--source", str(source), "--output", str(output))
+
+    assert result.returncode == 1
+    assert result.stderr == "error: YAML merge keys are not supported\n"
+    assert not output.exists()
+
+
 def test_extractor_preserves_all_sibling_source_locators_in_stable_order(tmp_path: Path) -> None:
     source = tmp_path / "threat-db.yaml"
     output = tmp_path / "inventory.json"

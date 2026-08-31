@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import math
 import subprocess
 import sys
 from pathlib import Path
@@ -80,6 +81,7 @@ def _plan(clone_root: Path, fixture_root: Path) -> dict[str, object]:
         "pids_limit": 64,
         "cpus": 1.0,
         "output_limit_bytes": 1000000,
+        "scratch_mb": 64,
     }
 
 
@@ -101,18 +103,53 @@ def _approval_receipt(digest: str) -> dict[str, object]:
 def _write_inputs(tmp_path: Path) -> tuple[Path, Path, Path, Path, Path]:
     clone_root = tmp_path / "clones"
     source = clone_root / "example-tool"
-    source.mkdir(parents=True)
+    full_commit = _git_commit(source)
     fixture_root = tmp_path / "fixtures"
     fixture = fixture_root / "clean-control"
     fixture.mkdir(parents=True)
     (fixture / "README.md").write_text("inert\n", encoding="utf-8")
     project_index = tmp_path / "projects.json"
-    project_index.write_text(json.dumps(_project_index()), encoding="utf-8")
+    index = _project_index()
+    assert isinstance(index["projects"], list)
+    index["projects"][0]["revision"] = full_commit[:12]
+    project_index.write_text(json.dumps(index), encoding="utf-8")
     fixture_manifest = fixture_root / "manifest.yaml"
     fixture_manifest.write_text(json.dumps(_fixture_manifest()), encoding="utf-8")
     plan_path = tmp_path / "plan.json"
-    plan_path.write_text(json.dumps(_plan(clone_root, fixture_root)), encoding="utf-8")
+    plan = _plan(clone_root, fixture_root)
+    runner = _load_runner()
+    plan.update(
+        {
+            "schema_version": "2",
+            "revision": full_commit[:12],
+            "source_commit": full_commit,
+            "source_tree": runner.build_committed_source_evidence(source, full_commit),
+            "fixture_tree": runner.build_tree_evidence(fixture),
+        }
+    )
+    plan_path.write_text(json.dumps(plan), encoding="utf-8")
     return plan_path, project_index, fixture_manifest, clone_root, fixture_root
+
+
+def _git_commit(repository: Path, filename: str = "source.txt", content: str = "source\n") -> str:
+    repository.mkdir(parents=True, exist_ok=True)
+    subprocess.run(["git", "init", "-q", str(repository)], check=True)
+    subprocess.run(
+        ["git", "-C", str(repository), "config", "user.email", "test@example.test"],
+        check=True,
+    )
+    subprocess.run(
+        ["git", "-C", str(repository), "config", "user.name", "Test"], check=True
+    )
+    (repository / filename).write_text(content, encoding="utf-8")
+    subprocess.run(["git", "-C", str(repository), "add", filename], check=True)
+    subprocess.run(["git", "-C", str(repository), "commit", "-qm", "fixture"], check=True)
+    return subprocess.run(
+        ["git", "-C", str(repository), "rev-parse", "HEAD"],
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout.strip()
 
 
 def _validate(tmp_path: Path, mutate: object | None = None) -> subprocess.CompletedProcess[str]:
@@ -221,6 +258,17 @@ def test_missing_timeout_is_rejected(tmp_path: Path) -> None:
     assert "timeout_seconds: missing required field" in result.stderr
 
 
+@pytest.mark.parametrize("value", [math.nan, math.inf, -math.inf])
+def test_non_finite_resource_number_is_rejected(tmp_path: Path, value: float) -> None:
+    result = _validate(
+        tmp_path,
+        lambda payload: payload.__setitem__("timeout_seconds", value),
+    )
+
+    assert result.returncode == 1
+    assert "timeout_seconds: expected a finite number" in result.stderr
+
+
 def test_unapproved_network_is_rejected(tmp_path: Path) -> None:
     def enable_network(payload: dict[str, object]) -> None:
         payload["network"] = {
@@ -257,6 +305,202 @@ def test_approval_digest_is_stable_when_plan_keys_are_reordered(tmp_path: Path) 
     reordered = {key: plan[key] for key in reversed(plan)}
 
     assert runner.approval_digest(plan) == runner.approval_digest(reordered)
+
+
+def test_approval_digest_uses_tree_evidence_instead_of_host_specific_paths(
+    tmp_path: Path,
+) -> None:
+    runner = _load_runner()
+    plan_path, _, _, _, _ = _write_inputs(tmp_path)
+    plan = json.loads(plan_path.read_text(encoding="utf-8"))
+    relocated = dict(plan)
+    relocated["source_path"] = "/different-host/clones/example-tool"
+    relocated["fixture_path"] = "/different-checkout/fixtures/clean-control"
+    changed_content = dict(plan)
+    changed_content["fixture_tree"] = {
+        **plan["fixture_tree"],
+        "sha256": "f" * 64,
+    }
+
+    assert runner.approval_digest(plan) == runner.approval_digest(relocated)
+    assert runner.approval_digest(plan) != runner.approval_digest(changed_content)
+
+
+def test_tree_evidence_binds_content_modes_and_symlink_targets(tmp_path: Path) -> None:
+    runner = _load_runner()
+    root = tmp_path / "tree"
+    root.mkdir()
+    script = root / "scan.sh"
+    script.write_text("echo inert\n", encoding="utf-8")
+    script.chmod(0o644)
+    (root / "link").symlink_to("scan.sh")
+
+    original = runner.build_tree_evidence(root)
+    script.chmod(0o755)
+    executable = runner.build_tree_evidence(root)
+    (root / "link").unlink()
+    (root / "link").symlink_to("other.txt")
+    retargeted = runner.build_tree_evidence(root)
+
+    assert original["file_count"] == 2
+    assert original["total_bytes"] == len(b"echo inert\n")
+    assert original["sha256"] != executable["sha256"]
+    assert executable["sha256"] != retargeted["sha256"]
+
+
+def test_tree_evidence_hashes_files_streaming_and_enforces_file_limit(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    runner = _load_runner()
+    root = tmp_path / "tree"
+    root.mkdir()
+    oversized = root / "large.bin"
+    oversized.write_bytes(b"x" * 32)
+    monkeypatch.setattr(runner, "MAX_TREE_FILE_BYTES", 16)
+    monkeypatch.setattr(
+        runner.Path,
+        "read_bytes",
+        lambda _self: pytest.fail("tree hashing must stream file content"),
+    )
+
+    with pytest.raises(runner.TreeEvidenceError, match="per-file byte limit"):
+        runner.build_tree_evidence(root)
+
+
+def test_generate_reconstructs_digest_bound_plan_without_absolute_blueprint_paths(
+    tmp_path: Path,
+) -> None:
+    clone_root = tmp_path / "clones"
+    source = clone_root / "example-tool"
+    full_commit = _git_commit(source)
+    fixture_root = tmp_path / "fixtures"
+    fixture = fixture_root / "clean-control"
+    fixture.mkdir(parents=True)
+    (fixture / "README.md").write_text("inert\n", encoding="utf-8")
+    project_index = tmp_path / "projects.json"
+    index = _project_index()
+    assert isinstance(index["projects"], list)
+    index["projects"][0]["revision"] = full_commit[:12]
+    project_index.write_text(json.dumps(index), encoding="utf-8")
+    fixture_manifest = fixture_root / "manifest.yaml"
+    fixture_manifest.write_text(json.dumps(_fixture_manifest()), encoding="utf-8")
+    blueprints = tmp_path / "blueprints.json"
+    blueprint_payload = {
+        "schema_version": "1",
+        "plans": [
+            {
+                "project_id": "example-tool",
+                "fixture_id": "clean-control",
+                "image": "sha256:" + "a" * 64,
+                "command": ["/tool/bin/scanner", "scan", "/fixture"],
+                "network": {"mode": "none", "allowlist": [], "approved": False},
+                "timeout_seconds": 30,
+                "memory_mb": 512,
+                "pids_limit": 64,
+                "cpus": 1,
+                "output_limit_bytes": 1_000_000,
+                "scratch_mb": 64,
+            }
+        ],
+    }
+    blueprints.write_text(json.dumps(blueprint_payload), encoding="utf-8")
+    assert str(tmp_path) not in blueprints.read_text(encoding="utf-8")
+    output = tmp_path / "local" / "plans"
+
+    result = subprocess.run(
+        [
+            sys.executable,
+            str(RUNNER_PATH),
+            "generate",
+            "--blueprints",
+            str(blueprints),
+            "--project-index",
+            str(project_index),
+            "--fixture-manifest",
+            str(fixture_manifest),
+            "--clone-root",
+            str(clone_root),
+            "--fixture-root",
+            str(fixture_root),
+            "--output-root",
+            str(output),
+        ],
+        cwd=PROJECT_ROOT,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 0, result.stderr
+    plan_path = output / "example-tool-clean-control.json"
+    first = plan_path.read_bytes()
+    plan = json.loads(first)
+    assert plan["schema_version"] == "2"
+    assert plan["source_commit"] == full_commit
+    assert len(plan["source_tree"]["sha256"]) == 64
+    assert len(plan["fixture_tree"]["sha256"]) == 64
+    assert plan["source_path"] == str(source)
+    assert plan["fixture_path"] == str(fixture)
+    assert subprocess.run(
+        [
+            sys.executable,
+            str(RUNNER_PATH),
+            "generate",
+            "--blueprints",
+            str(blueprints),
+            "--project-index",
+            str(project_index),
+            "--fixture-manifest",
+            str(fixture_manifest),
+            "--clone-root",
+            str(clone_root),
+            "--fixture-root",
+            str(fixture_root),
+            "--output-root",
+            str(output),
+        ],
+        cwd=PROJECT_ROOT,
+        check=False,
+        capture_output=True,
+        text=True,
+    ).returncode == 0
+    assert plan_path.read_bytes() == first
+
+
+def test_validate_rejects_fixture_content_changed_after_plan_generation(tmp_path: Path) -> None:
+    runner = _load_runner()
+    clone_root = tmp_path / "clones"
+    source = clone_root / "example-tool"
+    full_commit = _git_commit(source)
+    fixture_root = tmp_path / "fixtures"
+    fixture = fixture_root / "clean-control"
+    fixture.mkdir(parents=True)
+    marker = fixture / "README.md"
+    marker.write_text("inert\n", encoding="utf-8")
+    index = _project_index()
+    assert isinstance(index["projects"], list)
+    index["projects"][0]["revision"] = full_commit[:12]
+    plan = _plan(clone_root, fixture_root)
+    plan.update(
+        {
+            "schema_version": "2",
+            "revision": full_commit[:12],
+            "source_commit": full_commit,
+            "source_tree": runner.build_committed_source_evidence(source, full_commit),
+            "fixture_tree": runner.build_tree_evidence(fixture),
+        }
+    )
+    marker.write_text("changed\n", encoding="utf-8")
+
+    errors = runner.validate_plan(
+        plan,
+        index,
+        _fixture_manifest(),
+        clone_root,
+        fixture_root,
+    )
+
+    assert "fixture_tree: content does not match the approved plan" in errors
 
 
 def test_execute_rejects_unapproved_output_root_before_docker_lookup(
@@ -578,6 +822,14 @@ def test_result_envelope_contains_required_evidence_fields() -> None:
     runner = _load_runner()
 
     envelope = runner.build_result_envelope(
+        plan_digest="c" * 64,
+        receipt_sha256="d" * 64,
+        approval_metadata={
+            "decision": "approved",
+            "approver": "benchmark-owner",
+            "approved_at": "2026-08-31T12:00:00+00:00",
+            "scope": "execute",
+        },
         project_id="example-tool",
         revision="0123456789ab",
         fixture_id="clean-control",
@@ -596,6 +848,14 @@ def test_result_envelope_contains_required_evidence_fields() -> None:
     )
 
     assert envelope["schema_version"] == "1"
+    assert envelope["plan_digest"] == "c" * 64
+    assert envelope["receipt_sha256"] == "d" * 64
+    assert envelope["approval"] == {
+        "decision": "approved",
+        "approver": "benchmark-owner",
+        "approved_at": "2026-08-31T12:00:00+00:00",
+        "scope": "execute",
+    }
     assert envelope["stdout_sha256"]
     assert envelope["stderr_sha256"]
     assert envelope["network_attempts"] is None
@@ -603,6 +863,121 @@ def test_result_envelope_contains_required_evidence_fields() -> None:
     assert envelope["normalized_findings"] == []
     assert "stdout" not in envelope
     assert "stderr" not in envelope
+
+
+def test_docker_plan_uses_cidfile_and_bounded_tmpfs_scratch(tmp_path: Path) -> None:
+    runner = _load_runner()
+    plan = _plan(tmp_path / "clones", tmp_path / "fixtures")
+    plan["scratch_mb"] = 64
+    cidfile = tmp_path / "container.cid"
+
+    argv = runner.build_docker_argv(
+        plan,
+        cidfile=cidfile,
+        source_path=tmp_path / "staged-source",
+        fixture_path=tmp_path / "staged-fixture",
+    )
+
+    assert "--rm" not in argv
+    assert argv[argv.index("--cidfile") + 1] == str(cidfile)
+    assert "/scratch:rw,noexec,nosuid,nodev,size=64m" in argv
+    assert not any(value.endswith(":/scratch:rw") for value in argv)
+
+
+def test_timeout_cleanup_kills_removes_and_verifies_container_in_order(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    runner = _load_runner()
+    cidfile = tmp_path / "container.cid"
+    cidfile.write_text("a" * 64 + "\n", encoding="ascii")
+    calls: list[list[str]] = []
+
+    def run(argv: list[str], **kwargs: object) -> subprocess.CompletedProcess[bytes]:
+        calls.append(argv)
+        if argv[1] == "inspect":
+            return subprocess.CompletedProcess(argv, 1, b"", b"not found")
+        return subprocess.CompletedProcess(argv, 0, b"", b"")
+
+    monkeypatch.setattr(runner.subprocess, "run", run)
+
+    runner._cleanup_container(cidfile, timed_out=True)
+
+    assert [call[1] for call in calls] == ["kill", "rm", "inspect"]
+    assert all(call[-1] == "a" * 64 for call in calls)
+
+
+def test_timeout_cleanup_fails_closed_when_daemon_container_remains(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    runner = _load_runner()
+    cidfile = tmp_path / "container.cid"
+    cidfile.write_text("b" * 64, encoding="ascii")
+
+    def run(argv: list[str], **kwargs: object) -> subprocess.CompletedProcess[bytes]:
+        return subprocess.CompletedProcess(argv, 0, b"still present", b"")
+
+    monkeypatch.setattr(runner.subprocess, "run", run)
+
+    with pytest.raises(runner.BenchmarkCleanupError, match="still exists"):
+        runner._cleanup_container(cidfile, timed_out=True)
+
+
+def test_timeout_cleanup_still_removes_and_inspects_after_kill_failure(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    runner = _load_runner()
+    cidfile = tmp_path / "container.cid"
+    cidfile.write_text("c" * 64, encoding="ascii")
+    calls: list[str] = []
+
+    def run(argv: list[str], **kwargs: object) -> subprocess.CompletedProcess[bytes]:
+        calls.append(argv[1])
+        return subprocess.CompletedProcess(argv, 1 if argv[1] in {"kill", "inspect"} else 0)
+
+    monkeypatch.setattr(runner.subprocess, "run", run)
+
+    runner._cleanup_container(cidfile, timed_out=True)
+
+    assert calls == ["kill", "rm", "inspect"]
+
+
+def test_timeout_cleanup_inspects_after_remove_failure(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    runner = _load_runner()
+    cidfile = tmp_path / "container.cid"
+    cidfile.write_text("d" * 64, encoding="ascii")
+    calls: list[str] = []
+
+    def run(argv: list[str], **kwargs: object) -> subprocess.CompletedProcess[bytes]:
+        calls.append(argv[1])
+        return subprocess.CompletedProcess(argv, 1 if argv[1] in {"rm", "inspect"} else 0)
+
+    monkeypatch.setattr(runner.subprocess, "run", run)
+
+    with pytest.raises(runner.BenchmarkCleanupError, match="removal command failed"):
+        runner._cleanup_container(cidfile, timed_out=True)
+
+    assert calls == ["kill", "rm", "inspect"]
+
+
+def test_timeout_cleanup_fails_closed_when_cidfile_is_missing(tmp_path: Path) -> None:
+    runner = _load_runner()
+
+    with pytest.raises(runner.BenchmarkCleanupError, match="container ID"):
+        runner._cleanup_container(tmp_path / "missing.cid", timed_out=True)
+
+
+def test_write_inventory_enforces_total_byte_limit(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    runner = _load_runner()
+    (tmp_path / "first.bin").write_bytes(b"a" * 8)
+    (tmp_path / "second.bin").write_bytes(b"b" * 8)
+    monkeypatch.setattr(runner, "MAX_TREE_TOTAL_BYTES", 10)
+
+    with pytest.raises(runner.TreeEvidenceError, match="total byte limit"):
+        runner._inventory_files(tmp_path)
 
 
 def test_self_test_proves_bounded_capture_and_redaction() -> None:

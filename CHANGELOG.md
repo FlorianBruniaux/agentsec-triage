@@ -31,8 +31,8 @@ while the data-licensing decision remains unresolved.
   crates.io, and RDAP endpoints. `RepoVigil` remains the first candidate and
   `BeforeTrust` the only current fallback. `CampaignScope` is blocked by exact
   GitHub and `.com` collisions. Added a reproducible blind comprehension-test
-  kit; trademark review, crates.io recheck, and human results remain blocking,
-  so no rename is authorized.
+  kit with one candidate exposure per participant; trademark review, crates.io
+  recheck, and human results remain blocking, so no rename is authorized.
 
 - Published reviewed `clean-control` observations for seven digest-approved
   competitor images. The report records exit status, completion evidence,
@@ -41,11 +41,18 @@ while the data-licensing decision remains unresolved.
   also records the AgentSec baseline and the gated requirements for the next
   positive, near-miss, unsupported, and confinement fixture matrix.
 - Added eight deterministic teardown plans for SkillSpector, AgentShield, and
-  agent-bom. The runner now requires a separate digest-bound approval receipt
-  before Docker discovery and rejects absent, malformed, non-approved,
-  mismatched, or stale receipts. This is a procedural audit gate, not identity
-  authentication. No approval receipt or competitor execution was created, so
-  every prepared observation remains `not_tested`.
+  agent-bom plus a tracked path-free blueprint that reconstructs their ignored
+  host-specific files. Plan v2 binds the real full Git commit and deterministic
+  source and fixture tree evidence. The runner rematerializes both inputs,
+  rechecks their digests immediately before Docker, rejects non-finite resource
+  values, uses bounded scratch `tmpfs`, and requires a separate digest-bound
+  approval receipt. It rejects absent, malformed, non-approved, mismatched, or
+  plan-obsolete receipts. Timeout cleanup uses the cidfile to kill and remove
+  the daemon-side container and verifies disappearance. Future envelopes record
+  the full plan digest, receipt digest, and procedural approval metadata. This
+  is an audit gate, not identity authentication. No approval receipt or
+  competitor execution was created, so every prepared observation remains
+  `not_tested`.
 - Added a local AgentSec fixture-matrix harness that runs each inert fixture
   three times, removes runtime duration before digest comparison, rejects
   semantic or exit-code drift, preserves findings and coverage evidence, and
@@ -89,7 +96,9 @@ while the data-licensing decision remains unresolved.
   action. The generator rejects duplicate paths and provides a byte-for-byte
   `--check` mode enforced by CI. Historical local provenance remains verified
   for 28 fields, all 430 legal classifications remain `UNKNOWN`, and the
-  gated-data publication block remains active.
+  gated-data publication block remains active. The builder now fails closed on
+  non-textual prose values and rejects YAML merge keys that could hide semantic
+  collisions.
 
 - Added explicit `source`, `dependencies`, and `repository` scan scopes. The
   default `source` scope now reports measured exclusions for dependency,

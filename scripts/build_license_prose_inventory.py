@@ -156,6 +156,10 @@ class DuplicateYamlKeyError(ValueError):
     """Raised when YAML contains an ambiguous mapping."""
 
 
+class YamlMergeKeyError(ValueError):
+    """Raised when YAML merge semantics could hide a prose-field collision."""
+
+
 class YamlNode(Protocol):
     tag: str
 
@@ -193,6 +197,8 @@ class UniqueKeySafeLoader(yaml.SafeLoader):  # type: ignore[misc]
 
         local_keys: dict[object, None] = {}
         for key_node, value_node in node.value:
+            if key_node.tag == _YAML_MERGE_TAG:
+                raise YamlMergeKeyError
             key = (
                 _YAML_MERGE_KEY
                 if key_node.tag == _YAML_MERGE_TAG
@@ -240,6 +246,8 @@ def _load_yaml(path: Path) -> tuple[dict[str, object], bytes]:
         )
     except DuplicateYamlKeyError as exc:
         raise ProseInventoryBuildError("duplicate YAML mapping key") from exc
+    except YamlMergeKeyError as exc:
+        raise ProseInventoryBuildError("YAML merge keys are not supported") from exc
     except TypeError as exc:
         raise ProseInventoryBuildError("invalid YAML mapping key") from exc
     except (OSError, UnicodeError, yaml.YAMLError) as exc:
@@ -332,7 +340,10 @@ def _collect_entries(
         source_locators = [] if not path else _source_locators_for(record, locators)
         for key, child in record.items():
             child_path = f"{path}.{key}" if path else key
-            if key in PROSE_KEYS and isinstance(child, str):
+            if key in PROSE_KEYS and not isinstance(child, str):
+                raise ProseInventoryBuildError(f"{child_path} must be text")
+            if key in PROSE_KEYS:
+                assert isinstance(child, str)
                 value_sha256 = hashlib.sha256(child.encode("utf-8")).hexdigest()
                 entries.append(
                     {

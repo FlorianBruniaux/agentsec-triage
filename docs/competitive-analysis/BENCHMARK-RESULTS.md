@@ -95,7 +95,10 @@ The clean-control evidence supports four product decisions:
 
 Eight exact, bounded plans now cover the first teardown candidates:
 SkillSpector, AgentShield, and agent-bom. The fixture-level applicability
-decisions and SHA-256 plan digests are recorded in `BENCHMARK-DESIGN.md`. The
+decisions and current SHA-256 plan digests are recorded in
+`BENCHMARK-DESIGN.md`. A tracked path-free blueprint reconstructs the plans
+while the generated files with absolute host paths stay ignored. Their current
+digests bind the full Git commit plus source and fixture tree evidence. The
 plans were validated only and have no approval receipts. Docker and every
 competitor CLI remain uninvoked for this gate, so all planned observations
 remain `not_tested`.

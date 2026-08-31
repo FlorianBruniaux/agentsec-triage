@@ -1,0 +1,109 @@
+{
+  "plans": [
+    {
+      "command": ["scan", "/fixture", "--no-llm", "--format", "json", "--fail-on-incomplete"],
+      "cpus": 1,
+      "fixture_id": "skill-delayed-instruction",
+      "image": "sha256:6667e9b0429f6060ac5f3142e58c3982d8d136d0bb08933720f2d9d2dfe0d826",
+      "memory_mb": 512,
+      "network": {"allowlist": [], "approved": false, "mode": "none"},
+      "output_limit_bytes": 1000000,
+      "pids_limit": 64,
+      "project_id": "skillspector",
+      "scratch_mb": 64,
+      "timeout_seconds": 30
+    },
+    {
+      "command": ["scan", "/fixture", "--no-llm", "--format", "json", "--fail-on-incomplete"],
+      "cpus": 1,
+      "fixture_id": "confinement-symlink",
+      "image": "sha256:6667e9b0429f6060ac5f3142e58c3982d8d136d0bb08933720f2d9d2dfe0d826",
+      "memory_mb": 512,
+      "network": {"allowlist": [], "approved": false, "mode": "none"},
+      "output_limit_bytes": 1000000,
+      "pids_limit": 64,
+      "project_id": "skillspector",
+      "scratch_mb": 64,
+      "timeout_seconds": 30
+    },
+    {
+      "command": ["scan", "--path", "/fixture", "--format", "json"],
+      "cpus": 1,
+      "fixture_id": "claude-hook-review",
+      "image": "sha256:010bc7821650cd613e835804ceec627498cc0eb395e7f214dd490fbd88a59278",
+      "memory_mb": 512,
+      "network": {"allowlist": [], "approved": false, "mode": "none"},
+      "output_limit_bytes": 1000000,
+      "pids_limit": 64,
+      "project_id": "agentshield",
+      "scratch_mb": 64,
+      "timeout_seconds": 30
+    },
+    {
+      "command": ["scan", "--path", "/fixture", "--format", "json"],
+      "cpus": 1,
+      "fixture_id": "confinement-symlink",
+      "image": "sha256:010bc7821650cd613e835804ceec627498cc0eb395e7f214dd490fbd88a59278",
+      "memory_mb": 512,
+      "network": {"allowlist": [], "approved": false, "mode": "none"},
+      "output_limit_bytes": 1000000,
+      "pids_limit": 64,
+      "project_id": "agentshield",
+      "scratch_mb": 64,
+      "timeout_seconds": 30
+    },
+    {
+      "command": ["scan", "--project", "/fixture", "--no-discover", "--offline", "--format", "json", "--output", "-", "--reproducible", "--quiet"],
+      "cpus": 1,
+      "fixture_id": "shai-hulud-confirmed",
+      "image": "sha256:bcfe775915c08faac83dce749f4ce890528fd80b56415d7cb7e38d851f915e03",
+      "memory_mb": 512,
+      "network": {"allowlist": [], "approved": false, "mode": "none"},
+      "output_limit_bytes": 1000000,
+      "pids_limit": 64,
+      "project_id": "agent-bom",
+      "scratch_mb": 64,
+      "timeout_seconds": 30
+    },
+    {
+      "command": ["scan", "--project", "/fixture", "--no-discover", "--offline", "--format", "json", "--output", "-", "--reproducible", "--quiet"],
+      "cpus": 1,
+      "fixture_id": "lifecycle-near-miss",
+      "image": "sha256:bcfe775915c08faac83dce749f4ce890528fd80b56415d7cb7e38d851f915e03",
+      "memory_mb": 512,
+      "network": {"allowlist": [], "approved": false, "mode": "none"},
+      "output_limit_bytes": 1000000,
+      "pids_limit": 64,
+      "project_id": "agent-bom",
+      "scratch_mb": 64,
+      "timeout_seconds": 30
+    },
+    {
+      "command": ["scan", "--project", "/fixture", "--no-discover", "--offline", "--format", "json", "--output", "-", "--reproducible", "--quiet"],
+      "cpus": 1,
+      "fixture_id": "unsupported-binary-lock",
+      "image": "sha256:bcfe775915c08faac83dce749f4ce890528fd80b56415d7cb7e38d851f915e03",
+      "memory_mb": 512,
+      "network": {"allowlist": [], "approved": false, "mode": "none"},
+      "output_limit_bytes": 1000000,
+      "pids_limit": 64,
+      "project_id": "agent-bom",
+      "scratch_mb": 64,
+      "timeout_seconds": 30
+    },
+    {
+      "command": ["scan", "--project", "/fixture", "--no-discover", "--offline", "--format", "json", "--output", "-", "--reproducible", "--quiet"],
+      "cpus": 1,
+      "fixture_id": "confinement-symlink",
+      "image": "sha256:bcfe775915c08faac83dce749f4ce890528fd80b56415d7cb7e38d851f915e03",
+      "memory_mb": 512,
+      "network": {"allowlist": [], "approved": false, "mode": "none"},
+      "output_limit_bytes": 1000000,
+      "pids_limit": 64,
+      "project_id": "agent-bom",
+      "scratch_mb": 64,
+      "timeout_seconds": 30
+    }
+  ],
+  "schema_version": "1"
+}

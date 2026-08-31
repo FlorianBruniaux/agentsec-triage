@@ -134,12 +134,15 @@ that identity.
 
 ## Prepared teardown-plan gate
 
-Eight further plans were generated and validated without invoking Docker or a
-competitor CLI. They extend the clean-control gate with positive, near-miss,
-unsupported, and confinement cases for the first three teardown candidates.
-The private plans remain ignored because their source and fixture paths are
-absolute. The public evidence is limited to the fixture, resource policy, and
-digest in `BENCHMARK-DESIGN.md`.
+Eight further plans were regenerated from the tracked path-free blueprint at
+`research/competitive-runs/plan-blueprints.v1.json` and validated without
+invoking Docker or a competitor CLI. They extend the clean-control gate with
+positive, near-miss, unsupported, and confinement cases for the first three
+teardown candidates. The host-specific plans remain ignored because their
+source and fixture paths are absolute. Each current digest also binds the real
+40-character source commit and deterministic evidence for both mounted trees.
+The public fixture, resource policy, and current digests are recorded in
+`BENCHMARK-DESIGN.md`.
 
 The planned cases have runtime state `not_tested`. SkillSpector and AgentShield
 mark the package lifecycle and binary-lock inputs `not_applicable`; no plan was
@@ -147,6 +150,13 @@ created for those inputs. agent-bom has one exact plan for each of the four
 fixture kinds. No digest grants approval, no receipt exists for the prepared
 plans, and no runtime comparison may be published until a separate review
 creates a receipt for each exact plan.
+
+The current runner stages the exact commit and fixture into disposable
+snapshots, checks both evidence digests immediately before Docker, uses a
+bounded scratch `tmpfs`, and records the full plan and receipt digests in every
+future run envelope. A timed-out run uses the Docker cidfile to kill and remove
+the daemon-side container, then verifies that `docker inspect` can no longer
+find it.
 
 ## Build boundary
 

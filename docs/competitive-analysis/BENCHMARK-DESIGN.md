@@ -54,15 +54,18 @@ archives, secret shapes, and path confinement.
 
 One plan describes one project and one fixture. Required fields are:
 
-- pinned project ID and 12-character revision from the cohort index;
+- pinned project ID, 12-character revision, and resolved 40-character Git
+  commit from the cohort index and local clone;
 - fixture ID and exact direct-child paths below the approved roots;
+- deterministic source and fixture tree evidence covering relative paths,
+  regular-file content digests, symlink targets, and relevant modes;
 - image reference pinned with either a registry digest
   `name@sha256:<64 lowercase hex characters>` or a local immutable Docker image
   ID `sha256:<64 lowercase hex characters>`;
 - read-only source and fixture mount declarations;
 - argument vector as an array, never a shell string;
 - network mode, allowlist, and explicit approval state;
-- timeout, memory, process, CPU, and bounded-output limits.
+- timeout, memory, process, CPU, bounded-output, and bounded-scratch limits.
 
 The first cohort accepts only `network.mode=none`. The runner rejects an
 approved allowlist because no destination-enforcement backend exists yet.
@@ -84,11 +87,28 @@ runner cannot authenticate the declared identity cryptographically. It only
 checks that a distinct review assertion is bound to the exact plan. Any field
 change invalidates that binding.
 
-The plan digest canonicalizes only equivalent integral resource values, such
-as `1` and `1.0` CPUs. It preserves all paths, image IDs, commands, mounts, and
-network fields. The runner rejects an output root outside its ignored local
-boundary before it looks up Docker, so a malformed output destination cannot
-reach a competitor invocation.
+The plan digest canonicalizes equivalent integral resource values, such as `1`
+and `1.0` CPUs, and replaces verified host-specific source and fixture paths
+with stable logical slots. It preserves image IDs, commands, mounts, network
+fields, the full Git commit, and both tree-evidence digests. Path validation
+still requires the declared pinned clone and fixture before digesting or
+executing. The runner rejects non-finite numeric values. It rejects an output
+root outside its ignored local boundary before it looks up Docker, so a
+malformed destination cannot reach a competitor invocation.
+
+The tracked path-free blueprint at
+`research/competitive-runs/plan-blueprints.v1.json` reconstructs the eight
+current plans on a machine that has the pinned clones:
+
+```bash
+.venv/bin/python scripts/run_competitive_benchmark.py generate
+```
+
+Generation verifies each clone's real `HEAD`, materializes the exact commit,
+hashes source and fixture files by bounded streaming, and writes host-specific
+plans under the ignored `research/competitive-runs/local/plans/` directory.
+Execution repeats that work into disposable snapshots and compares the evidence
+again immediately before `docker run`.
 
 ## Container policy
 
@@ -105,21 +125,26 @@ Every run uses:
 - an empty temporary home and temporary directory;
 - competitor source mounted read-only at `/competitor`;
 - one fixture mounted read-only at `/fixture`;
-- one disposable writable scratch directory at `/scratch`;
+- one 64 MB disposable `tmpfs` scratch directory at `/scratch`, mounted with
+  `noexec`, `nosuid`, and `nodev`;
 - no host home, Docker socket, credentials, SSH agent, cloud config, or real
   repository mount.
 
-The scratch inventory records only relative path, type, byte count, and digest.
-The runner never treats a file written by a competitor as trusted input.
+The scratch filesystem disappears with the container. Current runtime records
+therefore state `not_measured_ephemeral_tmpfs` instead of claiming a post-run
+file inventory. Bounded scratch takes precedence over retaining untrusted
+competitor writes on the host.
 
 ## Result envelope
 
 Each local JSON Lines record contains:
 
 - project, revision, fixture, image, argument vector, and network policy;
+- full plan digest, approval-receipt digest, and the receipt's declared
+  decision, approver, timestamp, and scope;
 - exit code, timeout state, duration, and maximum RSS when available;
 - bounded stdout and stderr byte counts, digests, and truncation states;
-- relative scratch writes and their digests;
+- explicit ephemeral-scratch observation state;
 - network observation state;
 - normalized findings and normalization state.
 
@@ -131,7 +156,9 @@ Three limitations remain explicit:
 
 1. `network=none` blocks traffic but does not identify attempted destinations.
 2. Maximum RSS is `null` until a portable per-container measurement exists.
-3. Normalized findings stay empty until a reviewed adapter exists for each
+3. Scratch file paths and contents are not measured after the bounded `tmpfs`
+   disappears.
+4. Normalized findings stay empty until a reviewed adapter exists for each
    selected tool. A generic regex parser would create false comparability.
 
 ## Execution order and stop rules
@@ -156,28 +183,29 @@ a completeness failure, independently from detection.
 
 ## Prepared teardown plans
 
-The following plans were validated on 2026-08-31 and remain under the ignored
-local plan directory. They use the image IDs in `BUILD-GATE.md`, read-only
-source and fixture mounts, network mode `none`, 30 seconds, 512 MB, 64
-processes, one CPU, and a 1,000,000-byte limit per stream. The SHA-256 values
-bind each complete local plan, including its private absolute paths. They do
-not authorize execution, do not have approval receipts, and are not runtime
-observations.
+The following plans were regenerated and validated on 2026-08-31 from the
+tracked blueprint. They remain under the ignored local plan directory. They use
+the image IDs in `BUILD-GATE.md`, read-only source and fixture snapshots,
+network mode `none`, 30 seconds, 512 MB, 64 processes, one CPU, a 1,000,000-byte
+limit per stream, and 64 MB of scratch `tmpfs`. The SHA-256 values bind each
+complete semantic plan, including its full source commit and both mounted-tree
+digests, while canonicalizing verified host paths. They do not authorize
+execution, do not have approval receipts, and are not runtime observations.
 
 | Project | Fixture | Kind | Applicability | Runtime state | Plan digest |
 | --- | --- | --- | --- | --- | --- |
-| NVIDIA SkillSpector | `skill-delayed-instruction` | positive | applicable to its documented skill surface | `not_tested` | `f04329a636edb6fe5322758f9b3c4093cf7ae7c0b72bc575fa3567d15169766d` |
+| NVIDIA SkillSpector | `skill-delayed-instruction` | positive | applicable to its documented skill surface | `not_tested` | `26bfa9fc3630ebfbddf6af2f5bfbfb0e920fd4c2b6c89c5ad02682315aa00bae` |
 | NVIDIA SkillSpector | `lifecycle-near-miss` | near miss | `not_applicable`: package lifecycle input is outside the skill-only plan | `not_applicable` | none |
 | NVIDIA SkillSpector | `unsupported-binary-lock` | unsupported | `not_applicable`: package lockfile input is outside the skill-only plan | `not_applicable` | none |
-| NVIDIA SkillSpector | `confinement-symlink` | safety | applicable to the skill fixture's outside-root link | `not_tested` | `a9a018bcc746c707a9986a3af0950506930cd58c030b9a3c5ee36a8060fa482d` |
-| AgentShield | `claude-hook-review` | positive | applicable to its documented agent-configuration surface | `not_tested` | `93d7764b6cfd0c9aee548004965cdbbf28800eb8eca5bf165e9cdbb466ee6ded` |
+| NVIDIA SkillSpector | `confinement-symlink` | safety | applicable to the skill fixture's outside-root link | `not_tested` | `f9d78a12c2f0c59966a3fc719da85d14daf7a71c7c8bc4aecc4331c3d6c3dabf` |
+| AgentShield | `claude-hook-review` | positive | applicable to its documented agent-configuration surface | `not_tested` | `778c962fa766a09d35777a5f057fe87b421b1d3e16ac02e69f97af57bbf9b550` |
 | AgentShield | `lifecycle-near-miss` | near miss | `not_applicable`: package lifecycle input is outside the configuration plan | `not_applicable` | none |
 | AgentShield | `unsupported-binary-lock` | unsupported | `not_applicable`: package lockfile input is outside the configuration plan | `not_applicable` | none |
-| AgentShield | `confinement-symlink` | safety | applicable to an outside-root configuration link | `not_tested` | `cde5000d0a1a6053d5c36304c3e02c1d01f1a7dc4f178d5402e06f230a9bd0eb` |
-| agent-bom | `shai-hulud-confirmed` | positive | applicable to the documented package scan | `not_tested` | `56fab351a755f74302d48bef7cef87a66d6bcdae49f84d71ac4ee0322210cc68` |
-| agent-bom | `lifecycle-near-miss` | near miss | applicable package-manifest control | `not_tested` | `6574cf12df8f13f3c09d3d0186c9332019f07b885d05205ddd34b322544f543a` |
-| agent-bom | `unsupported-binary-lock` | unsupported | applicable unsupported-input check | `not_tested` | `019536c562c49f3e066642937facdabca94b8d7a7abf97d1d7eca9eb8fe26fd0` |
-| agent-bom | `confinement-symlink` | safety | applicable repository-confinement check | `not_tested` | `74bcbcdee7ee52ef7dae30f128dc132611ad064ad48ecf9d92fd1f0086d7baa1` |
+| AgentShield | `confinement-symlink` | safety | applicable to an outside-root configuration link | `not_tested` | `48cf26a39ea09d796288fc4c29be90271fecfcd3069b6b7f6e9038c0d743158f` |
+| agent-bom | `shai-hulud-confirmed` | positive | applicable to the documented package scan | `not_tested` | `ca07f3d5a7d3cda1c16e84254716ebfb9c18b38875466e63f09998272f5ed090` |
+| agent-bom | `lifecycle-near-miss` | near miss | applicable package-manifest control | `not_tested` | `c1b3ba131a93239ce1bb15388f01d07f1f564c7ef4d48608baa8155eb5493150` |
+| agent-bom | `unsupported-binary-lock` | unsupported | applicable unsupported-input check | `not_tested` | `189913ba71053748aeef3cc3b8318df19f2b97d1914a3a61b948d2f0a28aeef1` |
+| agent-bom | `confinement-symlink` | safety | applicable repository-confinement check | `not_tested` | `68e445b8099f2a2f4e0b720662c90058a420275d482098e6605bbcfe2a29cf91` |
 
 `not_applicable` has no exact plan or digest. It is not a clean result.
 `not_tested` records the remaining runtime evidence gap only for planned rows.
@@ -188,9 +216,10 @@ the approver's identity.
 ## Local infrastructure self-test
 
 The self-test executes only a hard-coded Python marker command from this
-repository. It proves bounded pipe capture, `shell=False`, redaction, scratch
-write inventory, and the disabled-network policy label. It does not prove
-Docker availability or competitor behavior.
+repository. It proves bounded pipe capture, `shell=False`, redaction, the
+bounded local inventory primitive, and the disabled-network policy label. It
+does not prove Docker availability, daemon-side timeout cleanup, or competitor
+behavior.
 
 ```bash
 .venv/bin/python scripts/run_competitive_benchmark.py self-test
