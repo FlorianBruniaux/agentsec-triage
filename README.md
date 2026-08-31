@@ -31,6 +31,35 @@ copy; no package or tagged release is authorized yet.
 Read the [examples and verdict guide](docs/examples.md) before automating the
 result. Exit code `2` means incomplete coverage, not success.
 
+## When to use AgentSec
+
+Use AgentSec before trusting a repository with a coding agent, after a tracked
+campaign disclosure, or in CI when you need repository-local evidence tied to
+reviewed threat intelligence.
+
+| Need | Use AgentSec? |
+| --- | --- |
+| Check supported lockfiles, package metadata, payload hashes, hooks, or skill instructions against an implemented campaign detector | **Yes** |
+| Know which applicable inputs were inspected, skipped, unsupported, or unreadable | **Yes** |
+| Find general application vulnerabilities, secrets, or every vulnerable dependency | **No.** Add SAST, secret scanning, and SCA tools. |
+| Inspect running processes, network traffic, credentials, persistence, live MCP servers, or registry history | **No.** Use host and runtime controls. |
+
+AgentSec differs from broad repository and agent scanners through traceability:
+each active rule links a reviewed source, campaign evidence, a deterministic
+fixture, a finding, stated coverage, and response guidance. Its current breadth
+is smaller than several alternatives, so it should complement rather than
+replace general security tooling. See
+[when to use AgentSec and how it compares](docs/when-to-use.md) and the dated
+[scanner ecosystem study](docs/ECOSYSTEM.md).
+
+AgentSec grew from the threat database behind
+[the Claude Code Guide security page](https://cc.bruniaux.com/security/). A
+scan does not query that website: it uses a validated, versioned database
+bundled with the installed source, then reports the database version in its
+output. AgentSec exports reviewed metadata back to the guide and landing page,
+and CI rejects feed drift. The page tracks more intelligence than the two
+detector families currently implemented by the scanner.
+
 ## What it checks today
 
 AgentSec currently ships two detector families. The wider intelligence catalogue
@@ -122,6 +151,7 @@ surfaces, sources of truth, and integration boundaries.
 | Install and run the first scan | [Installation](docs/installation.md) |
 | Interpret human, JSON, SARIF, and incomplete results | [Examples and verdicts](docs/examples.md) |
 | Understand architecture and canonical files | [Project overview](docs/project-overview.md) |
+| Decide when to use AgentSec or another control | [Usage and comparison guide](docs/when-to-use.md) |
 | Respond to a finding | [Response playbooks](docs/response-playbooks/) |
 | Review sources and dated events | [Security intelligence](docs/SECURITY-INTELLIGENCE.md) and [timeline](docs/SECURITY-TIMELINE.md) |
 | Add a source, event, IOC, or detector | [Intelligence authoring](docs/intelligence-authoring.md) |

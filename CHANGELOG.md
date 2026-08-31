@@ -258,6 +258,17 @@ while the data-licensing decision remains unresolved.
 
 ### Changed
 
+- Added a task-oriented usage and comparison guide that explains when AgentSec
+  fits a repository workflow, when SCA, SAST, secret scanning, broader agent
+  configuration scanning, or runtime controls answer a different question, and
+  why campaign traceability, fail-closed coverage, attributable intelligence,
+  confinement, and reproducible fixtures remain the intended distinction.
+  Clarified the bidirectional relationship with
+  `https://cc.bruniaux.com/security/`: AgentSec originated from the guide's
+  threat database, now scans against a bundled versioned projection without
+  network access, and exports reviewed metadata back to the guide and landing
+  mirrors without equating catalogue size with active detector coverage.
+
 - Added concrete README and examples-guide findings for compromised package
   versions, campaign-correlated startup hooks, review-only hooks, delegated
   ClawHavoc domains, contested intelligence, and unsupported lockfiles. Each

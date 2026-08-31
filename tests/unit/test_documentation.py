@@ -84,6 +84,7 @@ def test_public_markdown_links_resolve_locally() -> None:
     for document in (
         "README.md",
         "docs/project-overview.md",
+        "docs/when-to-use.md",
         "docs/installation.md",
         "docs/examples.md",
         "PROMPT.md",
@@ -128,6 +129,44 @@ def test_public_docs_show_concrete_findings_and_incomplete_diagnostics() -> None
         "delegated-known-malicious-domain",
     ):
         assert rule_id in examples
+
+
+def test_public_docs_explain_when_to_use_agentsec_and_guide_provenance() -> None:
+    readme = _read("README.md")
+    usage = _read("docs/when-to-use.md")
+    overview = _read("docs/project-overview.md")
+    llms = _read("llms.txt")
+
+    assert "## When to use AgentSec" in readme
+    assert "docs/when-to-use.md" in readme
+    assert "https://cc.bruniaux.com/security/" in readme
+    assert "does not query that website" in readme
+
+    for expected in (
+        "Software composition analysis",
+        "language-aware SAST",
+        "dedicated secret scanner",
+        "host and runtime monitoring",
+        "Campaign traceability",
+        "Fail-closed results",
+        "data/IMPORT_PROVENANCE.md",
+        "bundled threat-db.json used by offline scans",
+        "active scanner rules",
+    ):
+        assert expected in usage
+
+    for compared_project in (
+        "Aguara",
+        "patient-zero",
+        "Repo Forensics",
+        "AgentShield",
+        "Snyk Agent Scan",
+        "AgentSeal",
+    ):
+        assert compared_project in usage
+
+    assert "Scans load the bundled" in overview
+    assert "docs/when-to-use.md" in llms
 
 
 def test_security_has_separate_reporting_workflows() -> None:

@@ -62,6 +62,15 @@ The scanner and public intelligence feed share reviewed source material but
 serve different purposes. Adding a source, event, CVE, campaign, or IOC does not
 create an executable rule automatically.
 
+AgentSec began with a byte-identical import of the Claude Code Ultimate Guide
+threat database. The import version, original path, and digest are recorded in
+[`data/IMPORT_PROVENANCE.md`](../data/IMPORT_PROVENANCE.md). The adapted
+`data/threat-db.yaml` is now the AgentSec authoring source for bundled detector
+intelligence. The public feed flows in the other direction: AgentSec generates
+it, then the guide and landing repositories consume byte-identical mirrors for
+surfaces such as <https://cc.bruniaux.com/security/>. Scans load the bundled
+database and never query the website.
+
 Promotion into runtime coverage requires all of the following:
 
 1. A repository-local signal supported by the cited source.

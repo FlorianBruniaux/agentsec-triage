@@ -7,6 +7,10 @@ planned scope. It supports product positioning, naming, roadmap decisions, and
 competitive testing. It is not an endorsement, a security certification, or a
 benchmark result.
 
+For a task-oriented selection table, read
+[when to use AgentSec](when-to-use.md). The guide below remains the dated
+evidence inventory behind that shorter decision aid.
+
 ## Read this first
 
 The ecosystem is already crowded. Local execution, deterministic rules,
