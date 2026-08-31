@@ -1,0 +1,43 @@
+docs/ECOSYSTEM.md
+  s_0df90997879182::t_4c6d05d5bc582d 10-13
+llms.txt
+  s_0df90997879182::t_4c6d05d5bc582d 13
+docs/project-overview.md
+  s_0df90997879182::t_4c6d05d5bc582d 65-73
+CHANGELOG.md
+  s_0df90997879182::t_7a4ba0aedc73bd 261-271
+README.md
+  s_0df90997879182::t_4160dbc2c340fe 34-62,154
+docs/when-to-use.md
+  s_0df90997879182::t_262008d7d80da7 1-42,62-139
+  s_0df90997879182::t_dcf86058fc4f0d 43-61
+tests/unit/test_documentation.py
+  s_0df90997879182::t_f2c33087183e03 149,154
+  s_0df90997879182::t_7a4ba0aedc73bd 87,134-148,150-153,155-157,168-169
+  s_0df90997879182::t_dcf86058fc4f0d 158-167
+  s_d00f706886252a::t_ecbd29d507301c 170-171
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "c3c38d06e63e763e18fc6e89c49b68a9f5f105e9",
+  "prompts": {},
+  "sessions": {
+    "s_0df90997879182": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019fd73a-588d-7f03-ab50-494ca0e95848",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Florian BRUNIAUX <florian@bruniaux.com>"
+    },
+    "s_d00f706886252a": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a05978-0217-70e3-9f15-f91549dba1ca",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Florian BRUNIAUX <florian@bruniaux.com>"
+    }
+  }
+}
