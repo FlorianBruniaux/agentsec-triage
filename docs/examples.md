@@ -303,6 +303,26 @@ below keep this example stable.
 
 The example illustrates the schema. It is not a claim about a real scan.
 
+## Response playbooks
+
+Every active detector rule maps to one versioned playbook under
+[`docs/response-playbooks/`](response-playbooks/). Select the playbook by
+`detector_id` and `rule_id`, then follow the guidance for the finding's exact
+`confidence`. The mapping preserves `confirmed`, `high`, `review`, and
+`contested` instead of collapsing them into one incident verdict.
+
+The four phases remain separate: evidence collection, manual containment,
+remediation, and verification. Destructive automation is forbidden. AgentSec
+does not delete files, rewrite configuration or lockfiles, rotate credentials,
+revoke tokens, or recover accounts. The playbook sends host, identity,
+registry, and remote-CI work to the responsible owners and tools.
+
+The machine-readable authoring source is `data/response-playbooks.json`. The
+packaged deterministic mapping is
+`src/agentsec/resources/response-playbooks.json`. Findings keep the existing
+security-page remediation URL until individual public playbook URLs exist and
+can be checked. Do not infer a future URL from the repository path.
+
 The bundled database preserves disputed `@keyv/*@6.0.0` intelligence as a
 separate class. A match such as `@keyv/mongo@6.0.0` is reported
 `high/contested` with source attribution. It is not promoted to

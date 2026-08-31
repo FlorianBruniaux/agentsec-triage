@@ -25,6 +25,9 @@ Implemented in the current alpha codebase:
 - deterministic human and JSON detector coverage explanations with active
   rules, sources, applicability, supported inputs, database projection states,
   limitations, remediation, and stable `not_scanned` capability IDs;
+- sourced, versioned response playbooks for every active Shai-Hulud/Keyv and
+  ClawHavoc rule, with exact confidence handling, manual phases, deterministic
+  rule mapping, and destructive automation forbidden;
 - console-script and `python -m agentsec` entry points;
 - an opt-in redacted local benchmark without published performance claims;
 - a factual license evidence inventory that preserves the publication gate;
@@ -119,6 +122,8 @@ remediation, and stable `not_scanned` capability IDs.
 - Replace hardcoded landing security versions, dates, counts, and stale source
   paths with generated data.
 - Add an AgentSec installation and scan CTA to `https://cc.bruniaux.com/security/`.
+- Route finding remediation URLs to individual playbooks only after stable
+  public playbook URLs exist and automated link checks cover them.
 
 ## P3: Advanced analysis
 

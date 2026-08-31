@@ -80,6 +80,7 @@ class ShaiHuludDetector:
 
     id = "shai-hulud-keyv"
     version = "1"
+    rule_ids: tuple[str, ...] = tuple(sorted(_TECHNIQUES_BY_RULE))
     metadata = DetectorMetadata(
         description=(
             "Detect repository-local indicators associated with the August 2026 "

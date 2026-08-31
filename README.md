@@ -19,6 +19,7 @@ inputs, and limits reported by that run.
 | Which package formats are covered? | Supported `npm`, `pnpm`, `Yarn`, and `Bun` text lockfiles. Installed `node_modules` metadata requires `--scope dependencies` or `--scope repository`. Binary `bun.lockb` is **unsupported**. |
 | How does it run? | **Deterministically**, **read-only**, and **offline by default**. It does not follow symlinks outside the scan root or invoke Git on the target repository. |
 | What does it return? | Human-readable, versioned `JSON`, or `SARIF 2.1.0` with measured **discovery exclusions**, per-detector **coverage**, findings, diagnostics, and completion status. |
+| What happens after a finding? | Versioned **response playbooks** separate evidence collection, manual containment, remediation, and verification without destructive automation. |
 | What do exit codes mean? | `0`: completed checks found nothing; `1`: findings require action or review; `2`: the scan is incomplete or failed. |
 | Can it run in GitHub Actions? | A repository-local composite [`action.yml`](action.yml) runs the checked-out source and preserves exit codes. Remote action use and release installation remain blocked by the data-license gate. |
 | What does it not do? | It does not certify a repository as **clean** and does not replace antivirus, `EDR`, `SAST`, dependency, or secret scanning. |
@@ -92,6 +93,7 @@ projected, and stable capabilities that remain `not_scanned`.
 - [Examples](docs/examples.md): scans, verdicts, JSON, SARIF, coverage limits, and benchmark.
 - [Local action manifest](action.yml): checked-out source wrapper with fail-closed SARIF.
 - [Pinned action workflow](docs/examples/agentsec-local-action.yml): local consumer example with full third-party action SHAs.
+- [Response playbooks](docs/response-playbooks/): sourced, manual response steps for every active detector rule.
 - [Copy-ready LLM prompt](PROMPT.md): ask an LLM to run a read-only repository triage.
 - [LLM index](llms.txt): compact map of canonical project documentation.
 - [Security policy](SECURITY.md): vulnerabilities, false results, and IOC corrections.

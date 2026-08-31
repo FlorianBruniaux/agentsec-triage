@@ -775,6 +775,7 @@ def test_doctor_from_wheel_without_dependencies_validates_packaged_schema(tmp_pa
     wheel = next(dist.glob("*.whl"))
     with zipfile.ZipFile(wheel) as archive:
         assert "agentsec/resources/security-intelligence.json" in archive.namelist()
+        assert "agentsec/resources/response-playbooks.json" in archive.namelist()
         assert "agentsec/resources/scan-result-v1.schema.sha256" in archive.namelist()
         assert "agentsec/resources/scan-result-v2.schema.json" in archive.namelist()
         assert "agentsec/resources/scan-result-v2.schema.sha256" in archive.namelist()

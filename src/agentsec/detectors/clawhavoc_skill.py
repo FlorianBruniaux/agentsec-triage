@@ -40,6 +40,10 @@ class ClawHavocSkillDetector:
 
     id = "clawhavoc-skill"
     version = "1"
+    rule_ids: tuple[str, ...] = (
+        "delegated-known-malicious-domain",
+        "known-malicious-skill-domain",
+    )
     metadata = DetectorMetadata(
         description=(
             "Detect repository-local agent-skill evidence associated with the "

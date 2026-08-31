@@ -39,6 +39,12 @@ jobs:
       - name: Require deterministic generated threat data
         run: git diff --exit-code -- src/agentsec/resources/threat-db.json
 
+      - name: Rebuild response playbooks
+        run: python scripts/build_response_playbooks.py
+
+      - name: Require deterministic response playbooks
+        run: git diff --exit-code -- docs/response-playbooks src/agentsec/resources/response-playbooks.json
+
       - name: Rebuild security intelligence documents
         run: python scripts/build_intelligence_docs.py
 

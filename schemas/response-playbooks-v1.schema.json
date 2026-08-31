@@ -1,0 +1,120 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/FlorianBruniaux/agentsec-triage/blob/main/schemas/response-playbooks-v1.schema.json",
+  "title": "AgentSec response playbooks v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "updated", "playbooks"],
+  "properties": {
+    "schema_version": {"const": "1"},
+    "updated": {"type": "string", "format": "date"},
+    "playbooks": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/playbook"}
+    }
+  },
+  "$defs": {
+    "nonEmptyString": {"type": "string", "minLength": 1},
+    "uniqueStrings": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"$ref": "#/$defs/nonEmptyString"}
+    },
+    "phase": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "title", "mode", "actions"],
+      "properties": {
+        "id": {
+          "enum": [
+            "evidence-collection",
+            "manual-containment",
+            "remediation",
+            "verification"
+          ]
+        },
+        "title": {"$ref": "#/$defs/nonEmptyString"},
+        "mode": {"const": "manual"},
+        "actions": {"$ref": "#/$defs/uniqueStrings"}
+      }
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["title", "url", "accessed"],
+      "properties": {
+        "title": {"$ref": "#/$defs/nonEmptyString"},
+        "url": {"type": "string", "format": "uri", "pattern": "^https://"},
+        "accessed": {"type": "string", "format": "date"}
+      }
+    },
+    "playbook": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "version",
+        "title",
+        "detector_id",
+        "document_path",
+        "rule_ids",
+        "confidence_guidance",
+        "automation",
+        "phases",
+        "out_of_scope",
+        "sources"
+      ],
+      "properties": {
+        "id": {"type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"},
+        "version": {"type": "string", "pattern": "^[1-9][0-9]*\\.[0-9]+\\.[0-9]+$"},
+        "title": {"$ref": "#/$defs/nonEmptyString"},
+        "detector_id": {"type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"},
+        "document_path": {
+          "type": "string",
+          "pattern": "^docs/response-playbooks/[a-z0-9-]+-v[1-9][0-9]*\\.md$"
+        },
+        "rule_ids": {"$ref": "#/$defs/uniqueStrings"},
+        "confidence_guidance": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["confirmed", "high", "review", "contested"],
+          "properties": {
+            "confirmed": {"$ref": "#/$defs/nonEmptyString"},
+            "high": {"$ref": "#/$defs/nonEmptyString"},
+            "review": {"$ref": "#/$defs/nonEmptyString"},
+            "contested": {"$ref": "#/$defs/nonEmptyString"}
+          }
+        },
+        "automation": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["execution", "destructive_actions"],
+          "properties": {
+            "execution": {"const": "manual-only"},
+            "destructive_actions": {"const": "forbidden"}
+          }
+        },
+        "phases": {
+          "type": "array",
+          "minItems": 4,
+          "maxItems": 4,
+          "prefixItems": [
+            {"allOf": [{"$ref": "#/$defs/phase"}, {"properties": {"id": {"const": "evidence-collection"}}}]},
+            {"allOf": [{"$ref": "#/$defs/phase"}, {"properties": {"id": {"const": "manual-containment"}}}]},
+            {"allOf": [{"$ref": "#/$defs/phase"}, {"properties": {"id": {"const": "remediation"}}}]},
+            {"allOf": [{"$ref": "#/$defs/phase"}, {"properties": {"id": {"const": "verification"}}}]}
+          ],
+          "items": false
+        },
+        "out_of_scope": {"$ref": "#/$defs/uniqueStrings"},
+        "sources": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"$ref": "#/$defs/source"}
+        }
+      }
+    }
+  }
+}

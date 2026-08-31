@@ -91,6 +91,17 @@ def test_public_markdown_links_resolve_locally() -> None:
         assert missing == []
 
 
+def test_public_docs_route_findings_to_manual_response_playbooks() -> None:
+    readme = _read("README.md").lower()
+    examples = _read("docs/examples.md").lower()
+    roadmap = _read("ROADMAP.md").lower()
+
+    assert "response playbooks" in readme
+    assert "docs/response-playbooks/" in examples
+    assert "destructive automation" in examples
+    assert "versioned response playbooks" in roadmap
+
+
 def test_security_has_separate_reporting_workflows() -> None:
     security = _read("SECURITY.md").lower()
 
@@ -164,8 +175,10 @@ def test_ci_is_cross_platform_and_runs_every_alpha_gate() -> None:
     for command in (
         'python -m pip install -e ".[dev]"',
         "python scripts/build_threat_db.py",
+        "python scripts/build_response_playbooks.py",
         "python scripts/build_scan_schema_digest.py --check",
         "git diff --exit-code -- src/agentsec/resources/threat-db.json",
+        "src/agentsec/resources/response-playbooks.json",
         "ruff check src tests scripts",
         "mypy src scripts",
         "pytest --cov=agentsec --cov-report=term-missing",

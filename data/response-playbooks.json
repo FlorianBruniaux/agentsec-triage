@@ -1,0 +1,183 @@
+{
+  "schema_version": "1",
+  "updated": "2026-08-31",
+  "playbooks": [
+    {
+      "id": "clawhavoc-skill",
+      "version": "1.0.0",
+      "title": "ClawHavoc skill response",
+      "detector_id": "clawhavoc-skill",
+      "document_path": "docs/response-playbooks/clawhavoc-skill-v1.md",
+      "rule_ids": [
+        "delegated-known-malicious-domain",
+        "known-malicious-skill-domain"
+      ],
+      "confidence_guidance": {
+        "confirmed": "Use confirmed only when separate evidence establishes the sourced campaign indicator and its repository context. Preserve the evidence before changing the skill.",
+        "high": "Treat an exact bundled campaign-domain match as high-priority review evidence. It does not by itself prove payload execution, credential theft, or host compromise.",
+        "review": "Keep a review signal as a hunt lead. Do not relabel it as campaign activity without a sourced indicator or independent evidence.",
+        "contested": "Preserve the contested label, the conflicting source scopes, and the original evidence. Do not apply confirmed-incident language until the conflict is resolved."
+      },
+      "automation": {
+        "destructive_actions": "forbidden",
+        "execution": "manual-only"
+      },
+      "phases": [
+        {
+          "id": "evidence-collection",
+          "title": "Evidence collection",
+          "mode": "manual",
+          "actions": [
+            "Preserve the redacted AgentSec report, completion state, diagnostics, detector confidence, and the exact relative paths and line numbers before editing files.",
+            "Copy the relevant SKILL.md and explicitly delegated setup Markdown into an approved evidence location, then record cryptographic hashes without opening links or executing instructions.",
+            "Record where the skill came from, the installed or pinned version when known, and any evidence that a human or agent followed the referenced setup instructions. Mark unknown facts as unknown."
+          ]
+        },
+        {
+          "id": "manual-containment",
+          "title": "Manual containment",
+          "mode": "manual",
+          "actions": [
+            "With repository-owner approval, stop agents and automation from loading the affected skill while preserving the original files for investigation.",
+            "With CI-owner approval, prevent new jobs from consuming the affected skill or delegated setup instructions. Do not delete files or rewrite configuration automatically.",
+            "Escalate suspected host execution, credential exposure, registry compromise, or account activity to the responsible incident team because AgentSec does not inspect those surfaces."
+          ]
+        },
+        {
+          "id": "remediation",
+          "title": "Remediation",
+          "mode": "manual",
+          "actions": [
+            "After evidence preservation and explicit approval, prepare a reviewed repository change that removes the campaign-domain reference and the untrusted skill source or replaces it with a separately verified source.",
+            "Review every same-skill setup file and delegated instruction reached from SKILL.md. Do not assume that removing one visible line removes all related instructions.",
+            "Route credential rotation, host cleanup, registry action, and account recovery to their system owners. Those actions are not performed or verified by AgentSec."
+          ]
+        },
+        {
+          "id": "verification",
+          "title": "Verification",
+          "mode": "manual",
+          "actions": [
+            "Run AgentSec again on the explicit repository root and require a complete scan with no remaining finding for the mapped ClawHavoc rules.",
+            "Review the final repository diff and confirm that the affected skill is no longer loaded by local agent configuration or CI within the inspected repository scope.",
+            "Verify host, identity, registry, and remote-CI recovery with the responsible tools and owners. A clear AgentSec rescan does not verify those systems or certify the repository as clean."
+          ]
+        }
+      ],
+      "out_of_scope": [
+        "AgentSec does not execute, fetch, or detonate the referenced skill or payload.",
+        "AgentSec does not inspect host processes, credentials, caches, accounts, registry history, remote payloads, or remote CI state.",
+        "AgentSec does not delete skills, edit configuration, rotate credentials, revoke tokens, or recover accounts.",
+        "This playbook does not replace the incident owner's evidence-retention, legal, privacy, or notification procedures."
+      ],
+      "sources": [
+        {
+          "title": "ClawHavoc: 341 malicious ClawedBot skills found",
+          "url": "https://www.koi.ai/blog/clawhavoc-341-malicious-clawedbot-skills-found-by-the-bot-they-were-targeting",
+          "accessed": "2026-08-31"
+        },
+        {
+          "title": "OpenClaw skills used to distribute Atomic macOS Stealer",
+          "url": "https://www.trendmicro.com/en_us/research/26/b/openclaw-skills-used-to-distribute-atomic-macos-stealer.html",
+          "accessed": "2026-08-31"
+        }
+      ]
+    },
+    {
+      "id": "shai-hulud-keyv",
+      "version": "1.0.0",
+      "title": "Shai-Hulud and Keyv response",
+      "detector_id": "shai-hulud-keyv",
+      "document_path": "docs/response-playbooks/shai-hulud-keyv-v1.md",
+      "rule_ids": [
+        "campaign-lifecycle-script",
+        "campaign-startup-hook",
+        "compromised-installed-version",
+        "compromised-lockfile-version",
+        "known-payload-hash",
+        "startup-hook",
+        "suspicious-lifecycle-script"
+      ],
+      "confidence_guidance": {
+        "confirmed": "Treat an exact confirmed package-version or payload-hash match as incident-response evidence within the inspected repository scope. Preserve it before changing dependencies or files.",
+        "high": "Treat a campaign-correlated lifecycle or startup invocation as strong review evidence. Confirm whether it executed and whether the referenced file matches sourced campaign evidence before expanding the claim.",
+        "review": "Treat a generic startup hook or suspicious lifecycle script as a hunt lead, not proof of Shai-Hulud activity or compromise.",
+        "contested": "Keep disputed package scope labeled contested and retain the source disagreement. Do not merge it into the confirmed package set without a sourced correction."
+      },
+      "automation": {
+        "destructive_actions": "forbidden",
+        "execution": "manual-only"
+      },
+      "phases": [
+        {
+          "id": "evidence-collection",
+          "title": "Evidence collection",
+          "mode": "manual",
+          "actions": [
+            "Preserve the redacted AgentSec report, completion state, diagnostics, detector confidence, package name and version, relative path, and reported hash before editing the repository.",
+            "Copy affected lockfiles, installed package manifests, lifecycle scripts, startup configuration, and matched payload files into an approved evidence location, then record cryptographic hashes without executing repository content.",
+            "Record the package-manager command history and CI or developer install window when available. Keep execution, credential exposure, and host impact unknown until independently verified."
+          ]
+        },
+        {
+          "id": "manual-containment",
+          "title": "Manual containment",
+          "mode": "manual",
+          "actions": [
+            "With repository-owner approval, pause dependency installation, builds, and repository startup hooks for the affected checkout while retaining evidence.",
+            "With CI-owner approval, stop new jobs from consuming the affected dependency state. Do not delete files, rewrite lockfiles, or change hooks automatically.",
+            "Escalate suspected payload execution, credential exposure, package-registry compromise, or host persistence to the responsible incident team because AgentSec does not inspect those surfaces."
+          ]
+        },
+        {
+          "id": "remediation",
+          "title": "Remediation",
+          "mode": "manual",
+          "actions": [
+            "After evidence preservation and explicit approval, prepare a reviewed dependency change that replaces sourced affected versions and removes campaign-linked lifecycle or startup entries from the repository.",
+            "Recreate dependency state only in a controlled clean environment using independently verified package sources and project-specific package-manager procedures.",
+            "Route credential rotation, host cleanup, registry action, and remote-CI recovery to their system owners. AgentSec neither performs nor verifies those actions."
+          ]
+        },
+        {
+          "id": "verification",
+          "title": "Verification",
+          "mode": "manual",
+          "actions": [
+            "Run AgentSec again with the scope required to inspect the affected lockfiles and installed dependency metadata. Require a complete scan with no remaining mapped Shai-Hulud finding.",
+            "Review the final dependency and configuration diff, then verify the resolved package tree with the project's package manager in the controlled environment.",
+            "Verify host, identity, package-registry, and remote-CI recovery with the responsible tools and owners. A clear AgentSec rescan does not verify those systems or certify the repository as clean."
+          ]
+        }
+      ],
+      "out_of_scope": [
+        "AgentSec does not execute or detonate payloads, lifecycle scripts, startup hooks, or package-manager commands.",
+        "AgentSec does not inspect host processes, credentials, caches, accounts, registry state, network traffic, or remote CI.",
+        "AgentSec does not delete files, update dependencies, rewrite lockfiles, edit hooks, rotate credentials, revoke tokens, or recover accounts.",
+        "This playbook does not replace the incident owner's evidence-retention, legal, privacy, or notification procedures."
+      ],
+      "sources": [
+        {
+          "title": "Keyv npm supply-chain compromise",
+          "url": "https://safedep.io/keyv-npm-supply-chain-compromise/",
+          "accessed": "2026-08-31"
+        },
+        {
+          "title": "Keyv and friends compromised in npm supply-chain attack",
+          "url": "https://www.aikido.dev/blog/keyv-and-friends-compromised-in-npm-supply-chain-attack",
+          "accessed": "2026-08-31"
+        },
+        {
+          "title": "Shai-Hulud is back",
+          "url": "https://research.jfrog.com/post/shai-hulud-is-back-august/",
+          "accessed": "2026-08-31"
+        },
+        {
+          "title": "Popular npm packages Keyv and cacheable compromised",
+          "url": "https://socket.dev/blog/popular-npm-packages-keyv-and-cacheable-compromised",
+          "accessed": "2026-08-31"
+        }
+      ]
+    }
+  ]
+}

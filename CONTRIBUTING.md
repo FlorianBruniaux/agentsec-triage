@@ -119,17 +119,34 @@ by record; aggregate campaign counts are not event records.
 The complete source and fiche template, field routing, and three-repository sync
 commands live in `docs/intelligence-authoring.md`.
 
+## Response playbooks
+
+Edit `data/response-playbooks.json`, not the generated Markdown or packaged
+resource. Every active detector exposes stable `rule_ids`; the builder rejects
+missing, duplicate, and unknown mappings. Keep the four phases in order,
+preserve all confidence states, forbid destructive automation, and source the
+campaign boundary without copying third-party prose.
+
+```bash
+.venv/bin/python scripts/build_response_playbooks.py
+git diff --exit-code -- \
+  docs/response-playbooks \
+  src/agentsec/resources/response-playbooks.json
+```
+
 ## Local release gate
 
 Run every gate before requesting review:
 
 ```bash
 .venv/bin/python scripts/build_threat_db.py
+.venv/bin/python scripts/build_response_playbooks.py
 .venv/bin/python scripts/build_scan_schema_digest.py --check
 .venv/bin/python scripts/build_intelligence_docs.py
 .venv/bin/python scripts/build_security_feed.py
 .venv/bin/python scripts/check_markdown_style.py .
 git diff --exit-code -- src/agentsec/resources/threat-db.json
+git diff --exit-code -- docs/response-playbooks src/agentsec/resources/response-playbooks.json
 git diff --exit-code -- docs/SECURITY-INTELLIGENCE.md docs/SECURITY-TIMELINE.md src/agentsec/resources/security-intelligence.json
 git diff --exit-code -- exports/security-feed.v1.json
 .venv/bin/ruff check src tests scripts

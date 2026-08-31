@@ -53,6 +53,7 @@ class Detector(Protocol):
 
     id: str
     version: str
+    rule_ids: tuple[str, ...]
     metadata: DetectorMetadata
 
     def applies(self, context: ScanContext) -> bool: ...

@@ -15,6 +15,14 @@ while the data-licensing decision remains unresolved.
   Explicit `active`, `partial`, `documented_only`, and `not_scanned` states keep
   documented intelligence distinct from executable rules. The schema and its
   SHA-256 digest are packaged and verified by `agentsec doctor`.
+- Added sourced response playbooks v1 for every active `shai-hulud-keyv` and
+  `clawhavoc-skill` rule. The schema-validated deterministic mapping preserves
+  `confirmed`, `high`, `review`, and `contested`, separates evidence
+  collection, manual containment, remediation, and verification, forbids
+  destructive automation, and marks host, identity, registry, and remote-CI
+  work as outside AgentSec scope. Existing remediation URLs remain unchanged
+  until stable public playbook routes exist.
+
 - Added evidence-backed product decisions that separate five parity
   requirements, three differentiation bets, rejected V0.1 scope, measurable
   proof, and the accepted SARIF, delayed-skill, source-action, explain, and
