@@ -286,6 +286,10 @@ while the data-licensing decision remains unresolved.
 
 ### Fixed
 
+- Made the competitive tree-evidence regression portable by writing its byte
+  fixture without Windows newline translation and by asserting executable-mode
+  changes only on platforms that expose POSIX mode bits.
+
 - Revalidated an internal symlink alias target before treating it as a covered
   exclusion. A replaced alias that reuses the same filesystem identity now
   remains blocking when its textual target changes, and the regression witness

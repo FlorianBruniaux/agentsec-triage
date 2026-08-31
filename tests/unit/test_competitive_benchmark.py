@@ -331,7 +331,7 @@ def test_tree_evidence_binds_content_modes_and_symlink_targets(tmp_path: Path) -
     root = tmp_path / "tree"
     root.mkdir()
     script = root / "scan.sh"
-    script.write_text("echo inert\n", encoding="utf-8")
+    script.write_bytes(b"echo inert\n")
     script.chmod(0o644)
     (root / "link").symlink_to("scan.sh")
 
@@ -344,7 +344,8 @@ def test_tree_evidence_binds_content_modes_and_symlink_targets(tmp_path: Path) -
 
     assert original["file_count"] == 2
     assert original["total_bytes"] == len(b"echo inert\n")
-    assert original["sha256"] != executable["sha256"]
+    if sys.platform != "win32":
+        assert original["sha256"] != executable["sha256"]
     assert executable["sha256"] != retargeted["sha256"]
 
 
