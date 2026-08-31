@@ -894,16 +894,42 @@ def test_timeout_cleanup_kills_removes_and_verifies_container_in_order(
 
     def run(argv: list[str], **kwargs: object) -> subprocess.CompletedProcess[bytes]:
         calls.append(argv)
-        if argv[1] == "inspect":
-            return subprocess.CompletedProcess(argv, 1, b"", b"not found")
         return subprocess.CompletedProcess(argv, 0, b"", b"")
 
     monkeypatch.setattr(runner.subprocess, "run", run)
 
     runner._cleanup_container(cidfile, timed_out=True)
 
-    assert [call[1] for call in calls] == ["kill", "rm", "inspect"]
-    assert all(call[-1] == "a" * 64 for call in calls)
+    assert [call[1] for call in calls] == ["kill", "rm", "container"]
+    assert calls[-1] == [
+        "docker",
+        "container",
+        "ls",
+        "-a",
+        "--no-trunc",
+        "--filter",
+        f"id={'a' * 64}",
+        "--format",
+        "{{.ID}}",
+    ]
+
+
+def test_timeout_cleanup_fails_closed_when_daemon_query_fails(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    runner = _load_runner()
+    cidfile = tmp_path / "container.cid"
+    cidfile.write_text("e" * 64, encoding="ascii")
+
+    def run(argv: list[str], **kwargs: object) -> subprocess.CompletedProcess[bytes]:
+        if argv[1] == "container":
+            return subprocess.CompletedProcess(argv, 1, b"", b"daemon unavailable")
+        return subprocess.CompletedProcess(argv, 0, b"", b"")
+
+    monkeypatch.setattr(runner.subprocess, "run", run)
+
+    with pytest.raises(runner.BenchmarkCleanupError, match="absence query failed"):
+        runner._cleanup_container(cidfile, timed_out=True)
 
 
 def test_timeout_cleanup_fails_closed_when_daemon_container_remains(
@@ -912,17 +938,21 @@ def test_timeout_cleanup_fails_closed_when_daemon_container_remains(
     runner = _load_runner()
     cidfile = tmp_path / "container.cid"
     cidfile.write_text("b" * 64, encoding="ascii")
+    calls: list[list[str]] = []
 
     def run(argv: list[str], **kwargs: object) -> subprocess.CompletedProcess[bytes]:
-        return subprocess.CompletedProcess(argv, 0, b"still present", b"")
+        calls.append(argv)
+        stdout = ("b" * 64 + "\n").encode("ascii") if argv[1] == "container" else b""
+        return subprocess.CompletedProcess(argv, 0, stdout, b"")
 
     monkeypatch.setattr(runner.subprocess, "run", run)
 
     with pytest.raises(runner.BenchmarkCleanupError, match="still exists"):
         runner._cleanup_container(cidfile, timed_out=True)
+    assert calls[-1][1:3] == ["container", "ls"]
 
 
-def test_timeout_cleanup_still_removes_and_inspects_after_kill_failure(
+def test_timeout_cleanup_still_removes_and_queries_after_kill_failure(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     runner = _load_runner()
@@ -932,16 +962,16 @@ def test_timeout_cleanup_still_removes_and_inspects_after_kill_failure(
 
     def run(argv: list[str], **kwargs: object) -> subprocess.CompletedProcess[bytes]:
         calls.append(argv[1])
-        return subprocess.CompletedProcess(argv, 1 if argv[1] in {"kill", "inspect"} else 0)
+        return subprocess.CompletedProcess(argv, 1 if argv[1] == "kill" else 0, b"", b"")
 
     monkeypatch.setattr(runner.subprocess, "run", run)
 
     runner._cleanup_container(cidfile, timed_out=True)
 
-    assert calls == ["kill", "rm", "inspect"]
+    assert calls == ["kill", "rm", "container"]
 
 
-def test_timeout_cleanup_inspects_after_remove_failure(
+def test_timeout_cleanup_queries_after_remove_failure(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     runner = _load_runner()
@@ -951,14 +981,14 @@ def test_timeout_cleanup_inspects_after_remove_failure(
 
     def run(argv: list[str], **kwargs: object) -> subprocess.CompletedProcess[bytes]:
         calls.append(argv[1])
-        return subprocess.CompletedProcess(argv, 1 if argv[1] in {"rm", "inspect"} else 0)
+        return subprocess.CompletedProcess(argv, 1 if argv[1] == "rm" else 0, b"", b"")
 
     monkeypatch.setattr(runner.subprocess, "run", run)
 
     with pytest.raises(runner.BenchmarkCleanupError, match="removal command failed"):
         runner._cleanup_container(cidfile, timed_out=True)
 
-    assert calls == ["kill", "rm", "inspect"]
+    assert calls == ["kill", "rm", "container"]
 
 
 def test_timeout_cleanup_fails_closed_when_cidfile_is_missing(tmp_path: Path) -> None:

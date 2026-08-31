@@ -1029,8 +1029,22 @@ def _cleanup_container(cidfile: Path, *, timed_out: bool) -> None:
     if timed_out:
         _docker_control(["docker", "kill", container_id])
     removed = _docker_control(["docker", "rm", "-f", container_id])
-    remaining = _docker_control(["docker", "inspect", container_id])
-    if remaining.returncode == 0:
+    remaining = _docker_control(
+        [
+            "docker",
+            "container",
+            "ls",
+            "-a",
+            "--no-trunc",
+            "--filter",
+            f"id={container_id}",
+            "--format",
+            "{{.ID}}",
+        ]
+    )
+    if remaining.returncode != 0:
+        raise BenchmarkCleanupError("Docker container absence query failed")
+    if remaining.stdout.strip():
         raise BenchmarkCleanupError("Docker container still exists after cleanup")
     if removed.returncode != 0:
         raise BenchmarkCleanupError("Docker container removal command failed")

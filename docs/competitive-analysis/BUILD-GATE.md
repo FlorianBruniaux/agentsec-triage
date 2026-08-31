@@ -155,8 +155,8 @@ The current runner stages the exact commit and fixture into disposable
 snapshots, checks both evidence digests immediately before Docker, uses a
 bounded scratch `tmpfs`, and records the full plan and receipt digests in every
 future run envelope. A timed-out run uses the Docker cidfile to kill and remove
-the daemon-side container, then verifies that `docker inspect` can no longer
-find it.
+the daemon-side container, then requires a successful filtered daemon listing
+with no matching full container ID.
 
 ## Build boundary
 
