@@ -35,11 +35,17 @@ host paths, tokens, credentials, or personal data.
 
 ## Approval boundary
 
-`scripts/run_competitive_benchmark.py validate` prints a SHA-256 approval
-digest over the canonical plan. `execute` refuses a different plan or digest.
-Approval therefore applies to one exact project, fixture, image, command,
-network policy, and resource policy. Changing any field requires another
-review.
+`scripts/run_competitive_benchmark.py validate` prints a SHA-256 plan digest
+over the canonical plan. It never creates an approval receipt. `execute`
+refuses a different plan or digest and requires a separate receipt JSON with
+an explicit `approved` decision, declared approver identity, timezone-aware
+date, `execute` scope, matching digest, and exact approval statement.
+Changing any plan field requires another review and a new receipt.
+
+The receipt is a procedural audit gate. This local runner does not authenticate
+the declared identity cryptographically and does not treat the receipt as an
+identity barrier. It records the review assertion needed before the existing
+container path may continue.
 
 The runner does not install or build a competitor. Container image construction
 is a separate untrusted-code operation and needs its own reviewed command,

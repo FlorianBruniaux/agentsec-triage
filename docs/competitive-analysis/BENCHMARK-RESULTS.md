@@ -11,7 +11,7 @@ performance, or behavior on positive fixtures.
 
 ## Execution boundary
 
-Every run used the exact digest-approved plan recorded in `BUILD-GATE.md`:
+Every run used the exact digest-bound plan recorded in `BUILD-GATE.md`:
 
 - immutable local image ID and `--pull=never`;
 - network mode `none`;
@@ -95,9 +95,10 @@ The clean-control evidence supports four product decisions:
 
 Eight exact, bounded plans now cover the first teardown candidates:
 SkillSpector, AgentShield, and agent-bom. The fixture-level applicability
-decisions and SHA-256 digests are recorded in `BENCHMARK-DESIGN.md`. The plans
-were validated only. Docker and every competitor CLI remain uninvoked for this
-gate, so all planned observations remain `not_tested`.
+decisions and SHA-256 plan digests are recorded in `BENCHMARK-DESIGN.md`. The
+plans were validated only and have no approval receipts. Docker and every
+competitor CLI remain uninvoked for this gate, so all planned observations
+remain `not_tested`.
 
 SkillSpector and AgentShield have no plan for `lifecycle-near-miss` or
 `unsupported-binary-lock`. Those package-oriented inputs are
@@ -107,7 +108,8 @@ a lifecycle near miss, an unsupported binary lockfile, and a confinement link.
 
 The remaining gate must:
 
-1. obtain explicit owner approval for each exact plan and matching digest;
+1. record a separate procedural approval receipt for each exact plan and
+   matching digest; the runner does not authenticate the declared identity;
 2. run the approved case three times with the existing isolation policy;
 3. compare normalized evidence without converting a missing finding into a
    detection claim;

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate and run an approved competitor benchmark inside a locked container."""
+"""Validate and run a receipt-gated competitor benchmark inside a locked container."""
 
 from __future__ import annotations
 
@@ -47,6 +47,17 @@ PLAN_FIELDS = frozenset(
     }
 )
 NETWORK_FIELDS = frozenset({"mode", "allowlist", "approved"})
+APPROVAL_RECEIPT_FIELDS = frozenset(
+    {
+        "schema_version",
+        "decision",
+        "approver",
+        "approved_at",
+        "scope",
+        "plan_digest",
+        "statement",
+    }
+)
 REGISTRY_IMAGE_DIGEST = re.compile(
     r"^[A-Za-z0-9][A-Za-z0-9._/-]*@sha256:[0-9a-f]{64}$"
 )
@@ -64,6 +75,7 @@ MAX_OUTPUT_LIMIT_BYTES = 10_000_000
 RESOURCE_NUMBER_FIELDS = frozenset(
     {"timeout_seconds", "memory_mb", "pids_limit", "cpus", "output_limit_bytes"}
 )
+SHA256_HEX = re.compile(r"^[0-9a-f]{64}$")
 
 
 def _load_json(path: Path, label: str) -> dict[str, object]:
@@ -266,6 +278,49 @@ def approval_digest(plan: dict[str, object]) -> str:
         normalize_plan(plan), sort_keys=True, separators=(",", ":"), ensure_ascii=True
     )
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+
+
+def approval_statement(digest: str) -> str:
+    return f"I approve execution of the exact benchmark plan with SHA-256 digest {digest}."
+
+
+def validate_approval_receipt(receipt: dict[str, object], digest: str) -> list[str]:
+    """Validate a procedural audit receipt without authenticating its author."""
+    errors: list[str] = []
+    for field in sorted(set(receipt) - APPROVAL_RECEIPT_FIELDS):
+        errors.append(f"{field}: unknown field")
+    for field in sorted(APPROVAL_RECEIPT_FIELDS - set(receipt)):
+        errors.append(f"{field}: missing required field")
+    if errors:
+        return errors
+
+    if receipt.get("schema_version") != "1":
+        errors.append("schema_version: expected '1'")
+    if receipt.get("decision") != "approved":
+        errors.append("decision: expected 'approved'")
+    if not isinstance(receipt.get("approver"), str) or not receipt["approver"]:
+        errors.append("approver: expected a non-empty declared identity")
+    approved_at = receipt.get("approved_at")
+    if not isinstance(approved_at, str):
+        errors.append("approved_at: expected an ISO 8601 timestamp with timezone")
+    else:
+        try:
+            parsed = datetime.fromisoformat(approved_at.replace("Z", "+00:00"))
+        except ValueError:
+            errors.append("approved_at: expected an ISO 8601 timestamp with timezone")
+        else:
+            if parsed.tzinfo is None or parsed.utcoffset() is None:
+                errors.append("approved_at: expected an ISO 8601 timestamp with timezone")
+    if receipt.get("scope") != "execute":
+        errors.append("scope: expected 'execute'")
+    plan_digest = receipt.get("plan_digest")
+    if not isinstance(plan_digest, str) or not SHA256_HEX.fullmatch(plan_digest):
+        errors.append("plan_digest: expected 64 lowercase hexadecimal characters")
+    elif plan_digest != digest:
+        errors.append("plan_digest: does not match exact plan")
+    if receipt.get("statement") != approval_statement(digest):
+        errors.append("statement: does not bind the exact digest")
+    return errors
 
 
 def build_docker_argv(plan: dict[str, object], scratch_path: Path) -> list[str]:
@@ -535,6 +590,16 @@ def _execute_command(options: argparse.Namespace) -> int:
     if options.approval_digest != digest:
         print("competitive benchmark: approval digest does not match exact plan", file=sys.stderr)
         return 1
+    try:
+        receipt = _load_json(options.approval_receipt, "approval receipt")
+    except ValueError as error:
+        print(error, file=sys.stderr)
+        return 1
+    receipt_errors = validate_approval_receipt(receipt, digest)
+    for receipt_error in receipt_errors:
+        print(f"competitive benchmark: approval receipt: {receipt_error}", file=sys.stderr)
+    if receipt_errors:
+        return 1
 
     output_root = options.output_root.resolve()
     expected_output_root = DEFAULT_OUTPUT_ROOT.resolve()
@@ -652,6 +717,7 @@ def _parser() -> argparse.ArgumentParser:
     execute = commands.add_parser("execute", help="Execute an approved exact plan")
     _add_common_options(execute)
     execute.add_argument("--approval-digest", required=True)
+    execute.add_argument("--approval-receipt", type=Path, required=True)
     execute.add_argument("--output-root", type=Path, default=DEFAULT_OUTPUT_ROOT)
     commands.add_parser("self-test", help="Exercise local runner primitives without a competitor")
     return parser

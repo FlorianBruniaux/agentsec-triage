@@ -83,6 +83,21 @@ def _plan(clone_root: Path, fixture_root: Path) -> dict[str, object]:
     }
 
 
+def _approval_receipt(digest: str) -> dict[str, object]:
+    return {
+        "schema_version": "1",
+        "decision": "approved",
+        "approver": "benchmark-owner",
+        "approved_at": "2026-08-31T12:00:00+00:00",
+        "scope": "execute",
+        "plan_digest": digest,
+        "statement": (
+            "I approve execution of the exact benchmark plan with SHA-256 digest "
+            f"{digest}."
+        ),
+    }
+
+
 def _write_inputs(tmp_path: Path) -> tuple[Path, Path, Path, Path, Path]:
     clone_root = tmp_path / "clones"
     source = clone_root / "example-tool"
@@ -135,6 +150,7 @@ def test_valid_plan_returns_approval_digest_and_docker_preview(tmp_path: Path) -
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
     assert len(payload["approval_digest"]) == 64
+    assert "approval_receipt" not in payload
     command = payload["docker_argv"]
     assert command[:2] == ["docker", "run"]
     assert "--network" in command
@@ -249,6 +265,8 @@ def test_execute_rejects_unapproved_output_root_before_docker_lookup(
     plan_path, project_index, fixture_manifest, clone_root, fixture_root = _write_inputs(tmp_path)
     runner = _load_runner()
     digest = runner.approval_digest(json.loads(plan_path.read_text(encoding="utf-8")))
+    receipt_path = tmp_path / "receipt.json"
+    receipt_path.write_text(json.dumps(_approval_receipt(digest)), encoding="utf-8")
     options = runner._parser().parse_args(
         [
             "execute",
@@ -264,6 +282,8 @@ def test_execute_rejects_unapproved_output_root_before_docker_lookup(
             str(fixture_root),
             "--approval-digest",
             digest,
+            "--approval-receipt",
+            str(receipt_path),
             "--output-root",
             str(tmp_path / "outside-local-boundary"),
         ]
@@ -305,6 +325,240 @@ def test_execute_refuses_a_missing_approval_digest(tmp_path: Path) -> None:
 
     assert result.returncode == 2
     assert "--approval-digest" in result.stderr
+
+
+def test_execute_refuses_without_a_distinct_approval_receipt(tmp_path: Path) -> None:
+    plan_path, project_index, fixture_manifest, clone_root, fixture_root = _write_inputs(tmp_path)
+    runner = _load_runner()
+    digest = runner.approval_digest(json.loads(plan_path.read_text(encoding="utf-8")))
+
+    result = subprocess.run(
+        [
+            sys.executable,
+            str(RUNNER_PATH),
+            "execute",
+            "--plan",
+            str(plan_path),
+            "--project-index",
+            str(project_index),
+            "--fixture-manifest",
+            str(fixture_manifest),
+            "--clone-root",
+            str(clone_root),
+            "--fixture-root",
+            str(fixture_root),
+            "--approval-digest",
+            digest,
+            "--output-root",
+            str(tmp_path / "outside-local-boundary"),
+        ],
+        cwd=PROJECT_ROOT,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 2
+    assert "--approval-receipt" in result.stderr
+
+
+def test_execute_refuses_a_malformed_approval_receipt_before_docker(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    plan_path, project_index, fixture_manifest, clone_root, fixture_root = _write_inputs(tmp_path)
+    runner = _load_runner()
+    digest = runner.approval_digest(json.loads(plan_path.read_text(encoding="utf-8")))
+    receipt_path = tmp_path / "receipt.json"
+    receipt_path.write_text("{", encoding="utf-8")
+    options = runner._parser().parse_args(
+        [
+            "execute",
+            "--plan",
+            str(plan_path),
+            "--project-index",
+            str(project_index),
+            "--fixture-manifest",
+            str(fixture_manifest),
+            "--clone-root",
+            str(clone_root),
+            "--fixture-root",
+            str(fixture_root),
+            "--approval-digest",
+            digest,
+            "--approval-receipt",
+            str(receipt_path),
+            "--output-root",
+            str(tmp_path / "outside-local-boundary"),
+        ]
+    )
+    monkeypatch.setattr(
+        runner.shutil,
+        "which",
+        lambda _: pytest.fail("invalid receipt must not look up Docker"),
+    )
+
+    assert runner._execute_command(options) == 1
+    assert "approval receipt:" in capsys.readouterr().err
+
+
+@pytest.mark.parametrize(
+    ("mutate", "expected_error"),
+    [
+        (
+            lambda receipt: receipt.__setitem__("decision", "declined"),
+            "decision: expected 'approved'",
+        ),
+        (
+            lambda receipt: receipt.__setitem__("approver", ""),
+            "approver: expected a non-empty declared identity",
+        ),
+        (
+            lambda receipt: receipt.__setitem__("plan_digest", "b" * 64),
+            "plan_digest: does not match exact plan",
+        ),
+        (
+            lambda receipt: receipt.__setitem__("approved_at", "not-a-date"),
+            "approved_at: expected an ISO 8601 timestamp with timezone",
+        ),
+        (
+            lambda receipt: receipt.__setitem__("scope", "validate"),
+            "scope: expected 'execute'",
+        ),
+        (
+            lambda receipt: receipt.__setitem__("statement", "approved"),
+            "statement: does not bind the exact digest",
+        ),
+    ],
+)
+def test_execute_refuses_an_invalid_approval_receipt_before_docker(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+    mutate: object,
+    expected_error: str,
+) -> None:
+    plan_path, project_index, fixture_manifest, clone_root, fixture_root = _write_inputs(tmp_path)
+    runner = _load_runner()
+    plan = json.loads(plan_path.read_text(encoding="utf-8"))
+    digest = runner.approval_digest(plan)
+    receipt = _approval_receipt(digest)
+    assert callable(mutate)
+    mutate(receipt)
+    receipt_path = tmp_path / "receipt.json"
+    receipt_path.write_text(json.dumps(receipt), encoding="utf-8")
+    options = runner._parser().parse_args(
+        [
+            "execute",
+            "--plan",
+            str(plan_path),
+            "--project-index",
+            str(project_index),
+            "--fixture-manifest",
+            str(fixture_manifest),
+            "--clone-root",
+            str(clone_root),
+            "--fixture-root",
+            str(fixture_root),
+            "--approval-digest",
+            digest,
+            "--approval-receipt",
+            str(receipt_path),
+            "--output-root",
+            str(tmp_path / "outside-local-boundary"),
+        ]
+    )
+    monkeypatch.setattr(
+        runner.shutil,
+        "which",
+        lambda _: pytest.fail("invalid receipt must not look up Docker"),
+    )
+
+    assert runner._execute_command(options) == 1
+    assert expected_error in capsys.readouterr().err
+
+
+def test_execute_refuses_a_receipt_when_the_plan_changes_before_docker(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    plan_path, project_index, fixture_manifest, clone_root, fixture_root = _write_inputs(tmp_path)
+    runner = _load_runner()
+    original = json.loads(plan_path.read_text(encoding="utf-8"))
+    receipt_path = tmp_path / "receipt.json"
+    receipt_path.write_text(
+        json.dumps(_approval_receipt(runner.approval_digest(original))), encoding="utf-8"
+    )
+    changed = dict(original)
+    changed["command"] = ["/tool/bin/scanner", "scan", "/fixture", "--changed"]
+    plan_path.write_text(json.dumps(changed), encoding="utf-8")
+    changed_digest = runner.approval_digest(changed)
+    options = runner._parser().parse_args(
+        [
+            "execute",
+            "--plan",
+            str(plan_path),
+            "--project-index",
+            str(project_index),
+            "--fixture-manifest",
+            str(fixture_manifest),
+            "--clone-root",
+            str(clone_root),
+            "--fixture-root",
+            str(fixture_root),
+            "--approval-digest",
+            changed_digest,
+            "--approval-receipt",
+            str(receipt_path),
+            "--output-root",
+            str(tmp_path / "outside-local-boundary"),
+        ]
+    )
+    monkeypatch.setattr(
+        runner.shutil,
+        "which",
+        lambda _: pytest.fail("changed plan must not look up Docker"),
+    )
+
+    assert runner._execute_command(options) == 1
+    assert "plan_digest: does not match exact plan" in capsys.readouterr().err
+
+
+def test_valid_approval_receipt_reaches_the_existing_output_boundary(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    plan_path, project_index, fixture_manifest, clone_root, fixture_root = _write_inputs(tmp_path)
+    runner = _load_runner()
+    digest = runner.approval_digest(json.loads(plan_path.read_text(encoding="utf-8")))
+    receipt_path = tmp_path / "receipt.json"
+    receipt_path.write_text(json.dumps(_approval_receipt(digest)), encoding="utf-8")
+    options = runner._parser().parse_args(
+        [
+            "execute",
+            "--plan",
+            str(plan_path),
+            "--project-index",
+            str(project_index),
+            "--fixture-manifest",
+            str(fixture_manifest),
+            "--clone-root",
+            str(clone_root),
+            "--fixture-root",
+            str(fixture_root),
+            "--approval-digest",
+            digest,
+            "--approval-receipt",
+            str(receipt_path),
+            "--output-root",
+            str(tmp_path / "outside-local-boundary"),
+        ]
+    )
+    monkeypatch.setattr(
+        runner.shutil,
+        "which",
+        lambda _: pytest.fail("output boundary must reject before Docker"),
+    )
+
+    assert runner._execute_command(options) == 1
+    assert "output root must be the ignored local directory" in capsys.readouterr().err
 
 
 def test_redaction_removes_absolute_paths_and_secret_shapes(tmp_path: Path) -> None:

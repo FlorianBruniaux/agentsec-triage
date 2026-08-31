@@ -4,7 +4,7 @@ Status: **accepted for the V0.1 alpha sequence**
 
 Decision date: 2026-08-31
 
-These decisions use the 16 pinned static profiles, seven digest-approved
+These decisions use the 16 pinned static profiles, seven digest-bound
 `clean-control` runs, and the 12-fixture AgentSec baseline. They do not infer
 detection parity from one negative fixture.
 
@@ -103,5 +103,5 @@ must not imply host protection, antivirus coverage, or a clean certification.
 
 The clean-control report supports output and completion decisions. It does not
 rank detection quality. Positive competitor fixtures remain behind a separate
-digest approval gate, and the first three teardown candidates remain
+procedural receipt gate, and the first three teardown candidates remain
 SkillSpector, AgentShield, and agent-bom until that evidence exists.

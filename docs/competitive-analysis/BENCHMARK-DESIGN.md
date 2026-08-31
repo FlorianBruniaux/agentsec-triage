@@ -70,9 +70,21 @@ Claiming an allowlist while using a normal Docker bridge would be security
 theater.
 
 Validation prints the canonical plan digest and exact Docker argument vector.
-Execution requires the same digest. Any field change invalidates approval.
+It never creates an approval receipt. Execution requires the same digest and a
+separate receipt with decision `approved`, a declared approver identity, a
+timezone-aware date, scope `execute`, the matching digest, and this exact
+statement:
 
-The approval digest canonicalizes only equivalent integral resource values, such
+```text
+I approve execution of the exact benchmark plan with SHA-256 digest <digest>.
+```
+
+The receipt is a procedural audit gate, not an identity barrier. The local
+runner cannot authenticate the declared identity cryptographically. It only
+checks that a distinct review assertion is bound to the exact plan. Any field
+change invalidates that binding.
+
+The plan digest canonicalizes only equivalent integral resource values, such
 as `1` and `1.0` CPUs. It preserves all paths, image IDs, commands, mounts, and
 network fields. The runner rejects an output root outside its ignored local
 boundary before it looks up Docker, so a malformed output destination cannot
@@ -127,7 +139,7 @@ Three limitations remain explicit:
 For each approved image:
 
 1. review image-construction commands and resulting digest;
-2. review every generated plan and approval digest;
+2. review every generated plan, its digest, and its separate approval receipt;
 3. run `clean-control` first;
 4. run the applicable near-miss control;
 5. stop if the tool writes outside scratch, tries to execute fixture content,
@@ -149,9 +161,10 @@ local plan directory. They use the image IDs in `BUILD-GATE.md`, read-only
 source and fixture mounts, network mode `none`, 30 seconds, 512 MB, 64
 processes, one CPU, and a 1,000,000-byte limit per stream. The SHA-256 values
 bind each complete local plan, including its private absolute paths. They do
-not authorize execution and are not runtime observations.
+not authorize execution, do not have approval receipts, and are not runtime
+observations.
 
-| Project | Fixture | Kind | Applicability | Runtime state | Approval digest |
+| Project | Fixture | Kind | Applicability | Runtime state | Plan digest |
 | --- | --- | --- | --- | --- | --- |
 | NVIDIA SkillSpector | `skill-delayed-instruction` | positive | applicable to its documented skill surface | `not_tested` | `f04329a636edb6fe5322758f9b3c4093cf7ae7c0b72bc575fa3567d15169766d` |
 | NVIDIA SkillSpector | `lifecycle-near-miss` | near miss | `not_applicable`: package lifecycle input is outside the skill-only plan | `not_applicable` | none |
@@ -168,8 +181,9 @@ not authorize execution and are not runtime observations.
 
 `not_applicable` has no exact plan or digest. It is not a clean result.
 `not_tested` records the remaining runtime evidence gap only for planned rows.
-Any run still needs the exact reviewed plan and matching digest supplied to
-`execute` after a separate owner approval.
+Any run still needs the exact reviewed plan, matching digest, and separate
+procedural approval receipt supplied to `execute`. The runner does not verify
+the approver's identity.
 
 ## Local infrastructure self-test
 
@@ -185,5 +199,5 @@ Docker availability or competitor behavior.
 Seven image recipes, their exact source revisions, and their verified local
 image IDs are recorded in `BUILD-GATE.md`. Sigil stopped before build because
 its pinned source has no tracked `Cargo.lock`. Seven images built without
-running a competitor CLI. The exact clean-control plans and approval digests
-form the next safety gate, so runtime execution is not approved.
+running a competitor CLI. The exact clean-control plans and plan digests form
+the next procedural safety gate, so runtime execution is not approved.
