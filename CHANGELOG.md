@@ -269,6 +269,10 @@ while the data-licensing decision remains unresolved.
 
 ### Fixed
 
+- Revalidated an internal symlink alias target before treating it as a covered
+  exclusion. A replaced alias that reuses the same filesystem identity now
+  remains blocking when its textual target changes, and the regression witness
+  no longer depends on platform-specific inode allocation timing.
 - Pruned `.worktrees`, `.claude/worktrees`, and `.serena` as measured
   generated-or-cache subtrees in the default `source` scope. A real pilot with
   54 tool-managed nested repositories exposed the missing classification;

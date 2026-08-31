@@ -696,6 +696,14 @@ def _internal_alias_subtree(
             or not stat.S_ISLNK(final_link_stat.st_mode)
         ):
             return None
+        final_raw_target = os.readlink(link.path)
+        final_after = link.path.lstat()
+        if (
+            final_raw_target != raw_target
+            or _file_identity(final_after) != link.identity
+            or not stat.S_ISLNK(final_after.st_mode)
+        ):
+            return None
         return stat.S_ISDIR(target_stat.st_mode)
     except (OSError, RuntimeError, ValueError):
         return None

@@ -187,7 +187,7 @@ def test_alias_to_source_pruned_tree_remains_blocking(tmp_path: Path) -> None:
     assert ExclusionReason.INTERNAL_SYMLINK_ALIAS not in reasons
 
 
-def test_internal_alias_changed_after_revalidation_remains_blocking(
+def test_internal_alias_target_changed_with_same_identity_remains_blocking(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     target = tmp_path / "real.txt"
@@ -196,24 +196,25 @@ def test_internal_alias_changed_after_revalidation_remains_blocking(
     outside.write_text("external")
     alias = tmp_path / "alias.txt"
     alias.symlink_to(target.name)
-    original_lstat = Path.lstat
-    alias_lstat_calls = 0
+    original_readlink = os.readlink
+    alias_readlink_calls = 0
 
-    def mutate_after_second_alias_lstat(path: Path):
-        nonlocal alias_lstat_calls
-        result = original_lstat(path)
-        if path == alias:
-            alias_lstat_calls += 1
-            if alias_lstat_calls == 2:
-                alias.unlink()
-                alias.symlink_to(outside)
-        return result
+    def changed_target_with_same_identity(
+        path: str | bytes | os.PathLike[str] | os.PathLike[bytes],
+        *args: object,
+        **kwargs: object,
+    ) -> str | bytes:
+        nonlocal alias_readlink_calls
+        if Path(path) == alias:
+            alias_readlink_calls += 1
+            return target.name if alias_readlink_calls == 1 else str(outside)
+        return original_readlink(path, *args, **kwargs)
 
-    monkeypatch.setattr(Path, "lstat", mutate_after_second_alias_lstat)
+    monkeypatch.setattr(os, "readlink", changed_target_with_same_identity)
 
     result = discover(tmp_path, LIMITS, scope=ScanScope.REPOSITORY)
 
-    assert alias_lstat_calls >= 3
+    assert alias_readlink_calls >= 2
     assert any(
         diagnostic.kind is DiagnosticKind.ERROR
         and "1 symlinked repository path" in diagnostic.message
