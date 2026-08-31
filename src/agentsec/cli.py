@@ -13,6 +13,11 @@ from typing import NoReturn
 
 from agentsec import __version__
 from agentsec.batch import BatchInputError, read_root_file, run_batch
+from agentsec.detectors.explain import (
+    build_detector_explanation,
+    render_detector_explanation_human,
+    render_detector_explanation_json,
+)
 from agentsec.detectors.registry import get_detectors
 from agentsec.engine.discovery import DiscoveryLimits
 from agentsec.engine.runner import ProgressCallback, ProgressState, run_scan
@@ -64,6 +69,18 @@ _SCHEMA_CONTRACTS = {
             "elapsed_ms",
             "summary",
             "results",
+        },
+    ),
+    "detector-explain-v1": (
+        "detector-explain-v1.schema.json",
+        "https://agentsec.dev/schemas/detector-explain-v1.schema.json",
+        {
+            "schema_version",
+            "tool_version",
+            "database",
+            "detector",
+            "counters",
+            "intelligence_projection",
         },
     ),
 }
@@ -221,6 +238,12 @@ def build_parser() -> argparse.ArgumentParser:
     detector_commands.add_parser("list", help="list detector IDs")
     explain = detector_commands.add_parser("explain", help="explain one detector")
     explain.add_argument("detector_id")
+    explain.add_argument(
+        "--format",
+        choices=("human", "json"),
+        default="human",
+        help="coverage document format written to stdout (default: human)",
+    )
 
     database = commands.add_parser("db", help="inspect bundled threat data")
     database_commands = database.add_subparsers(dest="database_command", required=True)
@@ -514,23 +537,20 @@ def _detectors(arguments: argparse.Namespace) -> int:
         print(f"agentsec: unknown detector ID: {detector_id}", file=sys.stderr)
         return 2
     detector = matching[0]
-    metadata = detector.metadata
-    print(
-        "\n".join(
-            (
-                detector.id,
-                f"version: {detector.version}",
-                f"description: {metadata.description}",
-                f"supported_inputs: {', '.join(metadata.supported_inputs) or 'none'}",
-                f"campaign_ids: {', '.join(metadata.campaign_ids) or 'none'}",
-                f"technique_ids: {', '.join(metadata.technique_ids) or 'none'}",
-                f"source_references: {', '.join(metadata.source_references) or 'none'}",
-                f"limitations: {'; '.join(metadata.limitations) or 'none'}",
-                f"remediation_url: {metadata.remediation_url or 'none'}",
-                f"not_scanned: {', '.join(metadata.not_scanned) or 'none'}",
-            )
-        )
+    database = _load_database()
+    if database is None:
+        return 2
+    try:
+        payload = build_detector_explanation(detector, database)
+    except ValueError as error:
+        print(f"agentsec: cannot explain detector coverage: {error}", file=sys.stderr)
+        return 2
+    renderer = (
+        render_detector_explanation_json
+        if arguments.format == "json"
+        else render_detector_explanation_human
     )
+    print(renderer(payload), end="")
     return 0
 
 
@@ -609,6 +629,7 @@ def _doctor() -> int:
                 "resource: available",
                 "scan-result-v2: valid",
                 "batch-result-v1: valid",
+                "detector-explain-v1: valid",
             )
         )
     )

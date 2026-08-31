@@ -8,6 +8,13 @@ while the data-licensing decision remains unresolved.
 
 ### Added
 
+- Added deterministic `human` and schema-validated `json` formats to
+  `agentsec detectors explain`. Detector-explain v1 projects canonical detector
+  rules, sources, inputs, applicability, limitations, remediation, and
+  `not_scanned` capabilities together with bundled threat-database coverage.
+  Explicit `active`, `partial`, `documented_only`, and `not_scanned` states keep
+  documented intelligence distinct from executable rules. The schema and its
+  SHA-256 digest are packaged and verified by `agentsec doctor`.
 - Added evidence-backed product decisions that separate five parity
   requirements, three differentiation bets, rejected V0.1 scope, measurable
   proof, and the accepted SARIF, delayed-skill, source-action, explain, and

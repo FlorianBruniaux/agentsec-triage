@@ -16,6 +16,7 @@ DEFAULT_PAIRS = tuple(
         "scan-result-v1.schema.json",
         "scan-result-v2.schema.json",
         "batch-result-v1.schema.json",
+        "detector-explain-v1.schema.json",
     )
 )
 

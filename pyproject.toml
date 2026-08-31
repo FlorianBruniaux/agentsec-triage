@@ -38,6 +38,8 @@ packages = ["src/agentsec"]
 "schemas/scan-result-v2.schema.sha256" = "agentsec/resources/scan-result-v2.schema.sha256"
 "schemas/batch-result-v1.schema.json" = "agentsec/resources/batch-result-v1.schema.json"
 "schemas/batch-result-v1.schema.sha256" = "agentsec/resources/batch-result-v1.schema.sha256"
+"schemas/detector-explain-v1.schema.json" = "agentsec/resources/detector-explain-v1.schema.json"
+"schemas/detector-explain-v1.schema.sha256" = "agentsec/resources/detector-explain-v1.schema.sha256"
 
 [tool.hatch.build.targets.sdist]
 exclude = [

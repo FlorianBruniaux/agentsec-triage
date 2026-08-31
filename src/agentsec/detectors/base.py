@@ -13,6 +13,14 @@ from agentsec.scopes import ScanScope
 
 
 @dataclass(frozen=True, slots=True)
+class DetectorRuleMetadata:
+    """Stable identifiers and threat mappings for one active detector rule."""
+
+    id: str
+    technique_ids: tuple[str, ...]
+
+
+@dataclass(frozen=True, slots=True)
 class DetectorMetadata:
     """Immutable, machine-readable description of one detector's contract."""
 
@@ -24,6 +32,8 @@ class DetectorMetadata:
     limitations: tuple[str, ...]
     remediation_url: str | None
     not_scanned: tuple[str, ...]
+    applicability: str = "input_dependent"
+    rules: tuple[DetectorRuleMetadata, ...] = ()
 
 
 @dataclass(frozen=True, slots=True)

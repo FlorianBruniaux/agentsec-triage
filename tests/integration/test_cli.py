@@ -531,6 +531,66 @@ def test_detectors_explain_is_deterministic_and_exposes_metadata() -> None:
     assert "not_scanned: git.history" in first.stdout
 
 
+def test_detectors_explain_json_is_deterministic_and_matches_public_schema() -> None:
+    first = _run(
+        "detectors", "explain", "shai-hulud-keyv", "--format", "json"
+    )
+    second = _run(
+        "detectors", "explain", "shai-hulud-keyv", "--format", "json"
+    )
+
+    assert first.returncode == 0
+    assert first.stderr == ""
+    assert first.stdout == second.stdout
+    payload = json.loads(first.stdout)
+    schema = json.loads(
+        (PROJECT_ROOT / "schemas" / "detector-explain-v1.schema.json").read_text()
+    )
+    validate(instance=payload, schema=schema)
+
+    assert payload["schema_version"] == "1"
+    assert payload["database"]["version"] == "2.27.0"
+    assert payload["detector"]["id"] == "shai-hulud-keyv"
+    assert payload["detector"]["applicability"] == "at_least_one_discovered_file"
+    assert payload["counters"] == {
+        "active_rules": 7,
+        "active_sources": 4,
+        "limitations": 4,
+        "not_scanned": 1,
+        "supported_inputs": 10,
+    }
+    assert {
+        (item["id"], item["state"])
+        for item in payload["detector"]["rules"]
+    } == {
+        ("campaign-lifecycle-script", "active"),
+        ("campaign-startup-hook", "active"),
+        ("compromised-installed-version", "active"),
+        ("compromised-lockfile-version", "active"),
+        ("known-payload-hash", "active"),
+        ("startup-hook", "active"),
+        ("suspicious-lifecycle-script", "active"),
+    }
+    assert all(
+        item["state"] == "active" for item in payload["detector"]["sources"]
+    )
+    projections = {
+        item["id"]: item for item in payload["intelligence_projection"]
+    }
+    assert projections["cves"] == {
+        "active_count": 0,
+        "documented_count": 114,
+        "documented_only_count": 114,
+        "id": "cves",
+        "state": "documented_only",
+    }
+    assert projections["malicious_skills"]["state"] == "partial"
+    assert projections["malicious_skills"]["documented_only_count"] == 76
+    assert payload["detector"]["not_scanned"] == [
+        {"id": "git.history", "state": "not_scanned"}
+    ]
+
+
 def test_scan_rejects_file_limit_above_safe_reader_cap(tmp_path: Path) -> None:
     completed = _run("scan", str(tmp_path), "--max-file-bytes", "4000001")
 
@@ -720,6 +780,8 @@ def test_doctor_from_wheel_without_dependencies_validates_packaged_schema(tmp_pa
         assert "agentsec/resources/scan-result-v2.schema.sha256" in archive.namelist()
         assert "agentsec/resources/batch-result-v1.schema.json" in archive.namelist()
         assert "agentsec/resources/batch-result-v1.schema.sha256" in archive.namelist()
+        assert "agentsec/resources/detector-explain-v1.schema.json" in archive.namelist()
+        assert "agentsec/resources/detector-explain-v1.schema.sha256" in archive.namelist()
         metadata_name = next(name for name in archive.namelist() if name.endswith("METADATA"))
         metadata = BytesParser().parsebytes(archive.read(metadata_name))
     assert metadata.get_all("License-File", []) == []

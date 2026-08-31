@@ -52,7 +52,16 @@ agentsec db info
 agentsec detectors list
 agentsec detectors explain shai-hulud-keyv
 agentsec detectors explain clawhavoc-skill
+agentsec detectors explain shai-hulud-keyv --format json
 ```
+
+`detectors explain` defaults to human output. Its deterministic JSON form uses
+[`detector-explain-v1`](../schemas/detector-explain-v1.schema.json) and exposes
+the database version, applicability, supported inputs, active rule and source
+IDs, limits, remediation, and `not_scanned` capabilities. The
+`intelligence_projection` rows come from the bundled threat database's
+`authoring_coverage`: `documented_only` is not an active detector rule, and
+`partial` reports both active and documentation-only record counts.
 
 ## Batch triage
 

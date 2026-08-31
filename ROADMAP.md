@@ -21,7 +21,10 @@ Implemented in the current alpha codebase:
 - schema-validated threat database import and deterministic runtime artifact;
 - validated authoring-to-runtime projection counts with explicit ignored reasons;
 - detector-specific HTTPS remediation URLs and packaged digest checks for the
-  historical v1, active scan v2, and batch v1 schemas;
+  historical scan v1, active scan v2, batch v1, and detector-explain v1 schemas;
+- deterministic human and JSON detector coverage explanations with active
+  rules, sources, applicability, supported inputs, database projection states,
+  limitations, remediation, and stable `not_scanned` capability IDs;
 - console-script and `python -m agentsec` entry points;
 - an opt-in redacted local benchmark without published performance claims;
 - a factual license evidence inventory that preserves the publication gate;

@@ -75,6 +75,17 @@ This is not a remotely consumable release: no authorized package, release
 checksum, or provenance artifact exists while the data-license decision is
 open.
 
+Inspect the implemented coverage contract without scanning a repository:
+
+```bash
+agentsec detectors explain shai-hulud-keyv --format json
+```
+
+The machine output follows
+[detector-explain v1](schemas/detector-explain-v1.schema.json). It separates
+active rules and sources, threat records that are only documented or partially
+projected, and stable capabilities that remain `not_scanned`.
+
 ## Documentation
 
 - [Installation](docs/installation.md): source setup, verification, and Windows commands.

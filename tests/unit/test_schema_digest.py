@@ -71,3 +71,4 @@ def test_default_check_validates_all_public_schema_digests() -> None:
     assert "scan-result-v1.schema.json" in result.stdout
     assert "scan-result-v2.schema.json" in result.stdout
     assert "batch-result-v1.schema.json" in result.stdout
+    assert "detector-explain-v1.schema.json" in result.stdout

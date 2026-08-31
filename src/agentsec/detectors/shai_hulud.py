@@ -15,7 +15,7 @@ from agentsec.analyzers.packages import (
 )
 from agentsec.analyzers.safe_io import safe_read_regular_file
 from agentsec.analyzers.startup import StartupHook, inspect_startup_config_content
-from agentsec.detectors.base import DetectorMetadata, ScanContext
+from agentsec.detectors.base import DetectorMetadata, DetectorRuleMetadata, ScanContext
 from agentsec.engine.discovery import DiscoveredFile
 from agentsec.models import (
     Applicability,
@@ -113,6 +113,11 @@ class ShaiHuludDetector:
         ),
         remediation_url=_REMEDIATION_URL,
         not_scanned=("git.history",),
+        applicability="at_least_one_discovered_file",
+        rules=tuple(
+            DetectorRuleMetadata(id=rule_id, technique_ids=technique_ids)
+            for rule_id, technique_ids in sorted(_TECHNIQUES_BY_RULE.items())
+        ),
     )
 
     def applies(self, context: ScanContext) -> bool:

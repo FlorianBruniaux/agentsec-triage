@@ -24,7 +24,7 @@ dependency set, or account is clean.
 | Multiple detector families | Sourced positive and near-miss fixture per family, stable IDs, and explicit limits | One active family; skill expansion in progress |
 | SARIF 2.1.0 | Deterministic output preserving incomplete exit `2`, diagnostics, exclusions, and `not_scanned` | Implemented locally; integration pending |
 | Pinned GitHub Action | Commit-pinned action and dependencies, offline scan, SARIF artifact, fixture test, and no implicit upload | Source action in progress; release pin blocked |
-| Explain and coverage interface | Each detector exposes sources, inputs, rules, applicability, limits, remediation, and unsupported capabilities | Partial through `detectors explain` and scan-result v2 |
+| Explain and coverage interface | Each detector exposes sources, inputs, rules, applicability, limits, remediation, and unsupported capabilities | Implemented through deterministic human and detector-explain v1 JSON output |
 
 ## Differentiation bets
 

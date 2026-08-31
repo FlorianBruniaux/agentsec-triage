@@ -7,7 +7,7 @@ from pathlib import Path
 from urllib.parse import urlsplit
 
 from agentsec.analyzers.safe_io import safe_read_regular_file
-from agentsec.detectors.base import DetectorMetadata, ScanContext
+from agentsec.detectors.base import DetectorMetadata, DetectorRuleMetadata, ScanContext
 from agentsec.models import (
     Applicability,
     Confidence,
@@ -26,6 +26,13 @@ _MARKDOWN_LINK = re.compile(r"\[[^\]]*\]\(\s*<?([^\s)>]+)>?")
 _BACKTICK_PATH = re.compile(r"`([^`\r\n]+\.md)`", re.IGNORECASE)
 _SETUP_NAME_PARTS = ("install", "prerequisite", "requirement", "setup")
 _URL = re.compile(r"https?://[^\s<>()\[\]{}\"']+", re.IGNORECASE)
+_TECHNIQUES_BY_RULE = {
+    "delegated-known-malicious-domain": (
+        "skill.known-malicious-domain",
+        "skill.delegated-setup",
+    ),
+    "known-malicious-skill-domain": ("skill.known-malicious-domain",),
+}
 
 
 class ClawHavocSkillDetector:
@@ -60,6 +67,11 @@ class ClawHavocSkillDetector:
             "skill.remote_payloads",
             "skill.runtime_behavior",
             "skill.unreferenced_companion_files",
+        ),
+        applicability="repository_skill_manifest_present",
+        rules=tuple(
+            DetectorRuleMetadata(id=rule_id, technique_ids=technique_ids)
+            for rule_id, technique_ids in sorted(_TECHNIQUES_BY_RULE.items())
         ),
     )
 
@@ -241,20 +253,14 @@ def _local_setup_references(content: str, skill_path: Path) -> tuple[Path, ...]:
 def _domain_finding(
     *, path: Path, line: int, delegated_by: Path | None
 ) -> Finding:
-    technique_ids: tuple[str, ...]
     if delegated_by is None:
         rule_id = "known-malicious-skill-domain"
         evidence = f"known campaign domain: {_CAMPAIGN_DOMAIN}"
-        technique_ids = ("skill.known-malicious-domain",)
     else:
         rule_id = "delegated-known-malicious-domain"
         evidence = (
             f"known campaign domain: {_CAMPAIGN_DOMAIN} "
             f"(delegated by {delegated_by.as_posix()})"
-        )
-        technique_ids = (
-            "skill.known-malicious-domain",
-            "skill.delegated-setup",
         )
     return Finding(
         detector_id="clawhavoc-skill",
@@ -265,7 +271,7 @@ def _domain_finding(
         line=line,
         evidence=evidence,
         campaign_ids=(_CAMPAIGN_ID,),
-        technique_ids=technique_ids,
+        technique_ids=_TECHNIQUES_BY_RULE[rule_id],
         remediation_url=_REMEDIATION_URL,
     )
 

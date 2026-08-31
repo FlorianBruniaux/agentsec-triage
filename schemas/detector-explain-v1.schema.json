@@ -1,0 +1,133 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agentsec.dev/schemas/detector-explain-v1.schema.json",
+  "title": "AgentSec detector explanation v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "tool_version", "database", "detector", "counters", "intelligence_projection"],
+  "properties": {
+    "schema_version": { "const": "1" },
+    "tool_version": { "type": "string", "minLength": 1 },
+    "database": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["version", "updated"],
+      "properties": {
+        "version": { "type": "string", "minLength": 1 },
+        "updated": { "type": "string", "format": "date" }
+      }
+    },
+    "detector": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "version", "description", "applicability", "supported_inputs", "campaign_ids", "technique_ids", "rules", "sources", "limitations", "remediation_url", "not_scanned"],
+      "properties": {
+        "id": { "$ref": "#/$defs/identifier" },
+        "version": { "type": "string", "minLength": 1 },
+        "description": { "type": "string", "minLength": 1 },
+        "applicability": { "$ref": "#/$defs/identifier" },
+        "supported_inputs": { "$ref": "#/$defs/strings" },
+        "campaign_ids": { "$ref": "#/$defs/identifiers" },
+        "technique_ids": { "$ref": "#/$defs/identifiers" },
+        "rules": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/rule" },
+          "uniqueItems": true
+        },
+        "sources": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/source" },
+          "uniqueItems": true
+        },
+        "limitations": { "$ref": "#/$defs/strings" },
+        "remediation_url": {
+          "oneOf": [
+            { "type": "null" },
+            { "type": "string", "format": "uri", "pattern": "^https://" }
+          ]
+        },
+        "not_scanned": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/notScanned" },
+          "uniqueItems": true
+        }
+      }
+    },
+    "counters": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["active_rules", "active_sources", "limitations", "not_scanned", "supported_inputs"],
+      "properties": {
+        "active_rules": { "$ref": "#/$defs/count" },
+        "active_sources": { "$ref": "#/$defs/count" },
+        "limitations": { "$ref": "#/$defs/count" },
+        "not_scanned": { "$ref": "#/$defs/count" },
+        "supported_inputs": { "$ref": "#/$defs/count" }
+      }
+    },
+    "intelligence_projection": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/projection" },
+      "uniqueItems": true
+    }
+  },
+  "$defs": {
+    "count": { "type": "integer", "minimum": 0 },
+    "identifier": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[a-z0-9][a-z0-9._-]*$"
+    },
+    "identifiers": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/identifier" },
+      "uniqueItems": true
+    },
+    "strings": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true
+    },
+    "rule": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "state", "campaign_ids", "technique_ids"],
+      "properties": {
+        "id": { "$ref": "#/$defs/identifier" },
+        "state": { "const": "active" },
+        "campaign_ids": { "$ref": "#/$defs/identifiers" },
+        "technique_ids": { "$ref": "#/$defs/identifiers" }
+      }
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["reference", "state"],
+      "properties": {
+        "reference": { "type": "string", "format": "uri", "pattern": "^https://" },
+        "state": { "const": "active" }
+      }
+    },
+    "notScanned": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "state"],
+      "properties": {
+        "id": { "$ref": "#/$defs/identifier" },
+        "state": { "const": "not_scanned" }
+      }
+    },
+    "projection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "state", "documented_count", "active_count", "documented_only_count"],
+      "properties": {
+        "id": { "$ref": "#/$defs/identifier" },
+        "state": { "enum": ["active", "partial", "documented_only"] },
+        "documented_count": { "$ref": "#/$defs/count" },
+        "active_count": { "$ref": "#/$defs/count" },
+        "documented_only_count": { "$ref": "#/$defs/count" }
+      }
+    }
+  }
+}
