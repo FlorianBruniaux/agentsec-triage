@@ -1,0 +1,33 @@
+tests/unit/test_schema_digest.py
+  s_0df90997879182::t_bd8988c94b7d5b 65-73
+CHANGELOG.md
+  s_0df90997879182::t_7fa716b40a4d22 23-26
+src/agentsec/cli.py
+  s_0df90997879182::t_5bb9ac04a0fdf7 35-69,580-590,607-608,619-620,625,630-631,638,646-651,656,661,664
+tests/integration/test_cli.py
+  s_0df90997879182::t_b1aa1701e5630e 625-626,632,635-641,646,669-672,695-696,744,760-762,764,767-768,770,786,803,805-806,830
+pyproject.toml
+  s_0df90997879182::t_5bb9ac04a0fdf7 37-40
+scripts/build_scan_schema_digest.py
+  s_0df90997879182::t_02b0ab28646991 10-20,43-44,51-58,60-74,78-79
+schemas/batch-result-v1.schema.sha256
+  s_0df90997879182::t_d0f804631b3e46 1
+schemas/scan-result-v2.schema.sha256
+  s_0df90997879182::t_a4a443b2547bab 1
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "ee5c890d7daf832db0d2c56e7e3e11a113975d08",
+  "prompts": {},
+  "sessions": {
+    "s_0df90997879182": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019fd73a-588d-7f03-ab50-494ca0e95848",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Florian BRUNIAUX <florian@bruniaux.com>"
+    }
+  }
+}
