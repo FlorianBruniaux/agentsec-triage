@@ -220,13 +220,27 @@ def _validate_cross_references(
     events: Sequence[Mapping[str, object]],
 ) -> None:
     source_ids = _require_unique_ids(sources, "source")
-    _require_unique_ids(events, "event")
+    event_ids = _require_unique_ids(events, "event")
     for event in events:
+        event_id = _string(event.get("id"), "event id")
         for source_id in _strings(event.get("source_ids"), "event source_ids"):
             if source_id not in source_ids:
                 raise IntelligenceBuildError(
                     "cross-reference failed: unresolved source id"
                 )
+        affected_event_ids = event.get("affected_event_ids")
+        if affected_event_ids is not None:
+            for affected_event_id in _strings(
+                affected_event_ids, "affected event ids"
+            ):
+                if affected_event_id == event_id:
+                    raise IntelligenceBuildError(
+                        "cross-reference failed: event cannot affect itself"
+                    )
+                if affected_event_id not in event_ids:
+                    raise IntelligenceBuildError(
+                        "cross-reference failed: unresolved affected event id"
+                    )
         status = _string(event.get("status"), "event status")
         confidence = _string(event.get("confidence"), "event confidence")
         if (status == "contested") != (confidence == "contested"):
@@ -438,6 +452,13 @@ def render_timeline_markdown(corpus: IntelligenceCorpus) -> str:
                 f"{_markdown(_string(source.get('title'), 'title'))}]"
                 f"({_string(source.get('url'), 'source URL')}) (`{source_id}`)"
             )
+        affected_event_ids = event.get("affected_event_ids")
+        if affected_event_ids is not None:
+            affected = ", ".join(
+                f"`{value}`"
+                for value in _strings(affected_event_ids, "affected event IDs")
+            )
+            lines.extend(("", f"Affects events: {affected}"))
         related_parts: list[str] = []
         for label, key in (
             ("campaigns", "campaign_ids"),

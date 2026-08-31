@@ -20,8 +20,10 @@ documentation on 2026-08-15. The grant and its scope are recorded in
 license the data paths listed in [`LICENSE-DATA.md`](LICENSE-DATA.md).
 
 The verified evidence, candidate licenses, prose-review scope, and remaining
-owner decisions are tracked in [`docs/LICENSE-INVENTORY.md`](docs/LICENSE-INVENTORY.md).
-That inventory is a decision aid, not permission to publish.
+owner decisions are tracked in [`docs/LICENSE-INVENTORY.md`](docs/LICENSE-INVENTORY.md),
+[`docs/LICENSE-PROSE-REVIEW.md`](docs/LICENSE-PROSE-REVIEW.md), and the concise
+[`docs/LICENSE-OWNER-DECISION-PACKET.md`](docs/LICENSE-OWNER-DECISION-PACKET.md).
+These files are decision aids, not permission to publish.
 
 `pyproject.toml` deliberately retains
 `License decision pending before package release` for the distribution package.
@@ -48,8 +50,9 @@ rights, or share-alike questions.
 
 Before package, archive, GitHub release, or tag distribution:
 
-1. Inventory the imported database's relevant contribution history and identify
-   the owners of code, schema, data selection, descriptions, and later edits.
+1. Complete the field-level review beyond the 28-field scanning-tool subset and
+   identify the owners of code, schema, data selection, descriptions, and later
+   edits.
 2. Confirm what the guide's CC BY-SA 4.0 notice covers. Record any additional
    terms attached to imported or contributed material.
 3. Review attribution, notice, adaptation, database-right, and share-alike

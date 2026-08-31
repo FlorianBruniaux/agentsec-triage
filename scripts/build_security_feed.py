@@ -146,7 +146,7 @@ def _project_event(event: object) -> dict[str, object]:
     item = _mapping(event, "intelligence event")
     coverage = _mapping(item.get("detector_coverage"), "detector coverage")
     date_kind, date = _event_date(item)
-    return {
+    projected = {
         "id": item["id"],
         "event_type": item["event_type"],
         "title": item["title"],
@@ -164,6 +164,9 @@ def _project_event(event: object) -> dict[str, object]:
             "summary": coverage["notes"],
         },
     }
+    if "affected_event_ids" in item:
+        projected["affected_event_ids"] = item["affected_event_ids"]
+    return projected
 
 
 def _project_detectors() -> list[dict[str, object]]:

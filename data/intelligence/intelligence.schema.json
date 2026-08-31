@@ -214,6 +214,78 @@
           ]
         }
       ],
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "event_type": {
+                "const": "correction"
+              }
+            },
+            "required": [
+              "event_type"
+            ]
+          },
+          "then": {
+            "required": [
+              "affected_event_ids",
+              "updated_date"
+            ],
+            "properties": {
+              "status": {
+                "const": "corrected"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "event_type": {
+                "const": "retraction"
+              }
+            },
+            "required": [
+              "event_type"
+            ]
+          },
+          "then": {
+            "required": [
+              "affected_event_ids",
+              "updated_date"
+            ],
+            "properties": {
+              "status": {
+                "const": "retracted"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "event_type": {
+                "not": {
+                  "enum": [
+                    "correction",
+                    "retraction"
+                  ]
+                }
+              }
+            },
+            "required": [
+              "event_type"
+            ]
+          },
+          "then": {
+            "not": {
+              "required": [
+                "affected_event_ids"
+              ]
+            }
+          }
+        }
+      ],
       "properties": {
         "id": {
           "$ref": "#/$defs/stableId"
@@ -268,6 +340,14 @@
           ]
         },
         "source_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/stableId"
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "affected_event_ids": {
           "type": "array",
           "items": {
             "$ref": "#/$defs/stableId"

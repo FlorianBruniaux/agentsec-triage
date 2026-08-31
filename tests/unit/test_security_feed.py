@@ -15,10 +15,13 @@ SCHEMA = PROJECT_ROOT / "schemas" / "security-feed-v1.schema.json"
 def _build(
     output: Path,
     threat_database: Path | None = None,
+    intelligence: Path | None = None,
 ) -> subprocess.CompletedProcess[str]:
     command = [sys.executable, str(BUILDER), "--output", str(output)]
     if threat_database is not None:
         command.extend(["--threat-database", str(threat_database)])
+    if intelligence is not None:
+        command.extend(["--intelligence", str(intelligence)])
     return subprocess.run(
         command,
         cwd=PROJECT_ROOT,
@@ -110,3 +113,42 @@ def test_builder_normalizes_input_line_endings_for_cross_platform_digests(
     assert lf_result.returncode == 0, lf_result.stderr
     assert crlf_result.returncode == 0, crlf_result.stderr
     assert lf_output.read_bytes() == crlf_output.read_bytes()
+
+
+def test_public_feed_preserves_correction_target_references(tmp_path: Path) -> None:
+    intelligence_source = (
+        PROJECT_ROOT / "src" / "agentsec" / "resources" / "security-intelligence.json"
+    )
+    intelligence = json.loads(intelligence_source.read_text(encoding="utf-8"))
+    target_id = intelligence["events"][0]["id"]
+    correction = dict(intelligence["events"][0])
+    correction.update(
+        {
+            "id": "evt-2026-08-example-correction",
+            "event_type": "correction",
+            "title": "Example correction",
+            "summary": "A later source corrected the earlier event.",
+            "status": "corrected",
+            "updated_date": "2026-08-31",
+            "affected_event_ids": [target_id],
+        }
+    )
+    correction.pop("occurred_date", None)
+    correction.pop("disclosed_date", None)
+    intelligence["events"].append(correction)
+    intelligence_path = tmp_path / "intelligence.json"
+    intelligence_path.write_text(
+        json.dumps(intelligence, ensure_ascii=False), encoding="utf-8"
+    )
+    output = tmp_path / "feed.json"
+
+    result = _build(output, intelligence=intelligence_path)
+
+    assert result.returncode == 0, result.stderr
+    feed = json.loads(output.read_text(encoding="utf-8"))
+    projected = next(
+        event
+        for event in feed["intelligence"]["events"]
+        if event["id"] == "evt-2026-08-example-correction"
+    )
+    assert projected["affected_event_ids"] == [target_id]

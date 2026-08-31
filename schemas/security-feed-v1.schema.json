@@ -130,6 +130,7 @@
         "status": { "type": "string", "minLength": 1 },
         "confidence": { "type": "string", "minLength": 1 },
         "source_ids": { "$ref": "#/$defs/strings" },
+        "affected_event_ids": { "$ref": "#/$defs/strings" },
         "related": {
           "type": "object",
           "additionalProperties": false,

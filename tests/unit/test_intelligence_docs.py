@@ -256,3 +256,184 @@ def test_loader_rejects_nonexistent_calendar_date(tmp_path: Path) -> None:
         assert str(exc) == "validation failed: sources document"
     else:
         raise AssertionError("nonexistent calendar date was accepted")
+
+
+def _correction_event(target_id: str) -> dict[str, object]:
+    return {
+        "id": "evt-2026-08-example-correction",
+        "event_type": "correction",
+        "title": "Example event corrected",
+        "summary": "A later primary source corrected one claim in the earlier event.",
+        "ecosystems": ["developer-tools"],
+        "updated_date": "2026-08-31",
+        "status": "corrected",
+        "confidence": "confirmed",
+        "source_ids": ["varonis-cosnitch-2026"],
+        "affected_event_ids": [target_id],
+        "related": {
+            "campaign_ids": [],
+            "cve_ids": [],
+            "technique_ids": [],
+        },
+        "detector_coverage": {
+            "status": "not_applicable",
+            "detector_ids": [],
+            "notes": "The correction changes intelligence, not repository coverage.",
+        },
+    }
+
+
+def _retraction_event(target_id: str) -> dict[str, object]:
+    event = _correction_event(target_id)
+    event["id"] = "evt-2026-08-example-retraction"
+    event["event_type"] = "retraction"
+    event["title"] = "Example event retracted"
+    event["status"] = "retracted"
+    return event
+
+
+def _load_error(
+    tmp_path: Path,
+    sources: dict[str, object],
+    events: dict[str, object],
+) -> str:
+    source_path, event_path = _write_documents(tmp_path, sources, events)
+    try:
+        load_intelligence(
+            source_path,
+            event_path,
+            INTELLIGENCE_ROOT / "intelligence.schema.json",
+        )
+    except IntelligenceBuildError as exc:
+        return str(exc)
+    raise AssertionError("invalid intelligence documents were accepted")
+
+
+def test_loader_accepts_correction_that_preserves_and_references_prior_event(
+    tmp_path: Path,
+) -> None:
+    sources = deepcopy(_load_yaml("sources.yaml"))
+    events = deepcopy(_load_yaml("events.yaml"))
+    event_records = cast(list[dict[str, object]], events["events"])
+    target_id = cast(str, event_records[0]["id"])
+    event_records.append(_correction_event(target_id))
+    source_path, event_path = _write_documents(tmp_path, sources, events)
+
+    corpus = load_intelligence(
+        source_path,
+        event_path,
+        INTELLIGENCE_ROOT / "intelligence.schema.json",
+    )
+
+    timeline = render_timeline_markdown(corpus)
+    assert f"Affects events: `{target_id}`" in timeline
+    payload = json.loads(render_json(corpus))
+    correction = next(
+        item
+        for item in cast(list[dict[str, object]], payload["events"])
+        if item["id"] == "evt-2026-08-example-correction"
+    )
+    assert correction["affected_event_ids"] == [target_id]
+    assert any(
+        item["id"] == target_id
+        for item in cast(list[dict[str, object]], payload["events"])
+    )
+
+
+def test_loader_rejects_correction_without_affected_event_ids(tmp_path: Path) -> None:
+    sources = deepcopy(_load_yaml("sources.yaml"))
+    events = deepcopy(_load_yaml("events.yaml"))
+    event_records = cast(list[dict[str, object]], events["events"])
+    correction = _correction_event(cast(str, event_records[0]["id"]))
+    correction.pop("affected_event_ids")
+    event_records.append(correction)
+
+    assert _load_error(tmp_path, sources, events) == (
+        "validation failed: events document"
+    )
+
+
+def test_loader_rejects_unresolved_correction_target(tmp_path: Path) -> None:
+    sources = deepcopy(_load_yaml("sources.yaml"))
+    events = deepcopy(_load_yaml("events.yaml"))
+    event_records = cast(list[dict[str, object]], events["events"])
+    event_records.append(_correction_event("evt-missing"))
+
+    assert _load_error(tmp_path, sources, events) == (
+        "cross-reference failed: unresolved affected event id"
+    )
+
+
+def test_loader_rejects_self_referencing_correction(tmp_path: Path) -> None:
+    sources = deepcopy(_load_yaml("sources.yaml"))
+    events = deepcopy(_load_yaml("events.yaml"))
+    event_records = cast(list[dict[str, object]], events["events"])
+    event_records.append(_correction_event("evt-2026-08-example-correction"))
+
+    assert _load_error(tmp_path, sources, events) == (
+        "cross-reference failed: event cannot affect itself"
+    )
+
+
+def test_loader_rejects_correction_with_non_correction_status(tmp_path: Path) -> None:
+    sources = deepcopy(_load_yaml("sources.yaml"))
+    events = deepcopy(_load_yaml("events.yaml"))
+    event_records = cast(list[dict[str, object]], events["events"])
+    correction = _correction_event(cast(str, event_records[0]["id"]))
+    correction["status"] = "confirmed"
+    event_records.append(correction)
+
+    assert _load_error(tmp_path, sources, events) == (
+        "validation failed: events document"
+    )
+
+
+def test_loader_requires_correction_update_date(tmp_path: Path) -> None:
+    sources = deepcopy(_load_yaml("sources.yaml"))
+    events = deepcopy(_load_yaml("events.yaml"))
+    event_records = cast(list[dict[str, object]], events["events"])
+    correction = _correction_event(cast(str, event_records[0]["id"]))
+    correction.pop("updated_date")
+    correction["disclosed_date"] = "2026-08-31"
+    event_records.append(correction)
+
+    assert _load_error(tmp_path, sources, events) == (
+        "validation failed: events document"
+    )
+
+
+def test_loader_rejects_retraction_without_affected_event_ids(tmp_path: Path) -> None:
+    sources = deepcopy(_load_yaml("sources.yaml"))
+    events = deepcopy(_load_yaml("events.yaml"))
+    event_records = cast(list[dict[str, object]], events["events"])
+    retraction = _retraction_event(cast(str, event_records[0]["id"]))
+    retraction.pop("affected_event_ids")
+    event_records.append(retraction)
+
+    assert _load_error(tmp_path, sources, events) == (
+        "validation failed: events document"
+    )
+
+
+def test_loader_rejects_retraction_with_non_retracted_status(tmp_path: Path) -> None:
+    sources = deepcopy(_load_yaml("sources.yaml"))
+    events = deepcopy(_load_yaml("events.yaml"))
+    event_records = cast(list[dict[str, object]], events["events"])
+    retraction = _retraction_event(cast(str, event_records[0]["id"]))
+    retraction["status"] = "corrected"
+    event_records.append(retraction)
+
+    assert _load_error(tmp_path, sources, events) == (
+        "validation failed: events document"
+    )
+
+
+def test_loader_rejects_affected_event_ids_on_ordinary_event(tmp_path: Path) -> None:
+    sources = deepcopy(_load_yaml("sources.yaml"))
+    events = deepcopy(_load_yaml("events.yaml"))
+    event_records = cast(list[dict[str, object]], events["events"])
+    event_records[0]["affected_event_ids"] = [event_records[1]["id"]]
+
+    assert _load_error(tmp_path, sources, events) == (
+        "validation failed: events document"
+    )

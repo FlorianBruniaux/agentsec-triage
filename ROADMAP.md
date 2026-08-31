@@ -22,6 +22,8 @@ Implemented in the current alpha codebase:
 - console-script and `python -m agentsec` entry points;
 - an opt-in redacted local benchmark without published performance claims;
 - a factual license evidence inventory that preserves the publication gate;
+- a schema-enforced correction and retraction ledger that preserves earlier
+  events and publishes explicit affected-event references;
 - a public source repository with a separate unresolved gated-data license;
 - `shai-hulud-keyv` detector for supported npm, pnpm, Yarn, and text Bun
   lockfiles, installed package metadata, payload hashes, and repository startup
@@ -63,11 +65,14 @@ The remaining release and product work is tracked with acceptance criteria:
 
 ## P0: Make the alpha releasable
 
-- Complete the 28-field third-party prose review recorded in
-  `docs/LICENSE-INVENTORY.md`.
-- Record the owner's explicit code-license and data-license decisions.
-- Resolve the code and threat-data review in `LICENSE-DECISION.md`.
-- Select compatible code and data licenses with SPDX metadata and attribution.
+- Resolve the 28 `UNKNOWN` classifications in the reviewed scanning-tool subset
+  and classify the 402 current prose keys outside that subset.
+- Record the owner's explicit data-license, third-party-content, attribution,
+  packaging, and release decisions.
+- Resolve the threat-data review in `LICENSE-DECISION.md`; the MIT code-license
+  decision is already recorded.
+- Select the final data license and combined-package SPDX metadata with exact
+  path scope and attribution.
 - Keep the fully verified alpha history on local `main` before any release tag.
 - Fix failures found outside the local macOS environment.
 - Create the annotated `v0.1.0-alpha` tag only after every release gate passes.
@@ -82,7 +87,6 @@ The remaining release and product work is tracked with acceptance criteria:
 - Generate a versioned JSON artifact for the guide and landing.
 - Backfill historical records from the guide threat database one reviewed record
   at a time; never synthesize individual events from aggregate counts.
-- Define a correction and retraction policy with preserved history.
 
 ## P1: Detector expansion
 

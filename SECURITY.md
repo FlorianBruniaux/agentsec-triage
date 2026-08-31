@@ -79,6 +79,21 @@ Do not submit raw stolen data, credentials, victim identifiers, or a source that
 cannot legally be redistributed. Corrections require traceable evidence and a
 regression fixture when they affect detector behavior.
 
+Accepted corrections and retractions preserve the earlier intelligence event.
+Do not rewrite or delete the original event to make the timeline look current.
+Add a new `correction` or `retraction` event with:
+
+- an `updated_date` recording when AgentSec accepted the change;
+- `affected_event_ids` naming every earlier event affected;
+- `status: corrected` for a correction or `status: retracted` for a retraction;
+- at least one reviewed source that supports the change;
+- an explicit detector-coverage statement and a regression fixture when runtime
+  behavior changes.
+
+The intelligence builder rejects missing, unresolved, and self-referencing
+event targets. The generated timeline and public feed retain the relationship
+between the later change and every earlier event.
+
 ## Private disclosure
 
 Until this repository documents a verified private reporting channel, do not
@@ -93,4 +108,3 @@ Once a private channel is established, send the affected version, impact,
 reproduction steps, safe proof of concept, suggested mitigation, and a contact
 for follow-up. Encrypt sensitive attachments using a key confirmed through that
 channel. No response-time promise is made for this alpha.
-

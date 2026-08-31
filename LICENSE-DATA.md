@@ -56,8 +56,9 @@ GitHub release.
 Before granting CC BY-SA 4.0 for the gated data or publishing package and
 source-archive artifacts:
 
-1. Classify the 28 imported `notes:` and `description:` fields recorded in
-   [the license evidence inventory](docs/LICENSE-INVENTORY.md).
+1. Resolve the 28 `UNKNOWN` entries in the reviewed 28-field scanning-tool
+   subset and classify the 402 current prose keys outside that subset, as
+   recorded in [the prose review](docs/LICENSE-PROSE-REVIEW.md).
 2. Confirm ownership or permission for every protected contribution.
 3. Rewrite or remove third-party expression that cannot be redistributed.
 4. Record the required attribution and adaptation notices.

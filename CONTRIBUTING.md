@@ -93,8 +93,11 @@ record community context, but it is not an independent authority for an IOC.
 
 Contested events use both `status: contested` and `confidence: contested`.
 Corrections and retractions add explicit events and preserve the earlier record;
-do not silently rewrite the history. The timeline describes “events tracked by
-AgentSec” and must not claim completeness.
+do not silently rewrite the history. Each uses `updated_date` and a non-empty
+`affected_event_ids` list. A correction uses `status: corrected`; a retraction
+uses `status: retracted`. The builder rejects missing, unresolved, and
+self-referencing targets. The timeline describes “events tracked by AgentSec”
+and must not claim completeness.
 
 After editing either intelligence YAML file, validate and regenerate all public
 views:

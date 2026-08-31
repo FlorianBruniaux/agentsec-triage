@@ -40,6 +40,19 @@ while the data-licensing decision remains unresolved.
   compromise. Added positive, near-miss, reference-boundary, and diagnostic
   regression tests plus explicit registry, remote-payload, runtime, and
   unreferenced-file coverage limits.
+- Added a schema-enforced intelligence correction and retraction workflow.
+  Later records must use `updated_date`, reference preserved earlier records
+  through `affected_event_ids`, and carry `corrected` or `retracted` status as
+  appropriate. Validation rejects missing, unresolved, self-referencing, and
+  misplaced targets. Generated timelines, packaged intelligence JSON, and the
+  public feed retain the relationship.
+
+- Added a local-evidence review for the 28 imported scanning-tool notes and a
+  concise owner decision packet. The review corrects the earlier count: the
+  imported database has 419 recursive `notes:` or `description:` keys and the
+  current database has 430. Provenance for the reviewed subset is `VERIFIED`,
+  all 28 classifications are `UNKNOWN`, 402 current prose keys remain outside
+  the field-level review, and the gated-data publication block remains active.
 
 - Added explicit `source`, `dependencies`, and `repository` scan scopes. The
   default `source` scope now reports measured exclusions for dependency,

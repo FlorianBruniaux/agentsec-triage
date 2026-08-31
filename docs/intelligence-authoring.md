@@ -68,6 +68,48 @@ Use the actual occurrence, disclosure, or update date. Do not estimate an
 unknown date. A contested fiche must use both `status: contested` and
 `confidence: contested`.
 
+## Correct or retract a fiche
+
+Do not edit or delete the earlier event. Add a new event that points back to it.
+The authoring schema requires `updated_date`, a non-empty
+`affected_event_ids` list, and the matching terminal status.
+
+```yaml
+  - id: evt-2026-08-example-correction
+    event_type: correction
+    title: Example campaign scope corrected
+    summary: >-
+      A later primary source narrowed one claim in the earlier event. The
+      original record remains in the ledger for provenance.
+    ecosystems: [npm, developer-tools]
+    updated_date: "2026-08-31"
+    status: corrected
+    confidence: confirmed
+    source_ids: [vendor-correction-2026]
+    affected_event_ids: [evt-2026-08-example-campaign]
+    related:
+      campaign_ids: [example-campaign-2026-08]
+      cve_ids: []
+      technique_ids: [npm.compromised-version]
+    detector_coverage:
+      status: not_detected
+      detector_ids: []
+      notes: >-
+        The correction changes the intelligence scope. No repository detector
+        covers the event.
+```
+
+Use `event_type: retraction` with `status: retracted` when the supported claim
+is withdrawn rather than narrowed or corrected. The builder rejects a missing
+target, an unknown target, a self-reference, or `affected_event_ids` on an
+ordinary event. Generated Markdown, packaged JSON, and the public feed preserve
+the target relationship.
+
+If the change affects an IOC or detector result, update `data/threat-db.yaml`
+and add positive or negative regression fixtures in the same change. Retain the
+correction or retraction event even when the runtime projection no longer
+contains the earlier IOC.
+
 ## Regenerate and synchronize
 
 Update the top-level `updated` field in each edited authoring document, then run:

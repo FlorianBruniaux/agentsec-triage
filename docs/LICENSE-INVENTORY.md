@@ -3,8 +3,8 @@
 ## Status and scope
 
 This document is a factual decision aid, not a legal conclusion or a data
-license grant. It records evidence available in the local repositories on
-2026-08-11 and the owner's code-license decision from 2026-08-15. The source
+license grant. It records evidence available in the local repositories through
+2026-08-31 and the owner's code-license decision from 2026-08-15. The source
 repository became publicly visible on 2026-08-30. That visibility is not a data
 license grant. Tagging, release archives, and PyPI publication remain blocked
 by [`LICENSE-DECISION.md`](../LICENSE-DECISION.md).
@@ -66,8 +66,20 @@ The database cites public advisories, incident reports, vendor research, and
 community material. Facts and indicators can have different legal treatment
 from original prose, selection, arrangement, and database rights.
 
-The 2026-08-11 source contains 28 `notes:` or `description:` fields. Each field
-must be reviewed against its cited source and classified as one of:
+The earlier inventory count of 28 was incomplete. It matches the
+`scanning_tools[].notes` subset, not the complete database. A recursive count
+finds 419 `notes:` or `description:` keys in the imported 2.26.0 snapshot and
+430 in the current 2.27.0 authoring database.
+
+The 28-field subset now has a field path, value digest, source locator, local
+Git origin, reviewer, review date, status, and required action in
+[`LICENSE-PROSE-REVIEW.md`](LICENSE-PROSE-REVIEW.md). Local provenance is
+`VERIFIED` for all 28, but all 28 classifications remain `UNKNOWN`; 402 current
+prose keys are outside that field-level review. The review also found that the
+Aguara note contains a stale observatory claim.
+
+Every prose field must be reviewed against its cited source and classified as
+one of:
 
 1. independently written factual summary;
 2. short attributed quotation with a recorded justification;
@@ -76,8 +88,9 @@ must be reviewed against its cited source and classified as one of:
 
 The review must record the source URL, reviewed field path, classification,
 reviewer, review date, and required rewrite or attribution. Unresolved fields
-must be rewritten independently from verified facts or removed before the data
-is redistributed.
+must be rewritten independently from verified facts, covered by recorded
+permission, or removed before the data is redistributed. Local Git attribution
+does not prove independent authorship or redistribution rights.
 
 ## Code-license decision
 
@@ -114,6 +127,10 @@ Primary references:
 - <https://creativecommons.org/faq/index.html>
 - <https://creativecommons.org/licenses/by-sa/4.0/legalcode>
 
+The exact choices still required from the owner are separated from this
+evidence inventory in
+[`LICENSE-OWNER-DECISION-PACKET.md`](LICENSE-OWNER-DECISION-PACKET.md).
+
 ## Distribution work required after the decisions
 
 After the reviewed data scope is explicitly approved:
@@ -134,7 +151,7 @@ After the reviewed data scope is explicitly approved:
 | Code license | MIT selected on 2026-08-15 | Resolved |
 | Code copyright notice | Florian Bruniaux, 2026 | Resolved |
 | Data license | CC BY-SA 4.0 is the candidate | Approve after prose review |
-| Third-party prose | 28 fields require classification | Complete and record the review |
+| Third-party prose | Provenance for the recorded 28-field subset is `VERIFIED`; all 28 classifications are `UNKNOWN`; 402 current prose keys remain outside the field-level review | Complete source comparison, independent rewrite, permission, or removal |
 | Attribution packaging | Not implemented | Define notices and artifact inclusion |
 | Package and gated-data release | Blocked | Open only after every item above is complete |
 
