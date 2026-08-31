@@ -10,6 +10,7 @@ import sys
 from collections.abc import Mapping, Sequence
 from pathlib import Path
 from typing import Protocol, cast
+from urllib.parse import quote, unquote
 
 import yaml  # type: ignore[import-untyped]
 
@@ -260,33 +261,62 @@ def _source_locators(document: Mapping[str, object]) -> dict[str, str]:
     return locators
 
 
+def _structural_selector(value: object) -> str:
+    try:
+        encoded = json.dumps(
+            value,
+            ensure_ascii=False,
+            separators=(",", ":"),
+            sort_keys=True,
+        ).encode("utf-8")
+    except (TypeError, ValueError) as exc:
+        raise ProseInventoryBuildError("cannot build structural field locator") from exc
+    return f"sha256={hashlib.sha256(encoded).hexdigest()[:16]}"
+
+
 def _sequence_selector(values: Sequence[object], index: int) -> str:
     item = values[index]
     if not isinstance(item, Mapping):
-        return str(index)
-    for key in ("id", "name", "pattern", "domain", "hash"):
+        return _structural_selector(item)
+    for key in ("id", "name", "pattern", "domain", "hash", "ip", "url", "repo"):
         candidate = item.get(key)
         if not isinstance(candidate, str) or not candidate:
             continue
         if sum(isinstance(other, Mapping) and other.get(key) == candidate for other in values) == 1:
-            return f"{key}={candidate}"
-    return str(index)
+            return f"{key}={quote(candidate, safe='-._~')}"
+    return _structural_selector(item)
 
 
-def _locator_for(record: Mapping[str, object], locators: Mapping[str, str]) -> str | None:
+def _source_locators_for(record: Mapping[str, object], locators: Mapping[str, str]) -> list[str]:
+    found: set[str] = set()
     url = record.get("url")
     if isinstance(url, str) and url.startswith(("https://", "http://")):
-        return url
+        found.add(url)
+    sources = record.get("sources")
+    if sources is not None:
+        for index, source_value in enumerate(_sequence(sources, "sources")):
+            if not isinstance(source_value, str) or not source_value:
+                raise ProseInventoryBuildError(f"sources[{index}] must be a non-empty string")
+            if source_value.startswith(("https://", "http://")):
+                found.add(source_value)
+            else:
+                found.add(locators.get(source_value, source_value))
     source = record.get("source")
-    if not isinstance(source, str) or not source:
-        return None
-    if source.startswith(("https://", "http://")):
-        return source
-    return locators.get(source)
+    if isinstance(source, str) and source:
+        if source.startswith(("https://", "http://")):
+            found.add(source)
+        elif source in locators:
+            found.add(locators[source])
+    return sorted(found)
 
 
 def _review_state(field_path: str, value_sha256: str) -> str:
-    if (field_path, value_sha256) in HISTORICALLY_VERIFIED_PROSE:
+    prefix = "scanning_tools[name="
+    suffix = "].notes"
+    historical_path = field_path
+    if field_path.startswith(prefix) and field_path.endswith(suffix):
+        historical_path = f"{prefix}{unquote(field_path[len(prefix) : -len(suffix)])}{suffix}"
+    if (historical_path, value_sha256) in HISTORICALLY_VERIFIED_PROSE:
         return LOCAL_PROVENANCE_VERIFIED
     return UNREVIEWED
 
@@ -295,11 +325,11 @@ def _collect_entries(
     value: object,
     path: str,
     locators: Mapping[str, str],
-    entries: list[dict[str, str | None]],
+    entries: list[dict[str, object]],
 ) -> None:
     if isinstance(value, Mapping):
         record = _mapping(value, path or "threat database")
-        locator = _locator_for(record, locators)
+        source_locators = [] if not path else _source_locators_for(record, locators)
         for key, child in record.items():
             child_path = f"{path}.{key}" if path else key
             if key in PROSE_KEYS and isinstance(child, str):
@@ -309,10 +339,10 @@ def _collect_entries(
                         "classification": UNKNOWN,
                         "field_path": child_path,
                         "required_action": (
-                            ACTION_WITH_SOURCE if locator is not None else ACTION_WITHOUT_SOURCE
+                            ACTION_WITH_SOURCE if source_locators else ACTION_WITHOUT_SOURCE
                         ),
                         "review_state": _review_state(child_path, value_sha256),
-                        "source_locator": locator,
+                        "source_locators": source_locators,
                         "value_sha256": value_sha256,
                     }
                 )
@@ -327,9 +357,11 @@ def _collect_entries(
 
 
 def build_inventory(document: Mapping[str, object], raw_source: bytes) -> dict[str, object]:
-    entries: list[dict[str, str | None]] = []
+    entries: list[dict[str, object]] = []
     _collect_entries(document, "", _source_locators(document), entries)
     entries.sort(key=lambda entry: cast(str, entry["field_path"]))
+    if len({cast(str, entry["field_path"]) for entry in entries}) != len(entries):
+        raise ProseInventoryBuildError("field path collision")
     return {
         "entries": entries,
         "field_count": len(entries),
@@ -338,15 +370,26 @@ def build_inventory(document: Mapping[str, object], raw_source: bytes) -> dict[s
     }
 
 
+def _render_json(payload: Mapping[str, object]) -> bytes:
+    return (json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True) + "\n").encode(
+        "utf-8"
+    )
+
+
 def _write_json(path: Path, payload: Mapping[str, object]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     temporary = path.with_name(f".{path.name}.tmp")
-    temporary.write_text(
-        json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
-        encoding="utf-8",
-        newline="\n",
-    )
+    temporary.write_bytes(_render_json(payload))
     temporary.replace(path)
+
+
+def _check_json(path: Path, payload: Mapping[str, object]) -> None:
+    try:
+        current = path.read_bytes()
+    except OSError as exc:
+        raise ProseInventoryBuildError("license prose inventory is stale") from exc
+    if current != _render_json(payload):
+        raise ProseInventoryBuildError("license prose inventory is stale")
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -355,6 +398,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("--source", type=Path, default=DEFAULT_SOURCE)
     parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
+    parser.add_argument("--check", action="store_true")
     return parser
 
 
@@ -363,12 +407,17 @@ def main(argv: Sequence[str] | None = None) -> int:
     try:
         document, raw_source = _load_yaml(arguments.source)
         inventory = build_inventory(document, raw_source)
-        _write_json(arguments.output, inventory)
+        if arguments.check:
+            _check_json(arguments.output, inventory)
+        else:
+            _write_json(arguments.output, inventory)
     except ProseInventoryBuildError as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 1
+    action = "checked" if arguments.check else "built"
     print(
-        f"built license prose inventory fields={inventory['field_count']} output={arguments.output}"
+        f"{action} license prose inventory fields={inventory['field_count']} "
+        f"output={arguments.output}"
     )
     return 0
 

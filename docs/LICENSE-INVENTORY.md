@@ -73,14 +73,14 @@ finds 419 `notes:` or `description:` keys in the imported 2.26.0 snapshot and
 
 The generated [`LICENSE-PROSE-INVENTORY.json`](LICENSE-PROSE-INVENTORY.json)
 now records all 430 current prose fields with their field path, full value
-digest, locally resolvable source locator where available, classification,
+digest, locally resolvable source locators where available, classification,
 review state, and required action. The historical 28-field
 `scanning_tools[].notes` subset has review state `LOCAL_PROVENANCE_VERIFIED`;
 the other 402 fields are `UNREVIEWED`. Every classification remains `UNKNOWN`.
-The inventory resolves 65 field-level source locators from a sibling `url` or
-an exact top-level source match and leaves 365 as null rather than infer a
-source. The review also found that the Aguara note contains a stale observatory
-claim.
+The inventory resolves 93 locators across 77 fields from a sibling `url`, a
+sibling `sources` list, or an exact top-level source match, and leaves 353
+fields with an empty locator list rather than infer a source. The review also
+found that the Aguara note contains a stale observatory claim.
 
 Every prose field must be reviewed against its cited source and classified as
 one of:

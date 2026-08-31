@@ -11,14 +11,15 @@ That count was not the complete database count. It corresponds exactly to the
 28 `scanning_tools[].notes` fields. The deterministic
 [`LICENSE-PROSE-INVENTORY.json`](LICENSE-PROSE-INVENTORY.json) artifact records
 all 430 current prose fields in the 2.27.0 authoring database. It contains the
-field path, full SHA-256 value digest, locally resolvable source locator,
+field path, full SHA-256 value digest, locally resolvable source locators,
 classification, review state, and required action for every entry.
 
-The inventory resolves 65 field-level source locators from a sibling `url` or
-an exact match against the database's top-level `sources` list. The other 365
-fields retain a null locator. A resolved local URL links a field to a cited
-record; it does not prove that the prose is independently written, correctly
-attributed, or redistributable.
+The inventory resolves 93 source locators across 77 fields from a sibling
+`url`, a sibling `sources` list, or an exact match against the database's
+top-level `sources` list. Eight fields have more than one locator. The other
+353 fields retain an empty `source_locators` list. A resolved local URL links a
+field to a cited record; it does not prove that the prose is independently
+written, correctly attributed, or redistributable.
 
 Local Git establishes that all 28 strings first appeared in the canonical
 guide under the author identity `Florian BRUNIAUX <florian@bruniaux.com>` and
@@ -93,6 +94,7 @@ output:
 python scripts/build_license_prose_inventory.py
 python scripts/build_license_prose_inventory.py --output /tmp/license-prose-inventory.json
 cmp docs/LICENSE-PROSE-INVENTORY.json /tmp/license-prose-inventory.json
+python scripts/build_license_prose_inventory.py --check
 ```
 
 The imported baseline is available at commit `54c7d45`. Its complete file
