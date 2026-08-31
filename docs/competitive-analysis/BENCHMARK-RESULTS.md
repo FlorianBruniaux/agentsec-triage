@@ -48,17 +48,32 @@ not provide enough evidence for the claim.
 
 ## AgentSec baseline
 
-AgentSec scanned the same clean-control fixture with `--format json --redact`.
-It exited `0` and reported:
+Commit `9a07571` scanned all 12 fixtures three times with `--scope repository
+--format json --redact`. The harness removed only `elapsed_ms` before comparing
+the normalized payloads. All 12 fixtures produced identical normalized output
+and exit status across their three runs.
 
-- `complete: true`;
-- one file seen and inspected by the applicable `shai-hulud-keyv` detector;
-- no finding or diagnostic;
-- explicit detector-level and report-level `not_scanned` capability IDs;
-- the `source` scope and redacted scan root.
+| Fixture | Kind | Complete | Exit | Findings | Observed result |
+| --- | --- | ---: | ---: | ---: | --- |
+| `clean-control` | negative | yes | `0` | 0 | No false positive |
+| `shai-hulud-confirmed` | positive | yes | `1` | 1 | Confirmed compromised version detected |
+| `keyv-contested` | positive | yes | `1` | 1 | Contested version preserved as a finding |
+| `lifecycle-near-miss` | near miss | yes | `0` | 0 | Benign lifecycle script not promoted |
+| `renamed-payload-hash` | positive | yes | `0` | 0 | Expected content-hash evidence not detected |
+| `claude-hook-review` | positive | yes | `1` | 1 | Session-start hook exposed for review |
+| `vscode-startup-review` | positive | yes | `1` | 1 | Folder-open task exposed for review |
+| `skill-delayed-instruction` | positive | yes | `0` | 0 | Delayed skill instruction not detected |
+| `mcp-inline-fetch-exec` | positive | yes | `0` | 0 | MCP command evidence not detected |
+| `ci-untrusted-trigger` | positive | yes | `0` | 0 | Privileged CI trigger not detected |
+| `unsupported-binary-lock` | unsupported | no | `2` | 0 | Unsupported Bun lockfile reported as incomplete |
+| `confinement-symlink` | safety | no | `2` | 0 | Outside-root link reported as incomplete |
 
-This baseline demonstrates output semantics, not wider detection coverage.
-AgentSec currently has one detector family, while several competitors expose
+The ignored machine report preserves each full normalized SHA-256, finding,
+diagnostic, detector ledger, and capability exclusion. It is not published
+because the local report is the raw benchmark boundary.
+
+This baseline demonstrates deterministic output and exposes current detection
+gaps. AgentSec still has one detector family, while several competitors expose
 broader rule or analyzer catalogues.
 
 ## Decisions supported by this gate
@@ -73,13 +88,16 @@ The clean-control evidence supports four product decisions:
 4. Add an analyzer-status ledger comparable to SkillSpector's completed,
    disabled, not-applicable, skipped, and failed states without copying its
    product model.
+5. Prioritize skill, MCP, CI, and content-hash detectors because their positive
+   fixtures currently produce no finding.
 
 ## Next fixture gate
 
-No positive, near-miss, unsupported, or confinement fixture is authorized by
-this report. The next gate must:
+No positive, near-miss, unsupported, or confinement **competitor** fixture is
+authorized by this report. The next gate must:
 
-1. add a deterministic AgentSec baseline for each applicable fixture;
+1. run `scripts/run_agentsec_fixture_matrix.py` to create a three-run AgentSec
+   baseline for each fixture in the ignored local result directory;
 2. define `not_applicable` before generating a competitor plan;
 3. provide an inert `.cc-audit.yaml` for the cc-audit cohort entry;
 4. provide a skill-shaped clean control for Cisco Skill Scanner;

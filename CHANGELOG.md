@@ -14,6 +14,10 @@ while the data-licensing decision remains unresolved.
   without publishing raw third-party output or claiming detection parity. It
   also records the AgentSec baseline and the gated requirements for the next
   positive, near-miss, unsupported, and confinement fixture matrix.
+- Added a local AgentSec fixture-matrix harness that runs each inert fixture
+  three times, removes runtime duration before digest comparison, rejects
+  semantic or exit-code drift, preserves findings and coverage evidence, and
+  confines its machine report to the ignored local benchmark directory.
 
 - Added explicit `source`, `dependencies`, and `repository` scan scopes. The
   default `source` scope now reports measured exclusions for dependency,

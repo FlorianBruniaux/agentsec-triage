@@ -30,6 +30,8 @@ Implemented in the current alpha codebase:
   and Windows, plus guide and landing feed-mirror validation;
 - seven digest-approved, network-disabled competitor `clean-control` runs with
   reviewed aggregate observations and no published raw output;
+- a three-run deterministic AgentSec fixture-baseline harness that keeps its
+  machine report under the ignored local benchmark boundary;
 - source, package, safety, integration, and golden regression tests.
 
 Git history, host state, remote repositories, remote CI, network traffic,
