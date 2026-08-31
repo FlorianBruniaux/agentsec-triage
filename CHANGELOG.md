@@ -234,6 +234,11 @@ while the data-licensing decision remains unresolved.
 
 ### Changed
 
+- Updated the accepted product decision record after integration. It now
+  records two active detector families, completed SARIF, repository-local
+  Action, explain-ledger, playbook, and repeated 12-fixture matrix work without
+  claiming that remote distribution or positive competitor parity is complete.
+
 - Changed the alpha CLI JSON contract from scan-result v1 to v2. Consumers
   must migrate from the former aggregate `coverage` object to `discovery` plus
   per-detector rows, or pin an earlier CLI revision. Updated the README,

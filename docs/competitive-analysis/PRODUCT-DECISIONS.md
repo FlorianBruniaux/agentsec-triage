@@ -21,9 +21,9 @@ dependency set, or account is clean.
 | Requirement | Accepted proof | Current state |
 | --- | --- | --- |
 | Reproducible installation | Pinned artifact, checksum, provenance, and clean install verification | Blocked by data-license gate |
-| Multiple detector families | Sourced positive and near-miss fixture per family, stable IDs, and explicit limits | One active family; skill expansion in progress |
-| SARIF 2.1.0 | Deterministic output preserving incomplete exit `2`, diagnostics, exclusions, and `not_scanned` | Implemented locally; integration pending |
-| Pinned GitHub Action | Commit-pinned action and dependencies, offline scan, SARIF artifact, fixture test, and no implicit upload | Source action in progress; release pin blocked |
+| Multiple detector families | Sourced positive and near-miss fixture per family, stable IDs, and explicit limits | Two active families: npm campaign evidence and delegated skill instructions |
+| SARIF 2.1.0 | Deterministic output preserving incomplete exit `2`, diagnostics, exclusions, and `not_scanned` | Implemented and covered by unit and CLI tests |
+| Pinned GitHub Action | Commit-pinned action and dependencies, offline scan, SARIF artifact, fixture test, and no implicit upload | Repository-local source action implemented; remote release pin blocked |
 | Explain and coverage interface | Each detector exposes sources, inputs, rules, applicability, limits, remediation, and unsupported capabilities | Implemented through deterministic human and detector-explain v1 JSON output |
 
 ## Differentiation bets
@@ -60,7 +60,7 @@ steps without automatic remediation.
 
 Proof:
 
-- every confirmed or contested campaign finding links to a versioned playbook;
+- every active campaign rule maps exactly once to a versioned playbook;
 - the playbook separates evidence collection, containment, remediation, and
   follow-up verification;
 - destructive actions remain manual and explicitly authorized;
@@ -77,13 +77,16 @@ Proof:
 
 ## Accepted delivery sequence
 
-1. Integrate deterministic SARIF while preserving incomplete semantics.
-2. Add delayed-skill instruction coverage because the positive fixture is an
+Completed on 2026-08-31:
+
+1. Integrated deterministic SARIF while preserving incomplete semantics.
+2. Added delayed-skill instruction coverage because the positive fixture was an
    observed AgentSec gap and the intelligence database already carries a
    sourced campaign technique.
-3. Add a source-pinned GitHub Action without publishing a package or release.
-4. Complete the explain and analyzer-status ledger for every active detector.
-5. Add versioned campaign response playbooks, then repeat the fixture matrix.
+3. Added a source-pinned GitHub Action without publishing a package or release.
+4. Completed the explain and analyzer-status ledger for every active detector.
+5. Added versioned campaign response playbooks and repeated the 12-fixture,
+   three-run AgentSec matrix without semantic drift.
 
 MCP and privileged-CI detectors follow the delayed-skill detector. Their
 positive fixtures currently produce no AgentSec finding, but the product keeps
