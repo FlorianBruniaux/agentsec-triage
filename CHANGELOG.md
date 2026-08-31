@@ -8,6 +8,13 @@ while the data-licensing decision remains unresolved.
 
 ### Added
 
+- Published reviewed `clean-control` observations for seven digest-approved
+  competitor images. The report records exit status, completion evidence,
+  diagnostics, scratch writes, captured-output digests, and comparison limits
+  without publishing raw third-party output or claiming detection parity. It
+  also records the AgentSec baseline and the gated requirements for the next
+  positive, near-miss, unsupported, and confinement fixture matrix.
+
 - Added explicit `source`, `dependencies`, and `repository` scan scopes. The
   default `source` scope now reports measured exclusions for dependency,
   generated, binary, VCS, and covered internal-symlink paths. JSON reports use

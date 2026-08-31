@@ -28,6 +28,8 @@ Implemented in the current alpha codebase:
   configuration;
 - a fully executed Python 3.11–3.13 GitHub Actions matrix on Linux, macOS,
   and Windows, plus guide and landing feed-mirror validation;
+- seven digest-approved, network-disabled competitor `clean-control` runs with
+  reviewed aggregate observations and no published raw output;
 - source, package, safety, integration, and golden regression tests.
 
 Git history, host state, remote repositories, remote CI, network traffic,
@@ -39,11 +41,13 @@ Completed infrastructure work:
 
 - [#1: restore actual GitHub Actions execution](https://github.com/FlorianBruniaux/agentsec-triage/issues/1),
   verified by [run #33320781608](https://github.com/FlorianBruniaux/agentsec-triage/actions/runs/33320781608).
+- [#3: run seven digest-approved clean-control benchmarks](https://github.com/FlorianBruniaux/agentsec-triage/issues/3),
+  recorded in `docs/competitive-analysis/BENCHMARK-RESULTS.md` with bounded raw
+  output retained only in the ignored local run directory.
 
 The remaining release and product work is tracked with acceptance criteria:
 
 - [#6: resolve the public-source and gated-data license boundary](https://github.com/FlorianBruniaux/agentsec-triage/issues/6);
-- [#3: run seven digest-approved clean-control benchmarks](https://github.com/FlorianBruniaux/agentsec-triage/issues/3);
 - [#4: run the fixture matrix with an AgentSec baseline](https://github.com/FlorianBruniaux/agentsec-triage/issues/4);
 - [#7: publish benchmark results and top-three teardowns](https://github.com/FlorianBruniaux/agentsec-triage/issues/7);
 - [#2: convert competitive evidence into product decisions](https://github.com/FlorianBruniaux/agentsec-triage/issues/2);
