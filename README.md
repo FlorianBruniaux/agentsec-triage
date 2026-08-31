@@ -1,9 +1,10 @@
 # AgentSec Triage
 
-AgentSec Triage is an alpha command-line scanner for evidence associated with
-documented attacks against developers, software supply chains, and coding-agent
-configuration. It scans explicit local repository roots. Scans are
-**deterministic**, **read-only**, and **offline by default**.
+AgentSec Triage is an alpha command-line tool that turns sourced intelligence
+about developer, software-supply-chain, and coding-agent attacks into
+deterministic repository checks. It scans explicit local repository roots.
+Scans are **read-only**, **offline by default**, and fail closed when applicable
+evidence cannot be inspected reliably.
 
 AgentSec does not certify that a repository, workstation, dependency set, or
 account is clean. It is not an antivirus, EDR, general SAST, dependency scanner,
@@ -24,6 +25,60 @@ inputs, and limits reported by that run.
 | Can it run in GitHub Actions? | A repository-local composite [`action.yml`](action.yml) runs the checked-out source and preserves exit codes. Remote action use and release installation remain blocked by the data-license gate. |
 | What does it not do? | It does not certify a repository as **clean** and does not replace antivirus, `EDR`, `SAST`, dependency, or secret scanning. |
 | What is the current status? | **Alpha**, public source repository, and **no authorized package or tagged release**. See the [changelog](CHANGELOG.md). |
+
+## What the project includes
+
+| Surface | Shipped behavior |
+| --- | --- |
+| Repository scanner | Bounded discovery over one explicit root with `source`, `dependencies`, or `repository` scope. Target content is read but never executed or modified. |
+| Batch triage | Repeats the same scanner for an explicit, bounded list of roots. It does not crawl parent directories looking for repositories. |
+| Campaign detectors | Two stable detector families currently cover selected Shai-Hulud/Keyv evidence and the sourced ClawHavoc fake-prerequisite domain. |
+| Coverage explanation | `agentsec detectors explain` exposes active rules, supported inputs, sources, limits, remediation, documented-only intelligence, and stable `not_scanned` capabilities. |
+| Threat intelligence | Sourced YAML authoring data generates the bundled runtime database, human-readable intelligence catalogue, dated event timeline, and public metadata feed. |
+| Reports | Human output, scan-result v2 JSON, SARIF 2.1.0, and batch-result v1 keep findings separate from diagnostics, exclusions, detector coverage, and completion. |
+| Response guidance | Versioned playbooks separate evidence collection, manual containment, remediation, and verification. AgentSec does not perform destructive remediation. |
+| Automation | A repository-local GitHub Action validates SARIF and preserves exit classes. Remote action consumption remains blocked until a release is authorized. |
+| Consumer integration | A versioned security feed is mirrored byte for byte into the Claude Code Ultimate Guide and its landing page, with drift rejected in CI. |
+| Quality and research | Deterministic fixtures, schema digests, package tests, cross-platform CI, controlled competitor benchmarks, and explicit `not_tested` states protect the evidence boundary. |
+
+## How it works
+
+```mermaid
+flowchart LR
+    A[Reviewed security sources] --> B[Reviewed authoring data]
+    B --> C[Deterministic builders]
+    C --> D[Bundled threat database]
+    C --> E[Intelligence docs and timeline]
+    C --> F[Versioned public feed]
+    C --> I[Versioned response playbooks]
+    D --> G[Offline scan engine]
+    G --> H[Human, JSON, and SARIF reports]
+    F --> J[Guide and landing mirrors]
+```
+
+The builders validate source records and generate committed artifacts. The CLI
+loads only the bundled resources during a scan, discovers paths within explicit
+budgets, runs applicable detectors, and reports whether each applicable check
+completed. A finding changes the exit class to `1`; incomplete coverage takes
+precedence with exit class `2`.
+
+The scanner and intelligence feed share authoring data but serve different
+purposes. A source or event in the intelligence catalogue is not automatically
+an executable detector rule. Promotion into runtime coverage requires a stable
+rule, declared applicability, positive and near-miss fixtures, and regression
+tests.
+
+## Sources of truth
+
+| Concern | Canonical location |
+| --- | --- |
+| Detector intelligence and IOCs | [`data/threat-db.yaml`](data/threat-db.yaml) |
+| Sources and dated security events | [`data/intelligence/`](data/intelligence/) |
+| Scanner behavior | [`src/agentsec/`](src/agentsec/), [`schemas/`](schemas/), and [`tests/`](tests/) |
+| Response playbooks | [`data/response-playbooks.json`](data/response-playbooks.json) |
+| Guide and landing integration | [`exports/security-feed.v1.json`](exports/security-feed.v1.json) |
+| Shipped work and next priorities | [`CHANGELOG.md`](CHANGELOG.md) and [`ROADMAP.md`](ROADMAP.md) |
+| Release and data-rights gate | [`LICENSE-DATA.md`](LICENSE-DATA.md) and [`LICENSE-DECISION.md`](LICENSE-DECISION.md) |
 
 ## Try it from source
 

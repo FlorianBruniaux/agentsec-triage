@@ -66,7 +66,8 @@ delivery order live in `docs/competitive-analysis/PRODUCT-DECISIONS.md`.
 Completed infrastructure work:
 
 - [#1: restore actual GitHub Actions execution](https://github.com/FlorianBruniaux/agentsec-triage/issues/1),
-  verified by [run #33397458301](https://github.com/FlorianBruniaux/agentsec-triage/actions/runs/33397458301).
+  with the current Linux, macOS, Windows, package, scanner-fixture, and consumer
+  mirror gate verified by [run #33428744702](https://github.com/FlorianBruniaux/agentsec-triage/actions/runs/33428744702).
 - [#3: run seven digest-approved clean-control benchmarks](https://github.com/FlorianBruniaux/agentsec-triage/issues/3),
   recorded in `docs/competitive-analysis/BENCHMARK-RESULTS.md` with bounded raw
   output retained only in the ignored local run directory.

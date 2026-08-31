@@ -175,6 +175,23 @@ exit `2`, retain findings from positive fixtures, and report the tracked binary
 no critical finding. There is no V0.1 exclusion flag and `.gitignore` is not a
 scanner boundary.
 
+## Issue labels
+
+Use one `area:*` label for the main ownership surface, one `priority:*` label
+when the issue is scheduled, and a `status:*` label only when it communicates a
+real gate. Add a `type:*` label when the report needs a dedicated evidence
+workflow.
+
+| Prefix | Meaning | Examples |
+| --- | --- | --- |
+| `area:*` | Primary product or maintenance surface | `area:scanner`, `area:detectors`, `area:intelligence`, `area:output`, `area:integrations` |
+| `type:*` | Evidence-specific report class | `type:false-positive`, `type:false-negative`, `type:intelligence-correction` |
+| `priority:*` | Maintainer scheduling order | `priority:p0`, `priority:p1`, `priority:p2` |
+| `status:*` | Current decision or evidence gate | `status:blocked`, `status:needs-evidence`, `status:approval-required` |
+
+Do not use a `security` label to publish private vulnerability details. Follow
+[`SECURITY.md`](SECURITY.md) for suspected vulnerabilities in AgentSec itself.
+
 ## Pull request content
 
 State the threat claim or behavior changed, source and provenance, red test

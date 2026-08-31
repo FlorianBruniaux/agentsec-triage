@@ -251,6 +251,14 @@ while the data-licensing decision remains unresolved.
 
 ### Changed
 
+- Reworked the project overview around the shipped product surfaces, execution
+  flow, and canonical sources of truth. The README now distinguishes threat
+  intelligence records from executable detector coverage and explains how the
+  runtime database, reports, response playbooks, public feed, guide, and landing
+  fit together. Package and LLM descriptions now use the same bounded product
+  claim, the contributor guide documents the GitHub label taxonomy, and the
+  roadmap links the current cross-platform CI witness.
+
 - Updated the accepted product decision record after integration. It now
   records two active detector families, completed SARIF, repository-local
   Action, explain-ledger, playbook, and repeated 12-fixture matrix work without
