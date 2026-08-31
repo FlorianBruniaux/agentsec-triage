@@ -46,6 +46,22 @@ coverage contract. Binary `bun.lockb`, Git history, remote repositories,
 registry history, remote payloads, runtime behavior, host credentials, and host
 processes are not inspected.
 
+## Concrete examples
+
+These examples come from inert test fixtures shipped with AgentSec.
+
+| What AgentSec surfaces | Example | What it means |
+| --- | --- | --- |
+| Compromised dependency version | `critical / confirmed / package-lock.json / keyv@6.0.0` | The exact package-version pair matches bundled campaign intelligence. It proves the resolved version is present, not that its payload executed. |
+| Campaign-correlated startup hook | `high / high / .claude/settings.json / SessionStart: node setup.mjs` | Opening the repository with the affected agent configuration may invoke a command associated with the campaign. Inspect the referenced file and investigate possible prior execution. |
+| Suspicious but unconfirmed hook | `medium / review / .claude/settings.json / SessionStart: echo repository-ready` | A repository hook can execute automatically, but this command has no campaign correlation. Confirm its owner and purpose before changing it. |
+| Delegated skill instruction | `high / high / setup-installation.md:3 / openclawcli.vercel.app` | `SKILL.md` delegates setup to a local file containing an exact campaign domain. Do not follow the instruction; verify the skill's origin and version. |
+| Incomplete coverage | `error / bun.lockb / Unsupported binary Bun lockfile format` | This is a diagnostic, not a finding. AgentSec returns exit code `2` because it cannot inspect an applicable authoritative input. |
+
+See [complete finding examples](docs/examples.md#concrete-findings-and-diagnostics)
+for full output, every active rule, false-positive boundaries, and diagnostic
+classes.
+
 ## Read the result
 
 | Exit code | Meaning |

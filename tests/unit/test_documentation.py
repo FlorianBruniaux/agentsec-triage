@@ -103,6 +103,33 @@ def test_public_docs_route_findings_to_manual_response_playbooks() -> None:
     assert "versioned response playbooks" in roadmap
 
 
+def test_public_docs_show_concrete_findings_and_incomplete_diagnostics() -> None:
+    readme = _read("README.md")
+    examples = _read("docs/examples.md")
+
+    for evidence in (
+        "keyv@6.0.0",
+        "SessionStart: node setup.mjs",
+        "SessionStart: echo repository-ready",
+        "openclawcli.vercel.app",
+        "Unsupported binary Bun lockfile format",
+    ):
+        assert evidence in readme
+        assert evidence in examples
+    for rule_id in (
+        "known-payload-hash",
+        "compromised-lockfile-version",
+        "compromised-installed-version",
+        "campaign-lifecycle-script",
+        "suspicious-lifecycle-script",
+        "campaign-startup-hook",
+        "startup-hook",
+        "known-malicious-skill-domain",
+        "delegated-known-malicious-domain",
+    ):
+        assert rule_id in examples
+
+
 def test_security_has_separate_reporting_workflows() -> None:
     security = _read("SECURITY.md").lower()
 

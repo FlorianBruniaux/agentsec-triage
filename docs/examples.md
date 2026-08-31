@@ -188,6 +188,147 @@ skill and delegated file, do not follow or execute the referenced instructions,
 verify the skill origin and version outside AgentSec, and open a broader
 incident investigation if execution may already have occurred.
 
+## Concrete findings and diagnostics
+
+The examples below come from inert fixtures committed under `tests/fixtures/`.
+They demonstrate scanner behavior without redistributing malware or asserting
+that a real repository is compromised.
+
+### Complete scan with three different confidence levels
+
+```bash
+agentsec scan tests/fixtures/shai_hulud/positive --redact
+```
+
+<details>
+<summary>Show the complete human report</summary>
+
+```text
+AgentSec <TOOL_VERSION> | threat database <DATABASE_VERSION>
+Scope: source
+Complete: yes
+Discovery: entries_seen=5 directories_opened=2 files_selected=3
+Exclusions:
+  installed_dependencies: paths=1 subtrees=1
+Detector coverage:
+  clawhavoc-skill [not_applicable]: files_seen=0 files_inspected=0 bytes_inspected=0
+  shai-hulud-keyv [applicable]: files_seen=3 files_inspected=3 bytes_inspected=332
+Findings:
+  critical: shai-hulud-keyv/compromised-lockfile-version [confirmed] package-lock.json: keyv@6.0.0 (remediation: https://cc.bruniaux.com/security/)
+  high: shai-hulud-keyv/campaign-startup-hook [high] .claude/settings.json: claude SessionStart: node setup.mjs (remediation: https://cc.bruniaux.com/security/)
+  high: shai-hulud-keyv/compromised-lockfile-version [contested] package-lock.json: @keyv/mongo@6.0.0 (contested intelligence; sources: JFrog, SafeDep) (remediation: https://cc.bruniaux.com/security/)
+  medium: none
+  low: none
+  info: none
+Diagnostics: none
+Not scanned:
+  container.filesystems
+  git.history
+  host.caches
+  host.credentials
+  host.global_config
+  host.processes
+  remediation.automatic
+  remote.ci
+  remote.repositories
+  skill.registry_history
+  skill.remote_payloads
+  skill.runtime_behavior
+  skill.unreferenced_companion_files
+```
+
+</details>
+
+The report contains three different claims:
+
+| Finding | Observed evidence | Supported conclusion | Conclusion AgentSec does not make |
+| --- | --- | --- | --- |
+| `compromised-lockfile-version / confirmed` | `package-lock.json` resolves `keyv@6.0.0`, an exact bundled package-version IOC | The repository resolves a version documented as compromised by the active campaign sources | The package was installed, its lifecycle script ran, credentials were stolen, or the host remains compromised |
+| `campaign-startup-hook / high` | `.claude/settings.json` registers `node setup.mjs` for `SessionStart` | The repository contains an automatic execution path correlated with the campaign | The hook has already run on this workstation or in remote CI |
+| `compromised-lockfile-version / contested` | `package-lock.json` resolves `@keyv/mongo@6.0.0`, for which the bundled sources disagree | The disputed package-version pair is present and needs source-aware review | The intelligence dispute is resolved or the evidence is `confirmed` |
+
+The scan is complete for its applicable repository checks, but the default
+`source` scope excluded installed dependencies. Host state, credentials, remote
+CI, Git history, and runtime behavior remain outside the verdict.
+
+### Review finding that can be legitimate
+
+```text
+medium: shai-hulud-keyv/startup-hook [review] .claude/settings.json: claude SessionStart: echo repository-ready
+```
+
+This finding makes an automatic repository hook visible. The command in the
+fixture has no campaign correlation and may be intentional. Review who added
+it, the event that triggers it, the referenced command, and whether the same
+configuration is expected in the repository. Do not report compromise from
+hook presence alone.
+
+### Delegated skill instruction to a campaign domain
+
+```text
+high: clawhavoc-skill/delegated-known-malicious-domain [high] setup-installation.md:3: known campaign domain: openclawcli.vercel.app (delegated by SKILL.md)
+```
+
+The finding records both the local file containing the domain and the
+`SKILL.md` that delegated setup to it. AgentSec matches the exact hostname; a
+suffix such as `openclawcli.vercel.app.example.test` does not match. Preserve
+both files, do not execute the instructions, and verify the skill's origin and
+version outside AgentSec.
+
+### Finding plus incomplete coverage
+
+```bash
+agentsec scan tests/fixtures/lockfiles --redact
+```
+
+```text
+Complete: no
+Findings:
+  critical: shai-hulud-keyv/compromised-lockfile-version [confirmed] bun.lock: keyv@6.0.0
+Diagnostics:
+  error: <SCAN_ROOT>/bun.lockb: Unsupported binary Bun lockfile format
+```
+
+AgentSec preserves the confirmed finding from the supported text lockfile and
+returns exit code `2` because the binary lockfile was not inspected. A finding
+does not hide incomplete coverage, and an incomplete scan does not discard
+findings already collected.
+
+### Every active finding rule
+
+| Detector and rule | Default classification | What triggers it | Main review boundary |
+| --- | --- | --- | --- |
+| `shai-hulud-keyv/known-payload-hash` | `critical / confirmed` | Exact SHA-256 match against a bundled payload indicator | Confirms matching bytes, not execution or persistence |
+| `shai-hulud-keyv/compromised-lockfile-version` | `critical / confirmed` or `high / contested` | Exact package-version pair in a supported lockfile | Confirms dependency resolution; source disputes remain contested |
+| `shai-hulud-keyv/compromised-installed-version` | `critical / confirmed` or `high / contested` | Exact package-version pair in installed `node_modules` metadata | Requires `dependencies` or `repository` scope and does not prove script execution |
+| `shai-hulud-keyv/campaign-lifecycle-script` | `critical / high` | Campaign-correlated package metadata also contains a suspicious `preinstall` command | Strong correlation, but host and registry investigation remain outside AgentSec |
+| `shai-hulud-keyv/suspicious-lifecycle-script` | `medium / review` | A supported installed package contains a suspicious `preinstall` pattern without confirmed campaign correlation | Build tooling can use legitimate lifecycle scripts; inspect package provenance and command behavior |
+| `shai-hulud-keyv/campaign-startup-hook` | `high / high` | A supported Claude Code hook or VS Code `folderOpen` task invokes a campaign-correlated command | Repository evidence does not prove the hook ran |
+| `shai-hulud-keyv/startup-hook` | `medium / review` | A supported repository startup hook exists without campaign correlation | Hook presence can be expected; verify ownership and purpose |
+| `clawhavoc-skill/known-malicious-skill-domain` | `high / high` | `SKILL.md` contains an exact bundled campaign domain | Domain reference is evidence to review, not confirmed payload execution |
+| `clawhavoc-skill/delegated-known-malicious-domain` | `high / high` | `SKILL.md` references a same-skill setup file containing the exact domain | Only explicitly referenced setup files are inspected |
+
+### Errors and warnings AgentSec can expose
+
+Findings describe suspicious or campaign-linked repository evidence.
+Diagnostics describe why coverage is incomplete or constrained.
+
+| Diagnostic situation | Reported effect | Required interpretation |
+| --- | --- | --- |
+| Binary `bun.lockb` | Error, `complete: false`, exit `2` | The authoritative lockfile was not parsed; use a supported text lockfile or another inspection path |
+| Malformed or unsupported authoritative lockfile | Error, `complete: false`, exit `2` | Dependency evidence may be missing; do not treat the scan as a pass |
+| Unreadable, changed, invalid UTF-8, or oversized applicable file | Error, `complete: false`, exit `2` | AgentSec could not establish stable input bytes for an applicable check |
+| File, byte, entry, or directory budget reached | Error, `complete: false`, exit `2` | Increase coverage through a narrower explicit root or a separately planned scan; do not hide the limit |
+| External, broken, changed, or unsafe symlink or reparse point | Error, `complete: false`, exit `2` | Filesystem indirection was not followed because confinement was not proven |
+| Missing or unreadable setup file explicitly delegated by `SKILL.md` | Error, `complete: false`, exit `2` | The skill's applicable instructions could not be reviewed |
+| Nested Git repository or worktree | Warning and measured exclusion | Scan the nested repository as its own explicit root |
+
+After a finding, select the versioned
+[response playbook](response-playbooks/) by `detector_id` and `rule_id`.
+Preserve evidence before editing files, avoid executing referenced commands,
+and route host, credential, registry, identity, and remote-CI investigation to
+the tools and owners responsible for those systems.
+
 ## Coverage limits
 
 - Host processes, caches, global IDE or agent configuration, credential stores,

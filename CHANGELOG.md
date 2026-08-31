@@ -258,6 +258,12 @@ while the data-licensing decision remains unresolved.
 
 ### Changed
 
+- Added concrete README and examples-guide findings for compromised package
+  versions, campaign-correlated startup hooks, review-only hooks, delegated
+  ClawHavoc domains, contested intelligence, and unsupported lockfiles. Each
+  example now separates observed evidence, interpretation, false-positive or
+  attribution limits, manual response, and incomplete-coverage diagnostics.
+
 - Reordered and shortened the README around the first user decision. The page
   now leads with the product promise, workflow image, and a goal-command-result
   table; it then states current detectors, exit semantics, scan scopes, safety
