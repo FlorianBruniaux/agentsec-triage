@@ -78,6 +78,7 @@ incomplete scan still exits `2`.
 - [Scanner ecosystem](docs/ECOSYSTEM.md): competitors, adjacent tools, naming collisions, and product gaps.
 - [Competitive analysis plan](docs/COMPETITIVE-ANALYSIS-PLAN.md): static reviews, isolated benchmarks, product gates, and naming work.
 - [Product decisions](docs/competitive-analysis/PRODUCT-DECISIONS.md): accepted parity, differentiation, scope, and delivery sequence.
+- [Naming brief](docs/NAMING.md): collision screening, shortlist, comprehension gate, and migration surface.
 - [Intelligence authoring](docs/intelligence-authoring.md): add a source, fiche, IOC, or detector.
 - [Threat database update command](.claude/commands/update-threat-db.md): source review, promotion gates, generation, and consumer sync.
 - [Public security feed](exports/security-feed.v1.json): versioned metadata consumed by the guide and landing.

@@ -12,6 +12,11 @@ while the data-licensing decision remains unresolved.
   requirements, three differentiation bets, rejected V0.1 scope, measurable
   proof, and the accepted SARIF, delayed-skill, source-action, explain, and
   response-playbook sequence.
+- Added a provisional naming brief. `RepoVigil` is the first candidate, with
+  `BeforeTrust` and `CampaignScope` as fallbacks after current GitHub, local
+  corpus, PyPI, npm, crates.io, and `.com` or `.dev` RDAP screening. Trademark,
+  registrar, social-handle, and unaided-comprehension checks remain blocking;
+  no rename is authorized.
 
 - Published reviewed `clean-control` observations for seven digest-approved
   competitor images. The report records exit status, completion evidence,

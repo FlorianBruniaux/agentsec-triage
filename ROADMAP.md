@@ -37,6 +37,8 @@ Implemented in the current alpha codebase:
   reviewed aggregate observations and no published raw output;
 - a three-run deterministic AgentSec fixture-baseline harness that keeps its
   machine report under the ignored local benchmark boundary;
+- a provisional naming brief with registry and domain screening, three
+  candidates, an unaided-comprehension gate, and no authorized rename;
 - source, package, safety, integration, and golden regression tests.
 
 Git history, host state, remote repositories, remote CI, network traffic,

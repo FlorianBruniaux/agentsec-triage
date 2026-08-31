@@ -27,6 +27,7 @@ diagnostics, and incomplete coverage; it does not certify a system as clean.
 - [Changelog](https://github.com/FlorianBruniaux/agentsec-triage/blob/main/CHANGELOG.md)
 - [Roadmap](https://github.com/FlorianBruniaux/agentsec-triage/blob/main/ROADMAP.md)
 - [Product decisions](https://github.com/FlorianBruniaux/agentsec-triage/blob/main/docs/competitive-analysis/PRODUCT-DECISIONS.md)
+- [Naming brief](https://github.com/FlorianBruniaux/agentsec-triage/blob/main/docs/NAMING.md)
 - [Contributing](https://github.com/FlorianBruniaux/agentsec-triage/blob/main/CONTRIBUTING.md)
 - [MIT code license](https://github.com/FlorianBruniaux/agentsec-triage/blob/main/LICENSE)
 - [Data license status](https://github.com/FlorianBruniaux/agentsec-triage/blob/main/LICENSE-DATA.md)
