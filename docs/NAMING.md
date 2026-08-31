@@ -37,24 +37,25 @@ applicable input cannot be inspected.
 ## Candidate screening
 
 All package checks cover both the concatenated and hyphenated form. GitHub
-repository search uses the public GitHub search endpoint and is exact-name
-oriented. It is not a namespace reservation check. All URLs below were fetched
-on 2026-08-31 UTC.
+repository search uses GitHub's documented
+[`in:name` qualifier](https://docs.github.com/en/search-github/searching-on-github/searching-for-repositories).
+It narrows the search to repository names, but it is not a namespace
+reservation check. All URLs below were fetched on 2026-08-31 UTC.
 
 | Candidate | Product meaning and risk | GitHub repositories | PyPI exact names | npm exact names | crates.io exact names | `.com` RDAP | `.dev` RDAP | Current result |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| **RepoVigil** | Repository inspection and vigilance. `Vigil` can imply continuous monitoring. | `verified_absence`: API query returned `total_count=0` before the shared rate limit. | `verified_absence`: `repovigil`, `repo-vigil` returned 404. | `verified_absence`: `repovigil`, `repo-vigil` returned 404. | `verification_unavailable`: official API returned 403. | `verified_absence`: `repovigil.com` returned 404. | `verified_absence`: `repovigil.dev` returned 404. | Provisional first choice, pending comprehension and trademark review. |
-| **BeforeTrust** | Pre-trust timing. It does not itself identify repositories or security. | `ambiguity`: one non-exact cybersecurity-awareness repository, `beforetrust-game`, matched the query. | `verified_absence`: `beforetrust`, `before-trust` returned 404. | `verified_absence`: `beforetrust`, `before-trust` returned 404. | `verification_unavailable`: official API returned 403. | `verified_absence`: `beforetrust.com` returned 404. | `verified_absence`: `beforetrust.dev` returned 404. | Fallback only. The category meaning and same-stem cybersecurity use are ambiguities. |
-| **CampaignScope** | Campaign evidence and explicit scope. `Campaign` is ambiguous with marketing. | `collision`: `jh22d/CampaignScope` is an exact GitHub repository name for marketing-campaign analysis. | `verified_absence`: `campaignscope`, `campaign-scope` returned 404. | `verified_absence`: `campaignscope`, `campaign-scope` returned 404. | `verification_unavailable`: official API returned 403. | `collision`: `campaignscope.com` returned an active RDAP record, registered 2022-07-08 and expiring 2027-07-08. | `verified_absence`: `campaignscope.dev` returned 404. | Do not advance without owner direction. GitHub and domain collisions remain. |
+| **RepoVigil** | Repository inspection and vigilance. `Vigil` can imply continuous monitoring. | `verified_absence`: the `in:name` API query returned `total_count=0`. | `verified_absence`: `repovigil`, `repo-vigil` returned 404. | `verified_absence`: `repovigil`, `repo-vigil` returned 404. | `verification_unavailable`: official API returned 403. | `verified_absence`: `repovigil.com` returned 404. | `verified_absence`: `repovigil.dev` returned 404. | Provisional first choice, pending comprehension and trademark review. |
+| **BeforeTrust** | Pre-trust timing. It does not itself identify repositories or security. | `ambiguity`: one non-exact cybersecurity-awareness repository, [`beforetrust-game`](https://github.com/mnegrinho/beforetrust-game), matched the query. | `verified_absence`: `beforetrust`, `before-trust` returned 404. | `verified_absence`: `beforetrust`, `before-trust` returned 404. | `verification_unavailable`: official API returned 403. | `verified_absence`: `beforetrust.com` returned 404. | `verified_absence`: `beforetrust.dev` returned 404. | Fallback only. The category meaning and same-stem cybersecurity use are ambiguities. |
+| **CampaignScope** | Campaign evidence and explicit scope. `Campaign` is ambiguous with marketing. | `collision`: [`jh22d/CampaignScope`](https://github.com/jh22d/CampaignScope) is an exact GitHub repository name for marketing-campaign analysis. | `verified_absence`: `campaignscope`, `campaign-scope` returned 404. | `verified_absence`: `campaignscope`, `campaign-scope` returned 404. | `verification_unavailable`: official API returned 403. | `collision`: `campaignscope.com` returned an active RDAP record, registered 2022-07-08 and expiring 2027-07-08. | `verified_absence`: `campaignscope.dev` returned 404. | Blocked. GitHub and domain collisions remain. |
 
 ### Source endpoints and observed result
 
 | Surface | Official source | Result on 2026-08-31 UTC |
 | --- | --- | --- |
-| GitHub repositories | [RepoVigil query](https://api.github.com/search/repositories?q=RepoVigil), [BeforeTrust query](https://api.github.com/search/repositories?q=BeforeTrust), [CampaignScope query](https://api.github.com/search/repositories?q=CampaignScope) | `200`: RepoVigil `total_count=0`; BeforeTrust `total_count=1` for `mnegrinho/beforetrust-game`; CampaignScope `total_count=1` for exact `jh22d/CampaignScope`. |
-| PyPI | [RepoVigil JSON endpoint](https://pypi.org/pypi/repovigil/json), [BeforeTrust JSON endpoint](https://pypi.org/pypi/beforetrust/json), [CampaignScope JSON endpoint](https://pypi.org/pypi/campaignscope/json) | Each queried concatenated and hyphenated endpoint returned `404`. |
-| npm | [RepoVigil registry endpoint](https://registry.npmjs.org/repovigil), [BeforeTrust registry endpoint](https://registry.npmjs.org/beforetrust), [CampaignScope registry endpoint](https://registry.npmjs.org/campaignscope) | Each queried concatenated and hyphenated endpoint returned `404`. |
-| crates.io | [RepoVigil API endpoint](https://crates.io/api/v1/crates/repovigil), [BeforeTrust API endpoint](https://crates.io/api/v1/crates/beforetrust), [CampaignScope API endpoint](https://crates.io/api/v1/crates/campaignscope) | The official endpoint returned `403` for every query. No absence conclusion. |
+| GitHub repositories | [RepoVigil `in:name` query](https://api.github.com/search/repositories?q=RepoVigil+in%3Aname), [BeforeTrust `in:name` query](https://api.github.com/search/repositories?q=BeforeTrust+in%3Aname), [CampaignScope `in:name` query](https://api.github.com/search/repositories?q=CampaignScope+in%3Aname) | `200`: RepoVigil `total_count=0`; BeforeTrust `total_count=1` for [`mnegrinho/beforetrust-game`](https://github.com/mnegrinho/beforetrust-game); CampaignScope `total_count=1` for exact [`jh22d/CampaignScope`](https://github.com/jh22d/CampaignScope). |
+| PyPI | RepoVigil: [`repovigil`](https://pypi.org/pypi/repovigil/json), [`repo-vigil`](https://pypi.org/pypi/repo-vigil/json). BeforeTrust: [`beforetrust`](https://pypi.org/pypi/beforetrust/json), [`before-trust`](https://pypi.org/pypi/before-trust/json). CampaignScope: [`campaignscope`](https://pypi.org/pypi/campaignscope/json), [`campaign-scope`](https://pypi.org/pypi/campaign-scope/json). | Every linked endpoint returned `404`. |
+| npm | RepoVigil: [`repovigil`](https://registry.npmjs.org/repovigil), [`repo-vigil`](https://registry.npmjs.org/repo-vigil). BeforeTrust: [`beforetrust`](https://registry.npmjs.org/beforetrust), [`before-trust`](https://registry.npmjs.org/before-trust). CampaignScope: [`campaignscope`](https://registry.npmjs.org/campaignscope), [`campaign-scope`](https://registry.npmjs.org/campaign-scope). | Every linked endpoint returned `404`. |
+| crates.io | RepoVigil: [`repovigil`](https://crates.io/api/v1/crates/repovigil), [`repo-vigil`](https://crates.io/api/v1/crates/repo-vigil). BeforeTrust: [`beforetrust`](https://crates.io/api/v1/crates/beforetrust), [`before-trust`](https://crates.io/api/v1/crates/before-trust). CampaignScope: [`campaignscope`](https://crates.io/api/v1/crates/campaignscope), [`campaign-scope`](https://crates.io/api/v1/crates/campaign-scope). | Every linked endpoint returned `403`. No absence conclusion. |
 | `.com` | [Verisign RDAP for RepoVigil](https://rdap.verisign.com/com/v1/domain/repovigil.com), [BeforeTrust](https://rdap.verisign.com/com/v1/domain/beforetrust.com), [CampaignScope](https://rdap.verisign.com/com/v1/domain/campaignscope.com) | RepoVigil and BeforeTrust returned `404`; CampaignScope returned `200` with a registered record. |
 | `.dev` | [Google Registry RDAP for RepoVigil](https://www.registry.google/rdap/domain/repovigil.dev), [BeforeTrust](https://www.registry.google/rdap/domain/beforetrust.dev), [CampaignScope](https://www.registry.google/rdap/domain/campaignscope.dev) | Each endpoint returned `404`. |
 
@@ -93,12 +94,16 @@ comprehension gate in
 [the test kit](naming-comprehension-test-kit.md), crates.io is rechecked
 without an access failure, and the trademark-review record is complete.
 
-Fallbacks remain:
+Fallback status:
 
 1. **BeforeTrust**, if participants correctly identify the repository-security
    job from the name alone.
-2. **CampaignScope**, only if the domain collision is resolved by an explicit
-   owner decision and participants do not interpret it as marketing.
+2. **CampaignScope** is blocked and is not a fallback while its GitHub and
+   domain collisions remain. An owner must record one of these outcomes before
+   it can be reconsidered: acquire and control `campaignscope.com`, then repeat
+   the domain and registry screen; accept a documented no-domain risk and use a
+   different domain, with fresh confusion and trademark evidence; or reject the
+   candidate. An owner decision alone does not resolve the collision.
 
 ## Migration surface
 

@@ -26,11 +26,10 @@ AgentSec README.
 
 ## Facilitator procedure
 
-1. Create a random candidate-to-code mapping independently for each
-   participant, such as `A = RepoVigil`, `B = BeforeTrust`, and
-   `C = CampaignScope`. Keep the mapping outside the participant sheet until
-   scoring.
-2. Show one code and its candidate name only. Do not show a descriptor, logo,
+1. Use the reproducible draw below to create a candidate-to-code mapping and
+   display order independently for each participant. Keep the mapping outside
+   the participant sheet until scoring.
+2. Show one candidate name only. Do not show its code, a descriptor, logo,
    product category, repository, documentation, or the other candidates.
 3. Ask the four prompts verbatim. Do not clarify terms or react to an answer.
 4. Record the answer verbatim, then repeat for the remaining two names in a
@@ -38,6 +37,22 @@ AgentSec README.
 5. Score only after all participants finish. A second scorer independently
    scores at least 20 percent of responses, including every failing candidate.
    Resolve disagreements by retaining the lower score and recording why.
+
+### Reproducible randomization
+
+Use two six-card decks for every block of six participants. The mapping deck
+contains all permutations of candidate names assigned to `A`, `B`, and `C`.
+The order deck contains `ABC`, `ACB`, `BAC`, `BCA`, `CAB`, and `CBA`. Shuffle
+each deck with Fisher-Yates: for positions six through two, roll a fair die;
+reroll values greater than the current position; swap the current card with the
+selected card. Record every accepted and rejected die roll, the final deck
+order, and the card drawn for each participant. Draw one card from each deck
+without replacement. Start a new recorded block after six participants.
+
+The recording sheet must retain the mapping card, order card, and raw die-roll
+log. Those values reconstruct the exact names and display sequence shown to a
+participant without relying on facilitator memory. Do not show codes, cards,
+or prior responses to participants.
 
 ## Participant prompts
 
@@ -70,9 +85,9 @@ well.
 
 ## Recording sheet
 
-| Participant ID | Role / experience band | Candidate code | Display order | Q1 raw answer | Q2 raw answer | Q3 raw answer | Q4 raw answer | Target | Timing | Result | Boundary | Critical misconception | Scorer | Notes |
-| --- | --- | --- | --- | --- | --- | --- | --- | ---: | ---: | ---: | ---: | --- | --- | --- |
-| P01 | Developer, 5+ years | A | 2 |  |  |  |  |  |  |  |  |  |  |  |
+| Participant ID | Role / experience band | Mapping card | Order card | Die-roll log | Candidate code | Display order | Q1 raw answer | Q2 raw answer | Q3 raw answer | Q4 raw answer | Target | Timing | Result | Boundary | Critical misconception | Scorer | Notes |
+| --- | --- | ---: | ---: | --- | --- | --- | --- | --- | --- | --- | ---: | ---: | ---: | ---: | --- | --- | --- |
+| P01 | Developer, 5+ years |  |  |  | A |  |  |  |  |  |  |  |  |  |  |  |  |
 
 Store the candidate-code mapping and raw responses with the study record. Do
 not publish participant identifiers or free-text answers without their consent.
