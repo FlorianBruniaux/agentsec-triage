@@ -1,0 +1,54 @@
+README.md
+  s_0df90997879182::t_bc6bae6061331e 5,17,19,21,34-43,59-62
+  s_0df90997879182::t_15901825fe3eeb 63
+docs/installation.md
+  s_0df90997879182::t_bc6bae6061331e 57-58,62,82-84
+docs/examples.md
+  s_0df90997879182::t_0ddb9efef476a7 3-5,15-20,52-68,77-81,83-90,92-94,102-107,144,171-172,188-193,207-209,215,219,222-232,234-243
+tests/unit/test_benchmark_scan.py
+  s_0df90997879182::t_031ad068408224 52,56-57,74-75
+tests/unit/test_documentation.py
+  s_0df90997879182::t_0226e0f2b76a1e 43-48,68-70
+scripts/benchmark_scan.py
+  s_0df90997879182::t_6ae3cec1f9199a 39,46-56,68-73,77,80-86,92,97
+llms.txt
+  s_0df90997879182::t_278f389c9454a3 4-5
+ROADMAP.md
+  s_0df90997879182::t_bc6bae6061331e 12-16,20-21
+CLAUDE.md
+  s_0df90997879182::t_9d2f26ab24c6c1 55-56
+CONTRIBUTING.md
+  s_0df90997879182::t_9d2f26ab24c6c1 70-71
+CHANGELOG.md
+  s_0df90997879182::t_9d7c589323d95e 162-164
+  s_0df90997879182::t_69c8d2f005b9f6 165-168
+  s_d4bdd746a22829::t_425be6460489c0 169
+AGENTS.md
+  s_0df90997879182::t_9d2f26ab24c6c1 6-9,108,142-143,180-181,208-209
+PROMPT.md
+  s_0df90997879182::t_bc6bae6061331e 26,49-51
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "bee76833b88be08d39a8d1a7fa74ee092e8ca5a9",
+  "prompts": {},
+  "sessions": {
+    "s_0df90997879182": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019fd73a-588d-7f03-ab50-494ca0e95848",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Florian BRUNIAUX <florian@bruniaux.com>"
+    },
+    "s_d4bdd746a22829": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0532f-5cd1-7421-8380-ceb7233a8ef0",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Florian BRUNIAUX <florian@bruniaux.com>"
+    }
+  }
+}
