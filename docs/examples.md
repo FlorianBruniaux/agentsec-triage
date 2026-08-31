@@ -21,6 +21,9 @@ agentsec scan /path/to/repository --scope repository
 # Versioned JSON for local automation
 agentsec scan /path/to/repository --format json
 
+# SARIF 2.1.0 for compatible code-scanning consumers
+agentsec scan /path/to/repository --format sarif > agentsec.sarif
+
 # Redact the scan root and recognized secret-shaped values
 agentsec scan /path/to/repository --format json --redact
 
@@ -74,7 +77,7 @@ JSON embeds every scan-result v2 report and follows
 | `1` | One or more findings require action or review. Inspect severity, confidence, evidence, and diagnostics. |
 | `2` | The scan is incomplete or an error prevents a clean verdict. Do not treat it as a pass. |
 
-Human and JSON output include the selected scope, completion, discovery
+Human, JSON, and SARIF output include the selected scope, completion, discovery
 exclusions, per-detector coverage, diagnostics, findings, and stable
 `not_scanned` capability IDs.
 
@@ -128,7 +131,7 @@ sequences.
 Progress never includes target file content. It shows the resolved repository
 and bundled resource paths by default so the operator can confirm the scan
 scope. Add `--redact` to replace those paths in progress and report output.
-JSON and human reports remain on `stdout`.
+JSON, SARIF, and human reports remain on `stdout`.
 
 ## Current detector coverage
 
@@ -271,6 +274,35 @@ separate class. A match such as `@keyv/mongo@6.0.0` is reported
 `high/contested` with source attribution. It is not promoted to
 `critical/confirmed`; a matching lifecycle command remains an independent
 `medium/review` heuristic.
+
+## SARIF output
+
+`agentsec scan --format sarif` emits deterministic SARIF `2.1.0`. It is a
+representation of the same scan verdict, not a separate analysis mode.
+
+```bash
+agentsec scan /path/to/repository --format sarif --redact > agentsec.sarif
+scan_exit=$?
+```
+
+The SARIF `run` contains:
+
+- one rule ID composed as `<detector_id>/<rule_id>`;
+- relative, URI-encoded finding locations under `%SRCROOT%`;
+- SARIF levels mapped as `critical/high → error`, `medium → warning`, and
+  `low/info → note`;
+- original severity, confidence, campaigns, techniques, and remediation URL in
+  result properties;
+- `agentsec.complete`, diagnostics, discovery exclusions, per-detector
+  coverage, and `agentsec.notScanned` in run properties;
+- the AgentSec exit code and completion state in `invocations`.
+
+Preserve `scan_exit` in CI. A SARIF file can contain findings from completed
+checks while the overall scan remains incomplete. Exit code `2` and
+`agentsec.complete: false` must therefore fail the surrounding job. SARIF is
+currently available for `scan`; `batch` continues to support human and JSON
+output only. AgentSec does not upload the file or configure a code-scanning
+service.
 
 ## Local performance benchmark
 

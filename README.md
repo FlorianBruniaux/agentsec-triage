@@ -18,7 +18,7 @@ inputs, and limits reported by that run.
 | What does it detect today? | Evidence associated with the documented **Shai-Hulud/Keyv campaign**: compromised package versions, known payload hashes, lifecycle commands, Claude Code hooks, and VS Code startup tasks. |
 | Which package formats are covered? | Supported `npm`, `pnpm`, `Yarn`, and `Bun` text lockfiles. Installed `node_modules` metadata requires `--scope dependencies` or `--scope repository`. Binary `bun.lockb` is **unsupported**. |
 | How does it run? | **Deterministically**, **read-only**, and **offline by default**. It does not follow symlinks outside the scan root or invoke Git on the target repository. |
-| What does it return? | Human-readable or versioned `JSON` with measured **discovery exclusions**, per-detector **coverage**, findings, diagnostics, and completion status. |
+| What does it return? | Human-readable, versioned `JSON`, or `SARIF 2.1.0` with measured **discovery exclusions**, per-detector **coverage**, findings, diagnostics, and completion status. |
 | What do exit codes mean? | `0`: completed checks found nothing; `1`: findings require action or review; `2`: the scan is incomplete or failed. |
 | What does it not do? | It does not certify a repository as **clean** and does not replace antivirus, `EDR`, `SAST`, dependency, or secret scanning. |
 | What is the current status? | **Alpha**, public source repository, and **no authorized package or tagged release**. See the [changelog](CHANGELOG.md). |
@@ -38,6 +38,7 @@ an explicit broader scope when the investigation requires it:
 ```bash
 agentsec scan /path/to/repository --scope dependencies
 agentsec scan /path/to/repository --scope repository
+agentsec scan /path/to/repository --format sarif --redact > agentsec.sarif
 agentsec batch /path/to/repo-a /path/to/repo-b --format json --redact
 ```
 
@@ -49,9 +50,9 @@ agentsec scan /path/to/repository --progress --verbose --redact
 
 Progress is written to `stderr`. It confirms the loaded threat database,
 validated repository, scan limits, live discovery counts, and phase completion.
-The human or JSON report remains isolated on `stdout`, so local automation can
-parse it without stripping status lines. Use `--redact` when paths must not
-appear in progress output.
+The human, JSON, or SARIF report remains isolated on `stdout`, so local
+automation can parse it without stripping status lines. Use `--redact` when
+paths must not appear in progress output.
 
 Read the [examples and verdict guide](docs/examples.md) before interpreting the
 result. In particular, exit code `2` is an incomplete scan, not a pass.
@@ -59,12 +60,16 @@ result. In particular, exit code `2` is an incomplete scan, not a pass.
 Current scan JSON follows [scan-result v2](schemas/scan-result-v2.schema.json).
 Batch JSON follows [batch-result v1](schemas/batch-result-v1.schema.json). The
 older [scan-result v1](schemas/scan-result-v1.schema.json) remains available as
-a historical contract, but new CLI output no longer conforms to it.
+a historical contract, but new CLI output no longer conforms to it. Scan SARIF
+uses the standard `2.1.0` envelope and keeps AgentSec completion, diagnostics,
+exclusions, detector coverage, and `not_scanned` capabilities under explicit
+`agentsec.*` properties. SARIF output preserves the scan exit code; an
+incomplete scan still exits `2`.
 
 ## Documentation
 
 - [Installation](docs/installation.md): source setup, verification, and Windows commands.
-- [Examples](docs/examples.md): scans, verdicts, JSON, coverage limits, and benchmark.
+- [Examples](docs/examples.md): scans, verdicts, JSON, SARIF, coverage limits, and benchmark.
 - [Copy-ready LLM prompt](PROMPT.md): ask an LLM to run a read-only repository triage.
 - [LLM index](llms.txt): compact map of canonical project documentation.
 - [Security policy](SECURITY.md): vulnerabilities, false results, and IOC corrections.

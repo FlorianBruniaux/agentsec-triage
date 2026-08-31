@@ -18,6 +18,14 @@ while the data-licensing decision remains unresolved.
   three times, removes runtime duration before digest comparison, rejects
   semantic or exit-code drift, preserves findings and coverage evidence, and
   confines its machine report to the ignored local benchmark directory.
+- Added deterministic SARIF 2.1.0 output for `agentsec scan`. Findings map to
+  stable detector/rule IDs, SARIF severity levels, relative URI-encoded
+  locations, confidence, campaign, technique, and remediation properties. Run
+  properties retain completion, diagnostics, discovery exclusions,
+  per-detector coverage, and unsupported capabilities. The invocation preserves
+  exit code `2` for incomplete scans, so exporting SARIF cannot turn partial
+  coverage into a successful verdict. Batch SARIF and a GitHub Action remain
+  outside this change.
 
 - Added explicit `source`, `dependencies`, and `repository` scan scopes. The
   default `source` scope now reports measured exclusions for dependency,

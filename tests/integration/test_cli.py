@@ -66,6 +66,55 @@ def test_scan_help_documents_progress_verbosity_and_safe_limits() -> None:
     ):
         assert option in completed.stdout
     assert "Progress is written to stderr" in completed.stdout
+    assert "--format {human,json,sarif}" in completed.stdout
+
+
+def test_scan_sarif_preserves_incomplete_exit_and_coverage_boundaries(
+    tmp_path: Path,
+) -> None:
+    (tmp_path / ".git").mkdir()
+    (tmp_path / "package-lock.json").write_text("not-json", encoding="utf-8")
+
+    completed = _run("scan", str(tmp_path), "--format", "sarif", "--redact")
+
+    assert completed.returncode == 2
+    assert completed.stderr == ""
+    assert str(tmp_path) not in completed.stdout
+    payload = json.loads(completed.stdout)
+    assert payload["version"] == "2.1.0"
+    run = payload["runs"][0]
+    assert run["invocations"][0]["executionSuccessful"] is False
+    assert run["invocations"][0]["exitCode"] == 2
+    assert run["properties"]["agentsec.complete"] is False
+    assert run["properties"]["agentsec.diagnostics"]
+    assert run["properties"]["agentsec.discoveryExclusions"] == [
+        {"paths": 1, "reason": "vcs_metadata", "subtrees": 1}
+    ]
+    assert "git.history" in run["properties"]["agentsec.notScanned"]
+
+
+def test_scan_sarif_maps_positive_fixture_finding_to_rule_and_location(
+    tmp_path: Path,
+) -> None:
+    root = tmp_path / "positive"
+    shutil.copytree(FIXTURES / "positive", root)
+
+    completed = _run("scan", str(root), "--format", "sarif")
+
+    assert completed.returncode == 1
+    payload = json.loads(completed.stdout)
+    run = payload["runs"][0]
+    exact = next(
+        result
+        for result in run["results"]
+        if result["message"]["text"] == "keyv@6.0.0"
+    )
+    assert exact["ruleId"] == "shai-hulud-keyv/compromised-lockfile-version"
+    assert exact["level"] == "error"
+    assert exact["locations"][0]["physicalLocation"]["artifactLocation"] == {
+        "uri": "package-lock.json",
+        "uriBaseId": "%SRCROOT%",
+    }
 
 
 def test_progress_always_uses_stderr_without_corrupting_json(tmp_path: Path) -> None:

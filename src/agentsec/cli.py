@@ -20,6 +20,7 @@ from agentsec.models import ThreatDatabase
 from agentsec.output.batch_output import render_batch_human, render_batch_json
 from agentsec.output.human import render_human
 from agentsec.output.json_output import render_json
+from agentsec.output.sarif_output import render_sarif
 from agentsec.redaction import redact_text
 from agentsec.scopes import ScanScope
 from agentsec.threat_db import ThreatDatabaseError, load_bundled_database
@@ -96,7 +97,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     scan.add_argument(
         "--format",
-        choices=("human", "json"),
+        choices=("human", "json", "sarif"),
         default="human",
         help="final report format written to stdout (default: human)",
     )
@@ -316,6 +317,8 @@ def _scan(arguments: argparse.Namespace) -> int:
     )
     if arguments.format == "json":
         print(render_json(result, redact=arguments.redact), end="")
+    elif arguments.format == "sarif":
+        print(render_sarif(result, redact=arguments.redact), end="")
     else:
         color = _color_enabled(arguments.color)
         print(render_human(result, redact=arguments.redact, color=color), end="")

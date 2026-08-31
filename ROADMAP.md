@@ -12,8 +12,8 @@ Implemented in the current alpha codebase:
 - explicit `source`, `dependencies`, and `repository` scopes with measured
   exclusions;
 - bounded in-process batch triage for explicit repository roots;
-- human, scan-result v2, and batch-result v1 output with per-detector coverage
-  and exit codes;
+- human, scan-result v2, SARIF 2.1.0, and batch-result v1 output with
+  per-detector coverage and exit codes;
 - redaction for report preparation;
 - schema-validated threat database import and deterministic runtime artifact;
 - validated authoring-to-runtime projection counts with explicit ignored reasons;
@@ -93,7 +93,6 @@ remediation, and stable `not_scanned` capability IDs.
 ## P2: Distribution and integrations
 
 - Provide a GitHub Action with pinned, checksummed releases.
-- Add SARIF output for GitHub Code Scanning and compatible platforms.
 - Add documented pre-commit and CI recipes without making local hooks mandatory.
 - Let the Claude Code Ultimate Guide consume a pinned AgentSec release artifact.
 - Replace hardcoded landing security versions, dates, counts, and stale source
