@@ -133,7 +133,7 @@ def run_scan(
             f"max_total_bytes={limits.max_total_bytes}",
         )
         _emit_progress(progress, 3, "Discovering files")
-        files, discovery_diagnostics = discover(
+        discovery_result = discover(
             scan_root,
             limits,
             resolved_root=scan_root,
@@ -165,6 +165,8 @@ def run_scan(
                 )
             ),
         )
+        files = discovery_result.files
+        discovery_diagnostics = discovery_result.diagnostics
     context = ScanContext(
         root=context_root,
         files=files,

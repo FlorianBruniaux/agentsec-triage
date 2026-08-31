@@ -7,6 +7,7 @@ import pytest
 from agentsec.engine import discovery as discovery_module
 from agentsec.engine.discovery import DiscoveryLimits, discover
 from agentsec.models import DiagnosticKind
+from agentsec.scopes import ExclusionReason, ScanScope
 
 LIMITS = DiscoveryLimits(max_file_bytes=4_000_000, max_files=1000, max_diagnostics=100)
 
@@ -27,6 +28,80 @@ def test_files_are_relative_and_sorted(tmp_path: Path):
     files, diagnostics = discover(tmp_path, LIMITS)
     assert diagnostics == ()
     assert [item.relative_path.as_posix() for item in files] == ["a.txt", "b.txt"]
+
+
+def test_source_scope_groups_explicit_exclusions(tmp_path: Path) -> None:
+    (tmp_path / "src").mkdir()
+    (tmp_path / "src" / "main.py").write_text("print('safe')")
+    (tmp_path / "package-lock.json").write_text("{}")
+    (tmp_path / "asset.png").write_bytes(b"image")
+    for directory in ("node_modules", "dist"):
+        path = tmp_path / directory
+        path.mkdir()
+        (path / "payload.js").write_text("ignored")
+
+    result = discover(tmp_path, LIMITS, scope=ScanScope.SOURCE)
+
+    assert result.diagnostics == ()
+    assert [item.relative_path.as_posix() for item in result.files] == [
+        "package-lock.json",
+        "src/main.py",
+    ]
+    assert result.coverage.files_selected == 2
+    assert result.coverage.entries_seen == 6
+    assert tuple(
+        (item.reason, item.paths, item.subtrees)
+        for item in result.coverage.exclusions
+    ) == (
+        (ExclusionReason.BINARY_ASSET, 1, 0),
+        (ExclusionReason.GENERATED_OR_CACHE, 1, 1),
+        (ExclusionReason.INSTALLED_DEPENDENCIES, 1, 1),
+    )
+
+
+def test_dependency_scope_selects_nested_lockfiles_and_installed_tree(
+    tmp_path: Path,
+) -> None:
+    app = tmp_path / "apps" / "web"
+    installed = app / "node_modules" / "keyv"
+    installed.mkdir(parents=True)
+    (installed / "package.json").write_text("{}")
+    (app / "src").mkdir()
+    (app / "src" / "main.ts").write_text("export {}")
+    (app / "pnpm-lock.yaml").write_text("lockfileVersion: '9.0'")
+
+    result = discover(tmp_path, LIMITS, scope=ScanScope.DEPENDENCIES)
+
+    assert result.diagnostics == ()
+    assert [item.relative_path.as_posix() for item in result.files] == [
+        "apps/web/node_modules/keyv/package.json",
+        "apps/web/pnpm-lock.yaml",
+    ]
+    outside = next(
+        item
+        for item in result.coverage.exclusions
+        if item.reason is ExclusionReason.OUTSIDE_DEPENDENCY_SCOPE
+    )
+    assert outside.paths == 1
+    assert outside.subtrees == 0
+
+
+def test_repository_scope_keeps_binary_generated_and_dependency_files(
+    tmp_path: Path,
+) -> None:
+    for relative in ("asset.png", "dist/output.js", "node_modules/keyv/index.js"):
+        path = tmp_path / relative
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text("content")
+
+    result = discover(tmp_path, LIMITS, scope=ScanScope.REPOSITORY)
+
+    assert [item.relative_path.as_posix() for item in result.files] == [
+        "asset.png",
+        "dist/output.js",
+        "node_modules/keyv/index.js",
+    ]
+    assert result.coverage.exclusions == ()
 
 
 def test_external_symlink_is_reported_but_not_followed(tmp_path: Path):

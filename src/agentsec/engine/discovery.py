@@ -6,7 +6,18 @@ from collections.abc import Callable, Iterator
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from agentsec.models import Diagnostic, DiagnosticKind
+from agentsec.models import (
+    Diagnostic,
+    DiagnosticKind,
+    DiscoveryCoverage,
+    ExclusionCount,
+)
+from agentsec.scopes import (
+    ExclusionReason,
+    ScanScope,
+    classify_directory,
+    classify_file,
+)
 
 _FILE_ATTRIBUTE_REPARSE_POINT = getattr(stat, "FILE_ATTRIBUTE_REPARSE_POINT", 0x400)
 _MAX_SAFE_RECURSION_DEPTH = 256
@@ -59,6 +70,18 @@ class DiscoveredFile:
     absolute_path: Path
     size: int
     symlink: bool
+
+
+@dataclass(frozen=True, slots=True)
+class DiscoveryResult:
+    files: tuple[DiscoveredFile, ...]
+    diagnostics: tuple[Diagnostic, ...]
+    coverage: DiscoveryCoverage
+
+    def __iter__(self) -> Iterator[object]:
+        """Keep tuple unpacking compatible while callers migrate to named fields."""
+        yield self.files
+        yield self.diagnostics
 
 
 @dataclass(slots=True)
@@ -121,35 +144,54 @@ class _TraversalState:
     nested_repositories: int = 0
     next_progress_file_count: int = _PROGRESS_FILE_INTERVAL
     stopped: bool = False
+    exclusions: dict[ExclusionReason, list[int]] = field(default_factory=dict)
+
+    def exclude(self, reason: ExclusionReason, *, subtree: bool) -> None:
+        counts = self.exclusions.setdefault(reason, [0, 0])
+        counts[0] += 1
+        if subtree:
+            counts[1] += 1
+
+    def coverage(self, *, files_selected: int) -> DiscoveryCoverage:
+        return DiscoveryCoverage(
+            entries_seen=self.entries_seen,
+            directories_opened=self.directories_opened,
+            files_selected=files_selected,
+            exclusions=tuple(
+                ExclusionCount(reason, paths=counts[0], subtrees=counts[1])
+                for reason, counts in self.exclusions.items()
+            ),
+        )
 
 
 def discover(
     root: Path,
     limits: DiscoveryLimits,
     *,
+    scope: ScanScope = ScanScope.REPOSITORY,
     resolved_root: Path | None = None,
     progress: DiscoveryProgress | None = None,
-) -> tuple[tuple[DiscoveredFile, ...], tuple[Diagnostic, ...]]:
+) -> DiscoveryResult:
     diagnostics = _DiagnosticBuffer(root=root, limit=limits.max_diagnostics)
     scan_root = (
         _resolve_scan_root(root, diagnostics) if resolved_root is None else resolved_root
     )
     if scan_root is None:
-        return (), diagnostics.finish()
+        return DiscoveryResult((), diagnostics.finish(), DiscoveryCoverage())
 
     try:
         is_directory = scan_root.is_dir()
     except (OSError, RuntimeError) as error:
         diagnostics.add(root, f"cannot inspect scan root: {_error_message(error)}")
-        return (), diagnostics.finish()
+        return DiscoveryResult((), diagnostics.finish(), DiscoveryCoverage())
     if not is_directory:
         diagnostics.add(root, "scan root is not a directory")
-        return (), diagnostics.finish()
+        return DiscoveryResult((), diagnostics.finish(), DiscoveryCoverage())
 
     root_stat = _safe_lstat(scan_root, diagnostics)
     if root_stat is None or not stat.S_ISDIR(root_stat.st_mode):
         diagnostics.add(root, "scan root cannot be safely inspected as a directory")
-        return (), diagnostics.finish()
+        return DiscoveryResult((), diagnostics.finish(), DiscoveryCoverage())
 
     discovered: list[DiscoveredFile] = []
     state = _TraversalState()
@@ -160,6 +202,7 @@ def discover(
         parent_fd=None,
         entry_name=None,
         limits=limits,
+        scope=scope,
         discovered=discovered,
         diagnostics=diagnostics,
         depth=0,
@@ -201,9 +244,13 @@ def discover(
             True,
         )
 
-    return (
-        tuple(sorted(discovered, key=lambda item: item.relative_path.as_posix())),
+    ordered_files = tuple(
+        sorted(discovered, key=lambda item: item.relative_path.as_posix())
+    )
+    return DiscoveryResult(
+        ordered_files,
         diagnostics.finish(),
+        state.coverage(files_selected=len(ordered_files)),
     )
 
 
@@ -232,6 +279,7 @@ def _scan_directory(
     parent_fd: int | None,
     entry_name: str | None,
     limits: DiscoveryLimits,
+    scope: ScanScope,
     discovered: list[DiscoveredFile],
     diagnostics: _DiagnosticBuffer,
     depth: int,
@@ -273,21 +321,22 @@ def _scan_directory(
     try:
         if depth > 0 and any(entry.name == ".git" for entry in opened.entries):
             state.nested_repositories += 1
+            state.exclude(ExclusionReason.VCS_METADATA, subtree=False)
             return False
         for directory_entry in opened.entries:
             name = directory_entry.name
-            if name == ".git":
-                continue
             candidate = path / name
-            if opened.file_descriptor is None and not _path_fallback_parent_is_safe(
-                path,
-                expected_stat,
-                scan_root,
-                diagnostics,
-            ):
-                return False
+            relative_candidate = candidate.relative_to(scan_root)
+            lexical_directory = classify_directory(relative_candidate, scope)
+            if lexical_directory.reason is ExclusionReason.VCS_METADATA:
+                state.exclude(
+                    ExclusionReason.VCS_METADATA,
+                    subtree=directory_entry.listed_as_directory,
+                )
+                continue
             if (
                 not directory_entry.listed_as_directory
+                and classify_file(relative_candidate, scope).selected
                 and len(discovered) >= limits.max_files
             ):
                 diagnostics.add(
@@ -295,6 +344,13 @@ def _scan_directory(
                     f"file discovery stopped at max_files={limits.max_files}; discovery incomplete",
                 )
                 return True
+            if opened.file_descriptor is None and not _path_fallback_parent_is_safe(
+                path,
+                expected_stat,
+                scan_root,
+                diagnostics,
+            ):
+                return False
             entry_stat = _safe_entry_lstat(
                 candidate,
                 name,
@@ -314,6 +370,11 @@ def _scan_directory(
                 state.symlinked_paths += 1
                 continue
             if stat.S_ISDIR(entry_stat.st_mode) and not _is_link_like(entry_stat):
+                directory_decision = classify_directory(relative_candidate, scope)
+                if directory_decision.prune:
+                    if directory_decision.reason is not None:
+                        state.exclude(directory_decision.reason, subtree=True)
+                    continue
                 if _scan_directory(
                     candidate,
                     entry_stat,
@@ -321,6 +382,7 @@ def _scan_directory(
                     parent_fd=opened.file_descriptor,
                     entry_name=name,
                     limits=limits,
+                    scope=scope,
                     discovered=discovered,
                     diagnostics=diagnostics,
                     depth=depth + 1,
@@ -335,6 +397,11 @@ def _scan_directory(
                     "special file type is not analyzable; coverage incomplete",
                 )
                 continue
+            file_decision = classify_file(relative_candidate, scope)
+            if not file_decision.selected:
+                if file_decision.reason is not None:
+                    state.exclude(file_decision.reason, subtree=False)
+                continue
             if len(discovered) >= limits.max_files:
                 diagnostics.add(
                     scan_root,
@@ -343,7 +410,7 @@ def _scan_directory(
                 return True
             discovered.append(
                 DiscoveredFile(
-                    relative_path=candidate.relative_to(scan_root),
+                    relative_path=relative_candidate,
                     absolute_path=candidate,
                     size=entry_stat.st_size,
                     symlink=False,
