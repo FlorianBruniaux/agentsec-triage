@@ -1,0 +1,31 @@
+CHANGELOG.md
+  s_0df90997879182::t_3a1a906b9e413b 30-35,43-48,86-92
+llms.txt
+  s_0df90997879182::t_3a1a906b9e413b 33-35
+LICENSE-DECISION.md
+  s_0df90997879182::t_3a1a906b9e413b 53-54
+LICENSE-DATA.md
+  s_0df90997879182::t_3a1a906b9e413b 59-61
+ROADMAP.md
+  s_0df90997879182::t_3a1a906b9e413b 33-34,48-50,53-55,69,73-75,86-87
+docs/LICENSE-OWNER-DECISION-PACKET.md
+  s_0df90997879182::t_3a1a906b9e413b 35-36,43-49
+README.md
+  s_0df90997879182::t_3a1a906b9e413b 105,107-108
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "1b37fe5c463eea45c3c604db61fa0695b4eac683",
+  "prompts": {},
+  "sessions": {
+    "s_0df90997879182": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019fd73a-588d-7f03-ab50-494ca0e95848",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Florian BRUNIAUX <florian@bruniaux.com>"
+    }
+  }
+}
