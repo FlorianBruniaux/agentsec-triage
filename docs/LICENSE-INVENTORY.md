@@ -71,12 +71,16 @@ The earlier inventory count of 28 was incomplete. It matches the
 finds 419 `notes:` or `description:` keys in the imported 2.26.0 snapshot and
 430 in the current 2.27.0 authoring database.
 
-The 28-field subset now has a field path, value digest, source locator, local
-Git origin, reviewer, review date, status, and required action in
-[`LICENSE-PROSE-REVIEW.md`](LICENSE-PROSE-REVIEW.md). Local provenance is
-`VERIFIED` for all 28, but all 28 classifications remain `UNKNOWN`; 402 current
-prose keys are outside that field-level review. The review also found that the
-Aguara note contains a stale observatory claim.
+The generated [`LICENSE-PROSE-INVENTORY.json`](LICENSE-PROSE-INVENTORY.json)
+now records all 430 current prose fields with their field path, full value
+digest, locally resolvable source locator where available, classification,
+review state, and required action. The historical 28-field
+`scanning_tools[].notes` subset has review state `LOCAL_PROVENANCE_VERIFIED`;
+the other 402 fields are `UNREVIEWED`. Every classification remains `UNKNOWN`.
+The inventory resolves 65 field-level source locators from a sibling `url` or
+an exact top-level source match and leaves 365 as null rather than infer a
+source. The review also found that the Aguara note contains a stale observatory
+claim.
 
 Every prose field must be reviewed against its cited source and classified as
 one of:
@@ -151,7 +155,7 @@ After the reviewed data scope is explicitly approved:
 | Code license | MIT selected on 2026-08-15 | Resolved |
 | Code copyright notice | Florian Bruniaux, 2026 | Resolved |
 | Data license | CC BY-SA 4.0 is the candidate | Approve after prose review |
-| Third-party prose | Provenance for the recorded 28-field subset is `VERIFIED`; all 28 classifications are `UNKNOWN`; 402 current prose keys remain outside the field-level review | Complete source comparison, independent rewrite, permission, or removal |
+| Third-party prose | 430 fields are inventoried; 28 have `LOCAL_PROVENANCE_VERIFIED`, 402 are `UNREVIEWED`, and all classifications are `UNKNOWN` | Complete source comparison, independent rewrite, permission, or removal |
 | Attribution packaging | Not implemented | Define notices and artifact inclusion |
 | Package and gated-data release | Blocked | Open only after every item above is complete |
 

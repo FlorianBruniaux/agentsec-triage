@@ -8,32 +8,45 @@ license grant. Reviewer: Codex local evidence review. Review date:
 
 The earlier inventory described 28 imported `notes:` or `description:` fields.
 That count was not the complete database count. It corresponds exactly to the
-28 `scanning_tools[].notes` fields. A recursive count finds 419 `notes:` or
-`description:` keys in the imported 2.26.0 snapshot and 430 in the current
-2.27.0 authoring database. The 28 reviewed fields below are unchanged between
-those two versions.
+28 `scanning_tools[].notes` fields. The deterministic
+[`LICENSE-PROSE-INVENTORY.json`](LICENSE-PROSE-INVENTORY.json) artifact records
+all 430 current prose fields in the 2.27.0 authoring database. It contains the
+field path, full SHA-256 value digest, locally resolvable source locator,
+classification, review state, and required action for every entry.
+
+The inventory resolves 65 field-level source locators from a sibling `url` or
+an exact match against the database's top-level `sources` list. The other 365
+fields retain a null locator. A resolved local URL links a field to a cited
+record; it does not prove that the prose is independently written, correctly
+attributed, or redistributable.
 
 Local Git establishes that all 28 strings first appeared in the canonical
 guide under the author identity `Florian BRUNIAUX <florian@bruniaux.com>` and
 were later imported byte for byte into AgentSec. Git attribution does not prove
 independent authorship, permission, or the absence of copied expression.
 
-Result for this 28-field subset:
+Result for the current 430-field inventory:
 
-- provenance: 28 **VERIFIED** against local Git history;
-- classification: 28 **UNKNOWN** because no local source snapshot, drafting
-  record, or permission record establishes independent authorship, justified
-  quotation, or authorized third-party expression;
+- provenance: 28 `scanning_tools[].notes` fields have review state
+  `LOCAL_PROVENANCE_VERIFIED` against local Git history; the other 402 fields
+  have review state `UNREVIEWED`;
+- classification: all 430 fields are **UNKNOWN** because no local source
+  snapshot, drafting record, or permission record establishes independent
+  authorship, justified quotation, or authorized third-party expression;
 - factual drift: the Aguara note is contradicted by the pinned README, which
   states that the prior public observatory is stale and unsupported;
-- publication: still blocked, including the 402 current prose keys outside this
-  subset that have not received a field-level review.
+- publication: still blocked until every `UNKNOWN` classification is resolved
+  by source comparison, independent rewrite, permission, or removal.
 
 `VERIFIED` means the stated local evidence was observed. `UNKNOWN` means the
 available local evidence is insufficient. Neither state grants redistribution
-rights.
+rights. `LOCAL_PROVENANCE_VERIFIED` is a review state, not an authorship or
+rights classification. `UNREVIEWED` records that no local provenance review has
+been entered for that field. The historical state is emitted only when both the
+field path and its full digest match the recorded 28-field subset; changing the
+field value returns it to `UNREVIEWED`.
 
-## Reviewed fields
+## Historically verified local-provenance subset
 
 The digest is the first 16 hexadecimal characters of SHA-256 over the exact
 UTF-8 field value. The origin column records the first matching canonical-guide
@@ -72,6 +85,15 @@ recorded above.
 | `scanning_tools[name=SkillDetonate].notes` | `6591809cf5c5171a` | `752edfe5`, 2026-08-06 | [SkillDetonate](https://www.cybersecurityinstitute.com/blog/?p=5483) | **UNKNOWN** | No local source snapshot or permission record supports classification 1, 2, or 3. | Compare the source, then rewrite independently, obtain permission, or remove. |
 
 ## Reproduction
+
+Rebuild the complete machine-verifiable inventory twice and compare the byte
+output:
+
+```bash
+python scripts/build_license_prose_inventory.py
+python scripts/build_license_prose_inventory.py --output /tmp/license-prose-inventory.json
+cmp docs/LICENSE-PROSE-INVENTORY.json /tmp/license-prose-inventory.json
+```
 
 The imported baseline is available at commit `54c7d45`. Its complete file
 digest is recorded in `data/IMPORT_PROVENANCE.md`. Reproduce a field origin in
