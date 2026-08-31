@@ -1,0 +1,48 @@
+docs/LICENSE-PROSE-REVIEW.md
+  s_0df90997879182::t_1a7241b3caf744 17-21
+  s_0df90997879182::t_eb601eedb8951b 11-16,28,30-35,38-39,43-44,49,89-96
+  s_0df90997879182::t_76dc0ff90dc539 45-47
+  s_d812a5cba40e21::t_330bbc12215062 97
+tests/unit/test_license_prose_inventory.py
+  s_0df90997879182::t_4b26d2603376c9 129-133
+  s_0df90997879182::t_f1463fe426a28a 93-111
+  s_0df90997879182::t_1a1e25f58b34df 1-47,49,52-53,56-58,60,63-64,67-70,112-128,134
+  s_0df90997879182::t_e551c92dec3a94 48,50-51,54,59,61-62,65
+  s_0df90997879182::t_f093ee38d5b32a 55,66,80,90
+  s_0df90997879182::t_4ed90575a38b2f 71-79,81-89,91-92
+scripts/build_license_prose_inventory.py
+  s_0df90997879182::t_49385b7f9ee1dc 1-11,13-22,140-153,223-237,246-272,274-278,282-289,296-307,309-315,317,319-372,374-377
+  s_0df90997879182::t_5ddefca52e1ad8 23,292-295
+  s_0df90997879182::t_dc0de22dd8c766 24-25,138-139,290-291,308,316,318
+  s_0df90997879182::t_03ee63c775a1d0 12,154-222,238-245
+  s_0df90997879182::t_c5a6b858dc7761 26-137,273,279-281,373
+docs/LICENSE-INVENTORY.md
+  s_0df90997879182::t_1a7241b3caf744 80-83
+  s_0df90997879182::t_eb601eedb8951b 74-79,158
+docs/LICENSE-PROSE-INVENTORY.json
+  s_0df90997879182::t_9cd1f3303e2f98 1-3447
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "9c0ca67ad26c6ab29def66f3da706a20c158ece2",
+  "prompts": {},
+  "sessions": {
+    "s_0df90997879182": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019fd73a-588d-7f03-ab50-494ca0e95848",
+        "model": "gpt-5.6-terra"
+      },
+      "human_author": "Florian BRUNIAUX <florian@bruniaux.com>"
+    },
+    "s_d812a5cba40e21": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a033c4-cc98-74d2-adf5-63f175b8463b",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Florian BRUNIAUX <florian@bruniaux.com>"
+    }
+  }
+}
