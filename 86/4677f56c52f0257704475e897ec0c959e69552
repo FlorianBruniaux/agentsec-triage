@@ -1,0 +1,23 @@
+tests/integration/test_cli.py
+  s_0df90997879182::t_2e10b316ba0c09 658-661
+tests/integration/test_shai_hulud_detector.py
+  s_0df90997879182::t_2e10b316ba0c09 441,451-461
+tests/unit/test_sarif_output.py
+  s_0df90997879182::t_2e10b316ba0c09 25-27,35,49,54,226-229,236,239,241-242
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "864677f56c52f0257704475e897ec0c959e69552",
+  "prompts": {},
+  "sessions": {
+    "s_0df90997879182": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019fd73a-588d-7f03-ab50-494ca0e95848",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Florian BRUNIAUX <florian@bruniaux.com>"
+    }
+  }
+}
