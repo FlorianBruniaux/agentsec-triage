@@ -1,0 +1,30 @@
+tests/unit/test_agentsec_fixture_matrix.py
+  s_0df90997879182::t_e578dbc499b3da 88-97
+  s_0df90997879182::t_3245582a709a09 1-87
+scripts/run_agentsec_fixture_matrix.py
+  s_0df90997879182::t_fc40d383bff7f1 1-189,202-239,241-261
+  s_0df90997879182::t_00568dc1afa8ed 190-201,240
+docs/competitive-analysis/BENCHMARK-RESULTS.md
+  s_0df90997879182::t_46a55458d648a1 51-76,91-92,96-97
+  s_0df90997879182::t_3f27586fcc02fc 99-100
+ROADMAP.md
+  s_0df90997879182::t_3f27586fcc02fc 33-34
+CHANGELOG.md
+  s_0df90997879182::t_3f27586fcc02fc 17-20
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "88d6079a06847fb01a5d361a13d1bc42b048b0df",
+  "prompts": {},
+  "sessions": {
+    "s_0df90997879182": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019fd73a-588d-7f03-ab50-494ca0e95848",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Florian BRUNIAUX <florian@bruniaux.com>"
+    }
+  }
+}
