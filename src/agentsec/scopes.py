@@ -55,9 +55,11 @@ _GENERATED_DIRECTORIES = frozenset(
         ".pytest_cache",
         ".mypy_cache",
         ".ruff_cache",
+        ".serena",
         ".tox",
         ".nox",
         ".turbo",
+        ".worktrees",
         "build",
         "coverage",
         "dist",
@@ -112,7 +114,7 @@ def classify_directory(path: Path, scope: ScanScope) -> ScopeDecision:
         return ScopeDecision(True, False)
     if path.name in _DEPENDENCY_DIRECTORIES or _has_yarn_cache_suffix(path):
         return ScopeDecision(False, True, ExclusionReason.INSTALLED_DEPENDENCIES)
-    if path.name in _GENERATED_DIRECTORIES:
+    if path.name in _GENERATED_DIRECTORIES or _is_agent_worktree_directory(path):
         return ScopeDecision(False, True, ExclusionReason.GENERATED_OR_CACHE)
     return ScopeDecision(True, False)
 
@@ -134,3 +136,7 @@ def classify_file(path: Path, scope: ScanScope) -> ScopeDecision:
 
 def _has_yarn_cache_suffix(path: Path) -> bool:
     return len(path.parts) >= 2 and path.parts[-2:] == (".yarn", "cache")
+
+
+def _is_agent_worktree_directory(path: Path) -> bool:
+    return len(path.parts) >= 2 and path.parts[-2:] == (".claude", "worktrees")

@@ -31,6 +31,22 @@ def test_source_prunes_dependency_and_generated_directories(
     assert decision.reason is reason
 
 
+@pytest.mark.parametrize(
+    "path",
+    (
+        Path(".worktrees"),
+        Path(".claude/worktrees"),
+        Path(".serena"),
+    ),
+)
+def test_source_prunes_tool_managed_worktree_and_cache_roots(path: Path) -> None:
+    decision = classify_directory(path, ScanScope.SOURCE)
+
+    assert decision.prune is True
+    assert decision.reason is ExclusionReason.GENERATED_OR_CACHE
+    assert classify_directory(path, ScanScope.REPOSITORY).selected is True
+
+
 @pytest.mark.parametrize("scope", tuple(ScanScope))
 @pytest.mark.parametrize("name", (".git", ".hg", ".svn"))
 def test_every_scope_prunes_vcs_metadata(scope: ScanScope, name: str) -> None:

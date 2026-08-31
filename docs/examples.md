@@ -85,7 +85,7 @@ uses one deterministic scope and reports every excluded category:
 
 | Scope | Selected paths |
 | --- | --- |
-| `source` | Ordinary source and configuration plus supported lockfiles. Installed dependencies, generated or cache trees, binary assets, and VCS metadata are excluded. This is the default. |
+| `source` | Ordinary source and configuration plus supported lockfiles. Installed dependencies, generated or cache trees such as `.worktrees`, `.claude/worktrees`, and `.serena`, binary assets, and VCS metadata are excluded. This is the default. |
 | `dependencies` | Supported lockfiles and paths below installed `node_modules`. Other source paths are excluded. |
 | `repository` | The broad regular-file tree, including installed dependencies, generated trees, and binary paths. VCS metadata remains excluded. |
 

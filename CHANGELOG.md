@@ -189,6 +189,11 @@ while the data-licensing decision remains unresolved.
 
 ### Fixed
 
+- Pruned `.worktrees`, `.claude/worktrees`, and `.serena` as measured
+  generated-or-cache subtrees in the default `source` scope. A real pilot with
+  54 tool-managed nested repositories exposed the missing classification;
+  `repository` scope still includes these directories explicitly.
+
 - Redacted the bundled threat-database resource path explicitly when
   `--redact` is active, including on Windows CI paths outside a user home.
 - Canonicalized competitor image bundle paths and line endings before hashing,
