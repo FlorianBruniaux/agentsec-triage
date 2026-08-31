@@ -39,6 +39,9 @@ jobs:
       - name: Require deterministic generated threat data
         run: git diff --exit-code -- src/agentsec/resources/threat-db.json
 
+      - name: Require current license prose inventory
+        run: python scripts/build_license_prose_inventory.py --check
+
       - name: Rebuild response playbooks
         run: python scripts/build_response_playbooks.py
 

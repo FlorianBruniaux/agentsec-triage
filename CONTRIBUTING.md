@@ -58,6 +58,7 @@ Changes to `data/threat-db.yaml` must validate against
 
 ```bash
 .venv/bin/python scripts/build_threat_db.py
+.venv/bin/python scripts/build_license_prose_inventory.py --check
 git diff --exit-code -- src/agentsec/resources/threat-db.json
 ```
 
@@ -140,6 +141,7 @@ Run every gate before requesting review:
 
 ```bash
 .venv/bin/python scripts/build_threat_db.py
+.venv/bin/python scripts/build_license_prose_inventory.py --check
 .venv/bin/python scripts/build_response_playbooks.py
 .venv/bin/python scripts/build_scan_schema_digest.py --check
 .venv/bin/python scripts/build_intelligence_docs.py

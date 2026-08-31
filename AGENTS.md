@@ -127,6 +127,8 @@ Run the relevant builder after changing its source:
 
 ```bash
 .venv/bin/python scripts/build_threat_db.py
+.venv/bin/python scripts/build_license_prose_inventory.py
+.venv/bin/python scripts/build_license_prose_inventory.py --check
 .venv/bin/python scripts/build_response_playbooks.py
 .venv/bin/python scripts/build_scan_schema_digest.py
 .venv/bin/python scripts/build_scan_schema_digest.py --check
@@ -139,6 +141,7 @@ Then require a clean second generation:
 ```bash
 git diff --exit-code -- \
   src/agentsec/resources/threat-db.json \
+  docs/LICENSE-PROSE-INVENTORY.json \
   src/agentsec/resources/response-playbooks.json \
   schemas/scan-result-v1.schema.sha256 \
   schemas/scan-result-v2.schema.sha256 \
@@ -173,12 +176,14 @@ Install `.[dev]` before setting `PIP_NO_INDEX=1`. Then run:
 ```bash
 .venv/bin/python scripts/check_markdown_style.py .
 .venv/bin/python scripts/build_threat_db.py
+.venv/bin/python scripts/build_license_prose_inventory.py --check
 .venv/bin/python scripts/build_response_playbooks.py
 .venv/bin/python scripts/build_scan_schema_digest.py --check
 .venv/bin/python scripts/build_intelligence_docs.py
 .venv/bin/python scripts/build_security_feed.py
 git diff --exit-code -- \
   src/agentsec/resources/threat-db.json \
+  docs/LICENSE-PROSE-INVENTORY.json \
   src/agentsec/resources/response-playbooks.json \
   schemas/scan-result-v1.schema.sha256 \
   schemas/scan-result-v2.schema.sha256 \

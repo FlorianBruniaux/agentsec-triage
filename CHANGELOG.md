@@ -87,9 +87,9 @@ while the data-licensing decision remains unresolved.
   fields in the threat database. It records stable escaped field paths, full
   value digests, 93 source locators across 77 fields, review state, and required
   action. The generator rejects duplicate paths and provides a byte-for-byte
-  `--check` mode. Historical local provenance remains verified for 28 fields,
-  all 430 legal classifications remain `UNKNOWN`, and the gated-data
-  publication block remains active.
+  `--check` mode enforced by CI. Historical local provenance remains verified
+  for 28 fields, all 430 legal classifications remain `UNKNOWN`, and the
+  gated-data publication block remains active.
 
 - Added explicit `source`, `dependencies`, and `repository` scan scopes. The
   default `source` scope now reports measured exclusions for dependency,
