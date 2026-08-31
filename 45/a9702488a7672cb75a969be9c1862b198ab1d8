@@ -1,0 +1,77 @@
+schemas/security-feed-v1.schema.json
+  s_0df90997879182::t_9f2ba543a62178 133
+docs/intelligence-authoring.md
+  s_0df90997879182::t_d4eb50e4ed36cb 71-112
+scripts/build_security_feed.py
+  s_0df90997879182::t_9f2ba543a62178 149,167-169
+data/intelligence/intelligence.schema.json
+  s_0df90997879182::t_543532a509bce9 217-230,233-236,260-288,350,354,357
+  s_0df90997879182::t_ca68a33c623d13 231-232,237-259
+  s_785221fef14e1f::t_96fcac4333e441 351-353,355-356
+scripts/build_intelligence_docs.py
+  s_0df90997879182::t_543532a509bce9 223,225,231-243,455-461
+ROADMAP.md
+  s_0df90997879182::t_c966855eca528c 68-75
+  s_0df90997879182::t_d4eb50e4ed36cb 25-26
+CHANGELOG.md
+  s_0df90997879182::t_d4eb50e4ed36cb 43-52,56
+  s_0df90997879182::t_f06261f9eb3543 53-55
+tests/unit/test_security_feed.py
+  s_0df90997879182::t_60d4a84391582c 18,23-24,116-154
+tests/unit/test_intelligence_docs.py
+  s_0df90997879182::t_7abd0cf28d24ac 271
+  s_0df90997879182::t_6fb0a1ca55785e 259-270,272-285,312-350,354-361,365-372,376-385,429-436
+  s_0df90997879182::t_ee552cbfc6b025 286-294,389-399,403-412,416-425
+  s_0df90997879182::t_05b7b630cc660b 295-311,351-353,362-364,373-375,386-388,400-402,413-415,426-428,437-439
+docs/LICENSE-PROSE-REVIEW.md
+  s_0df90997879182::t_fdbf6c6a43947d 1-23,27-44,46-70,72-86
+  s_0df90997879182::t_f06261f9eb3543 24-26,45,71
+SECURITY.md
+  s_0df90997879182::t_d4eb50e4ed36cb 82-96
+docs/LICENSE-INVENTORY.md
+  s_0df90997879182::t_419f52a806f02b 6-7,69-75,80-82,91-93,130-132
+  s_0df90997879182::t_f06261f9eb3543 76-79,154
+  s_b3414c5bc8087e::t_30d5e00c710556 133
+LICENSE-DATA.md
+  s_0df90997879182::t_419f52a806f02b 60-61
+  s_0df90997879182::t_f06261f9eb3543 59
+CONTRIBUTING.md
+  s_0df90997879182::t_d4eb50e4ed36cb 96-100
+docs/LICENSE-OWNER-DECISION-PACKET.md
+  s_0df90997879182::t_f06261f9eb3543 44-47
+  s_0df90997879182::t_fdbf6c6a43947d 1-43,48-77
+LICENSE-DECISION.md
+  s_0df90997879182::t_419f52a806f02b 23-26,53-55
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "45a9702488a7672cb75a969be9c1862b198ab1d8",
+  "prompts": {},
+  "sessions": {
+    "s_0df90997879182": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019fd73a-588d-7f03-ab50-494ca0e95848",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Florian BRUNIAUX <florian@bruniaux.com>"
+    },
+    "s_785221fef14e1f": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0576c-628d-7c50-99b4-3750eac428eb",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Florian BRUNIAUX <florian@bruniaux.com>"
+    },
+    "s_b3414c5bc8087e": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a05791-b5ce-7ce0-b5fc-18921043fb1a",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Florian BRUNIAUX <florian@bruniaux.com>"
+    }
+  }
+}
