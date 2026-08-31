@@ -7,6 +7,8 @@ import sys
 from pathlib import Path
 from types import ModuleType
 
+import pytest
+
 PROJECT_ROOT = Path(__file__).parents[2]
 RUNNER_PATH = PROJECT_ROOT / "scripts" / "run_competitive_benchmark.py"
 
@@ -215,6 +217,94 @@ def test_unapproved_network_is_rejected(tmp_path: Path) -> None:
 
     assert result.returncode == 1
     assert "network: non-disabled network requires explicit approval" in result.stderr
+
+
+def test_approval_digest_normalizes_equivalent_resource_numbers(tmp_path: Path) -> None:
+    runner = _load_runner()
+    plan_path, _, _, _, _ = _write_inputs(tmp_path)
+    plan = json.loads(plan_path.read_text(encoding="utf-8"))
+    equivalent = dict(plan)
+    equivalent["timeout_seconds"] = 30.0
+    equivalent["memory_mb"] = 512.0
+    equivalent["pids_limit"] = 64.0
+    equivalent["cpus"] = 1
+    equivalent["output_limit_bytes"] = 1_000_000.0
+
+    assert runner.normalize_plan(plan) == runner.normalize_plan(equivalent)
+    assert runner.approval_digest(plan) == runner.approval_digest(equivalent)
+
+
+def test_approval_digest_is_stable_when_plan_keys_are_reordered(tmp_path: Path) -> None:
+    runner = _load_runner()
+    plan_path, _, _, _, _ = _write_inputs(tmp_path)
+    plan = json.loads(plan_path.read_text(encoding="utf-8"))
+    reordered = {key: plan[key] for key in reversed(plan)}
+
+    assert runner.approval_digest(plan) == runner.approval_digest(reordered)
+
+
+def test_execute_rejects_unapproved_output_root_before_docker_lookup(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    plan_path, project_index, fixture_manifest, clone_root, fixture_root = _write_inputs(tmp_path)
+    runner = _load_runner()
+    digest = runner.approval_digest(json.loads(plan_path.read_text(encoding="utf-8")))
+    options = runner._parser().parse_args(
+        [
+            "execute",
+            "--plan",
+            str(plan_path),
+            "--project-index",
+            str(project_index),
+            "--fixture-manifest",
+            str(fixture_manifest),
+            "--clone-root",
+            str(clone_root),
+            "--fixture-root",
+            str(fixture_root),
+            "--approval-digest",
+            digest,
+            "--output-root",
+            str(tmp_path / "outside-local-boundary"),
+        ]
+    )
+    monkeypatch.setattr(
+        runner.shutil,
+        "which",
+        lambda _: pytest.fail("output-root rejection must not look up Docker"),
+    )
+
+    assert runner._execute_command(options) == 1
+    assert "output root must be the ignored local directory" in capsys.readouterr().err
+
+
+def test_execute_refuses_a_missing_approval_digest(tmp_path: Path) -> None:
+    plan_path, project_index, fixture_manifest, clone_root, fixture_root = _write_inputs(tmp_path)
+
+    result = subprocess.run(
+        [
+            sys.executable,
+            str(RUNNER_PATH),
+            "execute",
+            "--plan",
+            str(plan_path),
+            "--project-index",
+            str(project_index),
+            "--fixture-manifest",
+            str(fixture_manifest),
+            "--clone-root",
+            str(clone_root),
+            "--fixture-root",
+            str(fixture_root),
+        ],
+        cwd=PROJECT_ROOT,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 2
+    assert "--approval-digest" in result.stderr
 
 
 def test_redaction_removes_absolute_paths_and_secret_shapes(tmp_path: Path) -> None:

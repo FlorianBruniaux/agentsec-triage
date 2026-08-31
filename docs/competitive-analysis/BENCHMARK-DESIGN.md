@@ -72,6 +72,12 @@ theater.
 Validation prints the canonical plan digest and exact Docker argument vector.
 Execution requires the same digest. Any field change invalidates approval.
 
+The approval digest canonicalizes only equivalent integral resource values, such
+as `1` and `1.0` CPUs. It preserves all paths, image IDs, commands, mounts, and
+network fields. The runner rejects an output root outside its ignored local
+boundary before it looks up Docker, so a malformed output destination cannot
+reach a competitor invocation.
+
 ## Container policy
 
 Every run uses:
@@ -135,6 +141,35 @@ For each approved image:
 A missing finding is not a failure until the fixture matches the tool's
 documented input and mode. A clean result with missing evidence is recorded as
 a completeness failure, independently from detection.
+
+## Prepared teardown plans
+
+The following plans were validated on 2026-08-31 and remain under the ignored
+local plan directory. They use the image IDs in `BUILD-GATE.md`, read-only
+source and fixture mounts, network mode `none`, 30 seconds, 512 MB, 64
+processes, one CPU, and a 1,000,000-byte limit per stream. The SHA-256 values
+bind each complete local plan, including its private absolute paths. They do
+not authorize execution and are not runtime observations.
+
+| Project | Fixture | Kind | Applicability | Runtime state | Approval digest |
+| --- | --- | --- | --- | --- | --- |
+| NVIDIA SkillSpector | `skill-delayed-instruction` | positive | applicable to its documented skill surface | `not_tested` | `f04329a636edb6fe5322758f9b3c4093cf7ae7c0b72bc575fa3567d15169766d` |
+| NVIDIA SkillSpector | `lifecycle-near-miss` | near miss | `not_applicable`: package lifecycle input is outside the skill-only plan | `not_applicable` | none |
+| NVIDIA SkillSpector | `unsupported-binary-lock` | unsupported | `not_applicable`: package lockfile input is outside the skill-only plan | `not_applicable` | none |
+| NVIDIA SkillSpector | `confinement-symlink` | safety | applicable to the skill fixture's outside-root link | `not_tested` | `a9a018bcc746c707a9986a3af0950506930cd58c030b9a3c5ee36a8060fa482d` |
+| AgentShield | `claude-hook-review` | positive | applicable to its documented agent-configuration surface | `not_tested` | `93d7764b6cfd0c9aee548004965cdbbf28800eb8eca5bf165e9cdbb466ee6ded` |
+| AgentShield | `lifecycle-near-miss` | near miss | `not_applicable`: package lifecycle input is outside the configuration plan | `not_applicable` | none |
+| AgentShield | `unsupported-binary-lock` | unsupported | `not_applicable`: package lockfile input is outside the configuration plan | `not_applicable` | none |
+| AgentShield | `confinement-symlink` | safety | applicable to an outside-root configuration link | `not_tested` | `cde5000d0a1a6053d5c36304c3e02c1d01f1a7dc4f178d5402e06f230a9bd0eb` |
+| agent-bom | `shai-hulud-confirmed` | positive | applicable to the documented package scan | `not_tested` | `56fab351a755f74302d48bef7cef87a66d6bcdae49f84d71ac4ee0322210cc68` |
+| agent-bom | `lifecycle-near-miss` | near miss | applicable package-manifest control | `not_tested` | `6574cf12df8f13f3c09d3d0186c9332019f07b885d05205ddd34b322544f543a` |
+| agent-bom | `unsupported-binary-lock` | unsupported | applicable unsupported-input check | `not_tested` | `019536c562c49f3e066642937facdabca94b8d7a7abf97d1d7eca9eb8fe26fd0` |
+| agent-bom | `confinement-symlink` | safety | applicable repository-confinement check | `not_tested` | `74bcbcdee7ee52ef7dae30f128dc132611ad064ad48ecf9d92fd1f0086d7baa1` |
+
+`not_applicable` has no exact plan or digest. It is not a clean result.
+`not_tested` records the remaining runtime evidence gap only for planned rows.
+Any run still needs the exact reviewed plan and matching digest supplied to
+`execute` after a separate owner approval.
 
 ## Local infrastructure self-test
 

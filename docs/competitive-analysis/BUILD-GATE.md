@@ -129,6 +129,21 @@ paths. The runner validated each plan and produced these approval digests:
 These digests authorize nothing by themselves. Each `execute` call still
 requires the matching digest to be supplied explicitly after owner approval.
 
+## Prepared teardown-plan gate
+
+Eight further plans were generated and validated without invoking Docker or a
+competitor CLI. They extend the clean-control gate with positive, near-miss,
+unsupported, and confinement cases for the first three teardown candidates.
+The private plans remain ignored because their source and fixture paths are
+absolute. The public evidence is limited to the fixture, resource policy, and
+digest in `BENCHMARK-DESIGN.md`.
+
+The planned cases have runtime state `not_tested`. SkillSpector and AgentShield
+mark the package lifecycle and binary-lock inputs `not_applicable`; no plan was
+created for those inputs. agent-bom has one exact plan for each of the four
+fixture kinds. No digest grants approval, and no runtime comparison may be
+published until an owner approves each exact plan.
+
 ## Build boundary
 
 Each ready recipe has these properties:

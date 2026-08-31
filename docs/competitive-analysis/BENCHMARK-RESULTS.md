@@ -91,21 +91,31 @@ The clean-control evidence supports four product decisions:
 5. Prioritize skill, MCP, CI, and content-hash detectors because their positive
    fixtures currently produce no finding.
 
-## Next fixture gate
+## Prepared teardown plans and remaining runtime gate
 
-No positive, near-miss, unsupported, or confinement **competitor** fixture is
-authorized by this report. The next gate must:
+Eight exact, bounded plans now cover the first teardown candidates:
+SkillSpector, AgentShield, and agent-bom. The fixture-level applicability
+decisions and SHA-256 digests are recorded in `BENCHMARK-DESIGN.md`. The plans
+were validated only. Docker and every competitor CLI remain uninvoked for this
+gate, so all planned observations remain `not_tested`.
 
-1. run `scripts/run_agentsec_fixture_matrix.py` to create a three-run AgentSec
-   baseline for each fixture in the ignored local result directory;
-2. define `not_applicable` before generating a competitor plan;
-3. provide an inert `.cc-audit.yaml` for the cc-audit cohort entry;
-4. provide a skill-shaped clean control for Cisco Skill Scanner;
-5. run each approved case three times and compare output digests;
-6. add normalization and completeness regression tests before publishing a
-   cross-tool comparison.
+SkillSpector and AgentShield have no plan for `lifecycle-near-miss` or
+`unsupported-binary-lock`. Those package-oriented inputs are
+`not_applicable` to their selected skill and configuration paths. That is not
+a successful clean scan. agent-bom has plans for a confirmed package version,
+a lifecycle near miss, an unsupported binary lockfile, and a confinement link.
 
-The first teardown candidates are SkillSpector, AgentShield, and agent-bom.
-They respectively expose the strongest analyzer ledger, a score-to-applicability
-question, and a completion-to-requested-scope question. Final selection waits
-for positive and incomplete fixture evidence.
+The remaining gate must:
+
+1. obtain explicit owner approval for each exact plan and matching digest;
+2. run the approved case three times with the existing isolation policy;
+3. compare normalized evidence without converting a missing finding into a
+   detection claim;
+4. preserve unsupported, skipped, unreadable, and outside-root inputs as
+   incomplete or `not_applicable`, according to the observed tool contract;
+5. publish only reviewed, redacted aggregates after the repeated runs.
+
+The target questions are unchanged: SkillSpector's analyzer ledger,
+AgentShield's score-to-applicability relationship, and agent-bom's
+completion-to-requested-scope relationship. No answer is available until the
+separate runtime approval and execution evidence exist.

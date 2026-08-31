@@ -61,6 +61,9 @@ SECRET_PATTERNS = (
 )
 MAX_TIMEOUT_SECONDS = 300
 MAX_OUTPUT_LIMIT_BYTES = 10_000_000
+RESOURCE_NUMBER_FIELDS = frozenset(
+    {"timeout_seconds", "memory_mb", "pids_limit", "cpus", "output_limit_bytes"}
+)
 
 
 def _load_json(path: Path, label: str) -> dict[str, object]:
@@ -248,8 +251,20 @@ def validate_plan(
     return errors
 
 
+def normalize_plan(plan: dict[str, object]) -> dict[str, object]:
+    """Return the digest representation without changing runtime semantics."""
+    normalized = dict(plan)
+    for field in RESOURCE_NUMBER_FIELDS:
+        value = normalized.get(field)
+        if isinstance(value, float) and value.is_integer():
+            normalized[field] = int(value)
+    return normalized
+
+
 def approval_digest(plan: dict[str, object]) -> str:
-    canonical = json.dumps(plan, sort_keys=True, separators=(",", ":"), ensure_ascii=True)
+    canonical = json.dumps(
+        normalize_plan(plan), sort_keys=True, separators=(",", ":"), ensure_ascii=True
+    )
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 
 
@@ -520,9 +535,6 @@ def _execute_command(options: argparse.Namespace) -> int:
     if options.approval_digest != digest:
         print("competitive benchmark: approval digest does not match exact plan", file=sys.stderr)
         return 1
-    if shutil.which("docker") is None:
-        print("competitive benchmark: docker executable not found", file=sys.stderr)
-        return 1
 
     output_root = options.output_root.resolve()
     expected_output_root = DEFAULT_OUTPUT_ROOT.resolve()
@@ -531,6 +543,9 @@ def _execute_command(options: argparse.Namespace) -> int:
             "competitive benchmark: output root must be the ignored local directory",
             file=sys.stderr,
         )
+        return 1
+    if shutil.which("docker") is None:
+        print("competitive benchmark: docker executable not found", file=sys.stderr)
         return 1
     output_root.mkdir(parents=True, exist_ok=True)
 
