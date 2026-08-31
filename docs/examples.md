@@ -1,7 +1,8 @@
 # AgentSec Triage Examples
 
-These examples run against one local repository. AgentSec reads target files but
-does not execute them or request the network during a scan.
+These examples run against explicit local repository roots. AgentSec reads
+selected target files but does not execute them or request the network during a
+scan.
 
 Complete the [source installation](installation.md) first.
 
@@ -10,6 +11,12 @@ Complete the [source installation](installation.md) first.
 ```bash
 # Human-readable output
 agentsec scan /path/to/repository
+
+# Inspect installed dependency metadata and lockfiles
+agentsec scan /path/to/repository --scope dependencies
+
+# Inspect the broad repository tree, including generated and binary paths
+agentsec scan /path/to/repository --scope repository
 
 # Versioned JSON for local automation
 agentsec scan /path/to/repository --format json
@@ -42,6 +49,23 @@ agentsec detectors list
 agentsec detectors explain shai-hulud-keyv
 ```
 
+## Batch triage
+
+Batch mode accepts explicit roots and calls the same scanner in process. It
+does not discover repositories across a parent directory.
+
+```bash
+agentsec batch /path/to/repo-a /path/to/repo-b --format json --redact
+
+# One UTF-8 path per non-empty line, limited to 1 MiB and 10,000 roots
+agentsec batch --from-file /path/to/roots.txt --scope source --format json
+```
+
+Batch exit code is the highest child class: `2` takes precedence over `1`,
+which takes precedence over `0`. Human output prints one compact row per root.
+JSON embeds every scan-result v2 report and follows
+[`batch-result-v1`](../schemas/batch-result-v1.schema.json).
+
 ## Verdicts and exit codes
 
 | Exit code | Meaning |
@@ -50,16 +74,24 @@ agentsec detectors explain shai-hulud-keyv
 | `1` | One or more findings require action or review. Inspect severity, confidence, evidence, and diagnostics. |
 | `2` | The scan is incomplete or an error prevents a clean verdict. Do not treat it as a pass. |
 
-Human and JSON output include completion, coverage, diagnostics, findings, the
-selected detector, and stable `not_scanned` capability IDs.
+Human and JSON output include the selected scope, completion, discovery
+exclusions, per-detector coverage, diagnostics, findings, and stable
+`not_scanned` capability IDs.
 
-## Repository traversal
+## Scan scopes and repository traversal
 
-AgentSec visits every directory entry under the scan root except `.git`. It
-does not honor `.gitignore` or other ignore files and has no exclusion option.
-Generated content, dependencies, fixtures, and virtual environments remain in
-scope so a hostile repository cannot hide evidence behind developer-tool ignore
-rules.
+AgentSec does not treat `.gitignore` as a security boundary. Instead, each run
+uses one deterministic scope and reports every excluded category:
+
+| Scope | Selected paths |
+| --- | --- |
+| `source` | Ordinary source and configuration plus supported lockfiles. Installed dependencies, generated or cache trees, binary assets, and VCS metadata are excluded. This is the default. |
+| `dependencies` | Supported lockfiles and paths below installed `node_modules`. Other source paths are excluded. |
+| `repository` | The broad regular-file tree, including installed dependencies, generated trees, and binary paths. VCS metadata remains excluded. |
+
+An exclusion is not a detector inspection. Scan-result v2 therefore separates
+`discovery` counters and exclusion reasons from each row under `detectors`.
+Broader scopes can hit file or byte limits and become incomplete.
 
 Nested Git repositories and worktrees are separate scan roots. AgentSec detects
 their own `.git` marker, skips the nested tree, emits one warning, and tells the
@@ -67,12 +99,12 @@ operator to scan it separately for coverage. This prevents a local
 `.claude/worktrees` directory from multiplying the same repository and its
 dependencies inside one scan. The root repository remains the requested scope.
 
-AgentSec does not follow symlinks or Windows reparse points outside the resolved
-scan root. Symlinked paths produce one aggregated diagnostic with their total
-count, not one line per alias. Their content remains unread and the result is
-incomplete. AgentSec does not invoke Git for an untrusted repository. A root
-`.git` directory or gitfile produces an incomplete-coverage diagnostic instead
-of allowing reads through object symlinks, alternates, or an external gitdir.
+AgentSec never opens content through symlinks or Windows reparse points. An
+internal symlink alias is a measured, non-blocking exclusion only when its
+canonical non-link target was independently covered in the same run. External,
+broken, changed, pruned-target, or otherwise unsafe links remain blocking.
+AgentSec does not invoke Git for an untrusted repository. Git history and VCS
+metadata are explicit `not_scanned` or exclusion boundaries, not scan errors.
 
 ## Progress output
 
@@ -109,7 +141,7 @@ cacheable campaign.
 | pnpm | Parses tested text lockfile forms. Unsupported or malformed authoritative input makes the scan incomplete. |
 | Yarn | Parses tested Classic and Berry forms, including supported aliases and resolutions. |
 | Bun | Parses text `bun.lock`; binary `bun.lockb` is unsupported and makes an applicable scan incomplete. |
-| Installed packages | Checks local `node_modules/**/package.json` metadata and correlated lifecycle commands. |
+| Installed packages | Checks local `node_modules/**/package.json` metadata and correlated lifecycle commands in `dependencies` and `repository` scopes. |
 | Payloads | Hashes inspected regular files and matches exact SHA-256 indicators. File-size and traversal limits apply. |
 | Startup configuration | Checks repository-local Claude Code startup hooks and VS Code `folderOpen` tasks. Hook presence alone is a review finding unless campaign evidence correlates it. |
 | Git history | Not scanned until metadata reads can be confined inside the scan root on every supported platform. |
@@ -136,8 +168,8 @@ proof of compromise.
 - Unsupported, unreadable, changed, or budget-exceeding applicable input makes
   the result incomplete instead of silently clean.
 - Nested Git repositories are skipped with a warning and must be scanned as
-  separate roots. Symlinked paths are not followed and make the requested scan
-  incomplete through one aggregated diagnostic.
+  separate roots. Covered internal symlink aliases are measured exclusions;
+  unresolved or unsafe indirection keeps the scan incomplete.
 - `--redact` reduces disclosure risk but cannot guarantee removal of arbitrary
   sensitive content.
 
@@ -153,11 +185,12 @@ A self-scan of the AgentSec source repository is intentionally incomplete:
 agentsec scan . --format json --redact
 ```
 
-The expected exit code is `2`. The repository `.git` metadata produces the
-unscanned-history diagnostic. A local `.venv` or build output may add further
-diagnostics. CI checks the unsupported Bun lockfile plus positive and negative
-detector inputs against their fixtures directly. The full self-scan remains an
-incomplete-coverage check rather than an oracle for individual detectors.
+The expected exit code is `2` while the tracked binary `bun.lockb` remains an
+unsupported authoritative lockfile. The default source scope excludes `.git`,
+the local `.venv`, and build output without reporting their descendants as
+inspected. CI also checks positive and negative detector fixtures directly. The
+self-scan remains an incomplete-coverage check rather than an oracle for
+individual detectors.
 
 The negative fixture demonstrates completed applicable checks without hiding
 files:
@@ -171,23 +204,43 @@ report `complete: true`, no diagnostic, and no critical finding.
 
 ## JSON output
 
-JSON follows the [public scan-result schema](../schemas/scan-result-v1.schema.json).
+JSON follows the active [scan-result v2 schema](../schemas/scan-result-v2.schema.json).
+The [v1 schema](../schemas/scan-result-v1.schema.json) is retained only for
+historical consumers. New CLI output is not backward-compatible with v1.
 Release values are recorded in the [changelog](../CHANGELOG.md); placeholders
 below keep this example stable.
 
 ```json
 {
-  "schema_version": "<SCHEMA_VERSION>",
+  "schema_version": "2",
   "tool_version": "<TOOL_VERSION>",
   "database_version": "<DATABASE_VERSION>",
   "root": "<SCAN_ROOT>",
+  "scope": "source",
   "complete": true,
   "elapsed_ms": 4,
-  "coverage": {
-    "files_seen": 2,
-    "files_inspected": 2,
-    "bytes_inspected": 512
+  "discovery": {
+    "entries_seen": 8,
+    "directories_opened": 3,
+    "files_selected": 2,
+    "exclusions": [
+      {
+        "reason": "installed_dependencies",
+        "paths": 1,
+        "subtrees": 1
+      }
+    ]
   },
+  "detectors": [
+    {
+      "detector_id": "shai-hulud-keyv",
+      "applicability": "applicable",
+      "files_seen": 2,
+      "files_inspected": 2,
+      "bytes_inspected": 512,
+      "not_scanned": ["git.history"]
+    }
+  ],
   "not_scanned": [
     "git.history",
     "host.credentials",

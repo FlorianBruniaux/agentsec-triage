@@ -9,11 +9,16 @@ requirements appear.
 Implemented in the current alpha codebase:
 
 - bounded, read-only, offline repository discovery;
-- human and versioned JSON results with explicit coverage and exit codes;
+- explicit `source`, `dependencies`, and `repository` scopes with measured
+  exclusions;
+- bounded in-process batch triage for explicit repository roots;
+- human, scan-result v2, and batch-result v1 output with per-detector coverage
+  and exit codes;
 - redaction for report preparation;
 - schema-validated threat database import and deterministic runtime artifact;
 - validated authoring-to-runtime projection counts with explicit ignored reasons;
-- detector-specific HTTPS remediation URLs and generated schema-digest checks;
+- detector-specific HTTPS remediation URLs and packaged digest checks for the
+  historical v1, active scan v2, and batch v1 schemas;
 - console-script and `python -m agentsec` entry points;
 - an opt-in redacted local benchmark without published performance claims;
 - a factual license evidence inventory that preserves the publication gate;

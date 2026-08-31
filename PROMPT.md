@@ -23,7 +23,7 @@ Rules:
 5. If doctor fails, stop and report the exact failure. Do not claim that a scan
    was completed.
 6. Run:
-   <AGENTSEC_PATH>/.venv/bin/agentsec scan <REPOSITORY_PATH> --format json --redact --progress=never
+   <AGENTSEC_PATH>/.venv/bin/agentsec scan <REPOSITORY_PATH> --scope source --format json --redact --progress=never
 7. Preserve the scanner exit code and JSON output. Interpret the exit codes
    exactly:
    - exit code `0`: applicable checks completed without findings; this does not
@@ -46,8 +46,9 @@ Return this report:
 State the scanner exit code, `complete` value, and a one-sentence conclusion.
 
 # Execution evidence
-List the AgentSec command, detector IDs, tool and database versions reported by
-the result, and coverage counts.
+List the AgentSec command, selected scope, detector IDs, tool and database
+versions, discovery counts and exclusion reasons, then each detector's
+inspection counts.
 
 # Findings
 For each finding, report severity, confidence, rule ID, redacted path, evidence,

@@ -54,10 +54,12 @@ Run both supported entry points:
 ```
 
 A valid source environment reports the Python runtime, bundled database,
-resource availability, and schema status. Then inspect the command surface:
+resource availability, `scan-result-v2: valid`, and
+`batch-result-v1: valid`. Then inspect the command surface:
 
 ```bash
 .venv/bin/agentsec --help
+.venv/bin/agentsec batch --help
 .venv/bin/agentsec detectors list
 .venv/bin/agentsec db info
 ```
@@ -77,6 +79,6 @@ examples in this repository.
 ## Distribution status
 
 Do not install AgentSec from an unofficial package index or source archive.
-[`LICENSE-DECISION.md`](../LICENSE-DECISION.md) blocks public visibility,
-tags, archives, and package publication until the separate data review is
-complete.
+The source repository is public, but [`LICENSE-DECISION.md`](../LICENSE-DECISION.md)
+still blocks tags, archives, and package publication until the separate data
+review is complete.

@@ -159,6 +159,14 @@ while the data-licensing decision remains unresolved.
 
 ### Changed
 
+- Changed the alpha CLI JSON contract from scan-result v1 to v2. Consumers
+  must migrate from the former aggregate `coverage` object to `discovery` plus
+  per-detector rows, or pin an earlier CLI revision. Updated the README,
+  examples, installation guide, roadmap, contributor and agent instructions,
+  LLM prompt, and LLM index for scopes, batch triage, Git-history semantics,
+  and the active schemas. The optional benchmark report now records schema v2
+  scope, discovery selection, and aggregated per-detector inspection counts.
+
 - Updated official `actions/checkout` and `actions/setup-python` workflow
   dependencies to their Node 24-based v7 majors after validating the previous
   matrix and its Node 20 deprecation annotations.

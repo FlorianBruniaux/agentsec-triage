@@ -67,8 +67,8 @@ reason. Adding data for an unsupported ecosystem does not make that data active
 in a detector; its projection count remains visible in the generated artifact
 and `agentsec db info`.
 
-After changing `schemas/scan-result-v1.schema.json`, regenerate and check the
-committed digest:
+After changing any result schema under `schemas/`, regenerate and check all
+committed digests:
 
 ```bash
 .venv/bin/python scripts/build_scan_schema_digest.py

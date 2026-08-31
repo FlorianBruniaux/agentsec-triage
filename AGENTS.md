@@ -3,8 +3,10 @@
 ## Product contract
 
 AgentSec Triage converts sourced security research into deterministic repository
-detectors backed by regression tests. A scan reads one local repository and
-runs offline by default. It reports evidence, diagnostics, and coverage limits.
+detectors backed by regression tests. A scan reads one explicit local
+repository root and runs offline by default. Batch mode repeats that same scan
+for a bounded explicit root list. It reports evidence, diagnostics, exclusions,
+and coverage limits.
 No result certifies that a repository, workstation, dependency set, or account
 is clean.
 
@@ -103,7 +105,7 @@ status and confidence.
 | Sources and reports | `data/intelligence/sources.yaml` | `docs/SECURITY-INTELLIGENCE.md` and packaged JSON |
 | Events and corrections | `data/intelligence/events.yaml` | `docs/SECURITY-TIMELINE.md` and packaged JSON |
 | Guide and landing integration | validated threat and intelligence metadata | `exports/security-feed.v1.json` |
-| Scan-result schema | `schemas/scan-result-v1.schema.json` | `schemas/scan-result-v1.schema.sha256` and wheel resources |
+| Result schemas | `schemas/scan-result-v1.schema.json`, `schemas/scan-result-v2.schema.json`, `schemas/batch-result-v1.schema.json` | matching SHA-256 digests and wheel resources |
 
 Do not edit generated Markdown, JSON, or digests as a standalone fix. Change the
 authoring source or builder, regenerate twice, then inspect the diff.
@@ -137,6 +139,8 @@ Then require a clean second generation:
 git diff --exit-code -- \
   src/agentsec/resources/threat-db.json \
   schemas/scan-result-v1.schema.sha256 \
+  schemas/scan-result-v2.schema.sha256 \
+  schemas/batch-result-v1.schema.sha256 \
   src/agentsec/resources/security-intelligence.json \
   docs/SECURITY-INTELLIGENCE.md \
   docs/SECURITY-TIMELINE.md \
@@ -173,6 +177,8 @@ Install `.[dev]` before setting `PIP_NO_INDEX=1`. Then run:
 git diff --exit-code -- \
   src/agentsec/resources/threat-db.json \
   schemas/scan-result-v1.schema.sha256 \
+  schemas/scan-result-v2.schema.sha256 \
+  schemas/batch-result-v1.schema.sha256 \
   src/agentsec/resources/security-intelligence.json \
   docs/SECURITY-INTELLIGENCE.md \
   docs/SECURITY-TIMELINE.md \
@@ -199,8 +205,8 @@ no critical finding. Do not hide these inputs through exclusions.
 
 ## Release gate
 
-`LICENSE-DECISION.md` blocks package and repository publication, tags, GitHub
-releases, source archives, and PyPI publication. The narrow generated-feed
+`LICENSE-DECISION.md` blocks packages, tags, GitHub releases, source archives,
+and PyPI publication. The repository source is already public. The narrow generated-feed
 exception is recorded in `LICENSE-DATA.md`. Release-specific package and tag values
 live in `CHANGELOG.md`. Create no tag until the recorded data licensing review
 is resolved.

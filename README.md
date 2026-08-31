@@ -2,7 +2,7 @@
 
 AgentSec Triage is an alpha command-line scanner for evidence associated with
 documented attacks against developers, software supply chains, and coding-agent
-configuration. It scans files inside **one local repository**. Scans are
+configuration. It scans explicit local repository roots. Scans are
 **deterministic**, **read-only**, and **offline by default**.
 
 AgentSec does not certify that a repository, workstation, dependency set, or
@@ -14,11 +14,11 @@ inputs, and limits reported by that run.
 
 | Question | Answer |
 | --- | --- |
-| What does it scan? | Files inside **one local repository**, without executing repository code. |
+| What does it scan? | **Source**, **installed dependencies**, or the **full repository**, according to an explicit scope. |
 | What does it detect today? | Evidence associated with the documented **Shai-Hulud/Keyv campaign**: compromised package versions, known payload hashes, lifecycle commands, Claude Code hooks, and VS Code startup tasks. |
-| Which package formats are covered? | Supported `npm`, `pnpm`, `Yarn`, and `Bun` text lockfiles, plus installed `node_modules` metadata. Binary `bun.lockb` is **unsupported**. |
+| Which package formats are covered? | Supported `npm`, `pnpm`, `Yarn`, and `Bun` text lockfiles. Installed `node_modules` metadata requires `--scope dependencies` or `--scope repository`. Binary `bun.lockb` is **unsupported**. |
 | How does it run? | **Deterministically**, **read-only**, and **offline by default**. It does not follow symlinks outside the scan root or invoke Git on the target repository. |
-| What does it return? | Human-readable or versioned `JSON` output with **findings**, **coverage**, **diagnostics**, remediation links, and completion status. |
+| What does it return? | Human-readable or versioned `JSON` with measured **discovery exclusions**, per-detector **coverage**, findings, diagnostics, and completion status. |
 | What do exit codes mean? | `0`: completed checks found nothing; `1`: findings require action or review; `2`: the scan is incomplete or failed. |
 | What does it not do? | It does not certify a repository as **clean** and does not replace antivirus, `EDR`, `SAST`, dependency, or secret scanning. |
 | What is the current status? | **Alpha**, public source repository, and **no authorized package or tagged release**. See the [changelog](CHANGELOG.md). |
@@ -29,6 +29,16 @@ Follow the [installation guide](docs/installation.md), then scan one repository:
 
 ```bash
 agentsec scan /path/to/repository --format json --redact
+```
+
+The default `source` scope excludes installed dependencies, generated or cache
+trees, binary assets, and VCS metadata while keeping supported lockfiles. Use
+an explicit broader scope when the investigation requires it:
+
+```bash
+agentsec scan /path/to/repository --scope dependencies
+agentsec scan /path/to/repository --scope repository
+agentsec batch /path/to/repo-a /path/to/repo-b --format json --redact
 ```
 
 For an interactive scan with phase and bounded counter updates:
@@ -45,6 +55,11 @@ appear in progress output.
 
 Read the [examples and verdict guide](docs/examples.md) before interpreting the
 result. In particular, exit code `2` is an incomplete scan, not a pass.
+
+Current scan JSON follows [scan-result v2](schemas/scan-result-v2.schema.json).
+Batch JSON follows [batch-result v1](schemas/batch-result-v1.schema.json). The
+older [scan-result v1](schemas/scan-result-v1.schema.json) remains available as
+a historical contract, but new CLI output no longer conforms to it.
 
 ## Documentation
 

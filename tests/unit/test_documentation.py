@@ -40,9 +40,12 @@ def test_examples_document_traversal_verdicts_and_self_scan() -> None:
     examples = _read("docs/examples.md").lower()
 
     for concept in (
-        "except `.git`",
-        "does not honor `.gitignore`",
-        "no exclusion",
+        "does not treat `.gitignore` as a security boundary",
+        "`source`",
+        "`dependencies`",
+        "`repository`",
+        "vcs metadata",
+        "measured exclusions",
         "self-scan",
         "bun.lockb",
         "expected exit code is `2`",
@@ -62,8 +65,9 @@ def test_docs_explain_progress_and_large_repository_traversal() -> None:
     for concept in (
         "nested git repositories",
         "scan it separately",
-        "symlinked paths",
-        "one aggregated diagnostic",
+        "internal symlink alias",
+        "external,\nbroken, changed",
+        "git history",
     ):
         assert concept in examples
     for concept in (

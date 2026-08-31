@@ -49,10 +49,12 @@ def test_benchmark_records_completed_real_scan_without_absolute_root(
 
     raw_report = output.read_text(encoding="utf-8")
     report = json.loads(raw_report)
-    assert report["benchmark_version"] == "1"
+    assert report["benchmark_version"] == "2"
     assert report["root"] == "<SCAN_ROOT>"
     assert report["scan_exit_code"] == 0
     assert report["complete"] is True
+    assert report["scope"] == "source"
+    assert report["files_selected"] == 0
     assert report["coverage"] == {
         "bytes_inspected": 0,
         "files_inspected": 0,
@@ -69,7 +71,8 @@ def test_benchmark_records_incomplete_real_scan_as_successful_measurement(
 ) -> None:
     namespace = _namespace()
     root = tmp_path / "repository"
-    (root / ".git").mkdir(parents=True)
+    root.mkdir()
+    (root / "package-lock.json").write_text("not-json", encoding="utf-8")
     output = tmp_path / "report.json"
 
     assert _main(namespace)([str(root), "--output", str(output)]) == 0

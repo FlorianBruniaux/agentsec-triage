@@ -36,16 +36,24 @@ def _non_empty_string(value: object, label: str) -> str:
 def _parse_scan_payload(raw: str) -> dict[str, object]:
     loaded = cast(object, json.loads(raw))
     payload = _mapping(loaded, "scan result")
-    if payload.get("schema_version") != "1":
+    if payload.get("schema_version") != "2":
         raise BenchmarkError("scan result has an unsupported schema version")
     if payload.get("root") != "<SCAN_ROOT>":
         raise BenchmarkError("scan result root is not redacted")
     complete = payload.get("complete")
     if not isinstance(complete, bool):
         raise BenchmarkError("scan result complete must be a boolean")
-    coverage = _mapping(payload.get("coverage"), "scan result coverage")
-    for field in ("files_seen", "files_inspected", "bytes_inspected"):
-        _non_negative_int(coverage.get(field), f"scan result coverage.{field}")
+    _non_empty_string(payload.get("scope"), "scan result scope")
+    discovery = _mapping(payload.get("discovery"), "scan result discovery")
+    for field in ("entries_seen", "directories_opened", "files_selected"):
+        _non_negative_int(discovery.get(field), f"scan result discovery.{field}")
+    detectors = payload.get("detectors")
+    if not isinstance(detectors, list):
+        raise BenchmarkError("scan result detectors must be an array")
+    for index, detector in enumerate(detectors):
+        row = _mapping(detector, f"scan result detectors[{index}]")
+        for field in ("files_seen", "files_inspected", "bytes_inspected"):
+            _non_negative_int(row.get(field), f"scan result detectors[{index}].{field}")
     for field in ("findings", "diagnostics"):
         if not isinstance(payload.get(field), list):
             raise BenchmarkError(f"scan result {field} must be an array")
@@ -57,25 +65,36 @@ def _parse_scan_payload(raw: str) -> dict[str, object]:
 def _report(
     payload: Mapping[str, object], *, elapsed_seconds: float, scan_exit_code: int
 ) -> dict[str, object]:
-    coverage = _mapping(payload["coverage"], "scan result coverage")
+    discovery = _mapping(payload["discovery"], "scan result discovery")
+    detectors = cast(list[object], payload["detectors"])
+    detector_rows = [
+        _mapping(item, f"scan result detectors[{index}]")
+        for index, item in enumerate(detectors)
+    ]
     findings = cast(list[object], payload["findings"])
     diagnostics = cast(list[object], payload["diagnostics"])
     return {
-        "benchmark_version": "1",
+        "benchmark_version": "2",
         "complete": payload["complete"],
         "coverage": {
-            "bytes_inspected": coverage["bytes_inspected"],
-            "files_inspected": coverage["files_inspected"],
-            "files_seen": coverage["files_seen"],
+            "bytes_inspected": sum(
+                cast(int, row["bytes_inspected"]) for row in detector_rows
+            ),
+            "files_inspected": sum(
+                cast(int, row["files_inspected"]) for row in detector_rows
+            ),
+            "files_seen": sum(cast(int, row["files_seen"]) for row in detector_rows),
         },
         "database_version": payload["database_version"],
         "diagnostic_count": len(diagnostics),
         "elapsed_seconds": round(elapsed_seconds, 6),
         "finding_count": len(findings),
+        "files_selected": discovery["files_selected"],
         "platform": platform.platform(),
         "python_version": platform.python_version(),
         "root": "<SCAN_ROOT>",
         "scan_exit_code": scan_exit_code,
+        "scope": payload["scope"],
         "tool_version": payload["tool_version"],
     }
 

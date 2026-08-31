@@ -1,7 +1,8 @@
 # AgentSec Triage
 
 AgentSec Triage performs deterministic, read-only, offline-by-default triage of
-one local repository for evidence associated with documented developer,
+explicit local repository roots using source, dependency, or repository scope
+for evidence associated with documented developer,
 software-supply-chain, and coding-agent attacks. It reports findings,
 diagnostics, and incomplete coverage; it does not certify a system as clean.
 
