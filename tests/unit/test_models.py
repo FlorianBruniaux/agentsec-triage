@@ -207,11 +207,31 @@ def test_serialization_aggregates_and_sorts_mixed_detector_results():
         "b-warning",
         "aggregate-warning",
     ]
-    assert payload["coverage"] == {
-        "files_seen": 4,
-        "files_inspected": 3,
-        "bytes_inspected": 40,
+    assert payload["discovery"] == {
+        "entries_seen": 0,
+        "directories_opened": 0,
+        "files_selected": 0,
+        "exclusions": [],
     }
+    assert payload["detectors"] == [
+        {
+            "detector_id": "detector-a",
+            "applicability": "applicable",
+            "files_seen": 1,
+            "files_inspected": 1,
+            "bytes_inspected": 10,
+            "not_scanned": ["container", "git"],
+        },
+        {
+            "detector_id": "detector-b",
+            "applicability": "applicable",
+            "files_seen": 3,
+            "files_inspected": 2,
+            "bytes_inspected": 30,
+            "not_scanned": ["git", "network"],
+        },
+    ]
+    assert "coverage" not in payload
     assert payload["not_scanned"] == ["container", "git", "network"]
 
 

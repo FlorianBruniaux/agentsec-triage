@@ -33,7 +33,9 @@ def render_human(result: ScanResult, *, redact: bool, color: bool = False) -> st
     if redact:
         payload = redact_result(payload, result.root)
 
-    coverage = cast(Mapping[str, object], payload["coverage"])
+    discovery = cast(Mapping[str, object], payload["discovery"])
+    exclusions = cast(list[Mapping[str, object]], discovery["exclusions"])
+    detectors = cast(list[Mapping[str, object]], payload["detectors"])
     findings = cast(list[Mapping[str, object]], payload["findings"])
     diagnostics = cast(list[Mapping[str, object]], payload["diagnostics"])
     not_scanned = cast(list[str], payload["not_scanned"])
@@ -41,12 +43,32 @@ def render_human(result: ScanResult, *, redact: bool, color: bool = False) -> st
 
     lines = [
         f"AgentSec {payload['tool_version']} | threat database {payload['database_version']}",
+        f"Scope: {payload['scope']}",
         f"Complete: {'yes' if complete else 'no'}",
-        "Coverage: "
-        f"files_seen={coverage['files_seen']} "
-        f"files_inspected={coverage['files_inspected']} "
-        f"bytes_inspected={coverage['bytes_inspected']}",
+        "Discovery: "
+        f"entries_seen={discovery['entries_seen']} "
+        f"directories_opened={discovery['directories_opened']} "
+        f"files_selected={discovery['files_selected']}",
     ]
+    if exclusions:
+        lines.append("Exclusions:")
+        lines.extend(
+            f"  {item['reason']}: paths={item['paths']} subtrees={item['subtrees']}"
+            for item in exclusions
+        )
+    else:
+        lines.append("Exclusions: none")
+    if detectors:
+        lines.append("Detector coverage:")
+        lines.extend(
+            f"  {item['detector_id']} [{item['applicability']}]: "
+            f"files_seen={item['files_seen']} "
+            f"files_inspected={item['files_inspected']} "
+            f"bytes_inspected={item['bytes_inspected']}"
+            for item in detectors
+        )
+    else:
+        lines.append("Detector coverage: none")
     if complete and all(
         item.applicability is Applicability.NOT_APPLICABLE
         for item in result.detector_results

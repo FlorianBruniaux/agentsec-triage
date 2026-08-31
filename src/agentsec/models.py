@@ -6,7 +6,7 @@ from enum import StrEnum
 from pathlib import PurePath
 from types import MappingProxyType
 
-from agentsec.scopes import ExclusionReason
+from agentsec.scopes import ExclusionReason, ScanScope
 
 
 class Severity(StrEnum):
@@ -217,6 +217,8 @@ class ScanResult:
     detector_results: tuple[DetectorResult, ...]
     diagnostics: tuple[Diagnostic, ...]
     elapsed_ms: int
+    scope: ScanScope = ScanScope.SOURCE
+    discovery: DiscoveryCoverage = field(default_factory=DiscoveryCoverage)
     global_not_scanned: tuple[str, ...] = ()
 
     @property
@@ -293,9 +295,13 @@ class ScanResult:
             "tool_version": self.tool_version,
             "database_version": self.database_version,
             "root": self.root.as_posix(),
+            "scope": self.scope.value,
             "complete": self.complete,
             "elapsed_ms": self.elapsed_ms,
-            "coverage": self._coverage_to_dict(),
+            "discovery": self._discovery_to_dict(),
+            "detectors": [
+                self._detector_result_to_dict(result) for result in detector_results
+            ],
             "not_scanned": list(self.not_scanned),
             "diagnostics": [self._diagnostic_to_dict(diagnostic) for diagnostic in diagnostics],
             "findings": [self._finding_to_dict(finding) for finding in findings],
@@ -312,12 +318,30 @@ class ScanResult:
             ),
         )
 
-    def _coverage_to_dict(self) -> dict[str, object]:
-        coverage = self.coverage
+    def _discovery_to_dict(self) -> dict[str, object]:
         return {
-            "files_seen": coverage.files_seen,
-            "files_inspected": coverage.files_inspected,
-            "bytes_inspected": coverage.bytes_inspected,
+            "entries_seen": self.discovery.entries_seen,
+            "directories_opened": self.discovery.directories_opened,
+            "files_selected": self.discovery.files_selected,
+            "exclusions": [
+                {
+                    "reason": item.reason.value,
+                    "paths": item.paths,
+                    "subtrees": item.subtrees,
+                }
+                for item in self.discovery.exclusions
+            ],
+        }
+
+    @staticmethod
+    def _detector_result_to_dict(result: DetectorResult) -> dict[str, object]:
+        return {
+            "detector_id": result.detector_id,
+            "applicability": result.applicability.value,
+            "files_seen": result.coverage.files_seen,
+            "files_inspected": result.coverage.files_inspected,
+            "bytes_inspected": result.coverage.bytes_inspected,
+            "not_scanned": list(sorted(set(result.coverage.not_scanned))),
         }
 
     @staticmethod

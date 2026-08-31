@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 from collections.abc import Callable, Sequence
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from pathlib import Path
 from time import monotonic_ns
 
@@ -22,9 +22,11 @@ from agentsec.models import (
     DetectorResult,
     Diagnostic,
     DiagnosticKind,
+    DiscoveryCoverage,
     ScanResult,
     ThreatDatabase,
 )
+from agentsec.scopes import ScanScope
 
 _LOGGER = logging.getLogger(__name__)
 _GLOBAL_NOT_SCANNED = (
@@ -99,6 +101,7 @@ def run_scan(
     database: ThreatDatabase,
     limits: DiscoveryLimits,
     *,
+    scope: ScanScope = ScanScope.SOURCE,
     progress: ProgressCallback | None = None,
 ) -> ScanResult:
     """Discover a repository once and aggregate isolated detector executions."""
@@ -116,6 +119,7 @@ def run_scan(
         )
         files = ()
         discovery_diagnostics = root_diagnostics
+        discovery_coverage = DiscoveryCoverage()
     else:
         _emit_progress(
             progress,
@@ -136,6 +140,7 @@ def run_scan(
         discovery_result = discover(
             scan_root,
             limits,
+            scope=scope,
             resolved_root=scan_root,
             progress=lambda file_count, directory_count, entry_count, complete: (
                 _emit_progress(
@@ -167,11 +172,13 @@ def run_scan(
         )
         files = discovery_result.files
         discovery_diagnostics = discovery_result.diagnostics
+        discovery_coverage = discovery_result.coverage
     context = ScanContext(
         root=context_root,
         files=files,
         database=database,
         limits=limits,
+        scope=scope,
         progress=lambda file_count, byte_count: _emit_progress(
             progress,
             4,
@@ -182,12 +189,6 @@ def run_scan(
     diagnostics = _DiagnosticBuffer(root=context_root, limit=limits.max_diagnostics)
     diagnostics.extend(discovery_diagnostics)
     detector_results: list[DetectorResult] = []
-    selected_not_scanned = {
-        capability
-        for detector in detectors
-        for capability in getattr(getattr(detector, "metadata", None), "not_scanned", ())
-    }
-
     ordered_detectors = sorted(detectors, key=lambda item: item.id)
     _emit_progress(progress, 4, "Running detectors")
     for index, detector in enumerate(ordered_detectors, start=1):
@@ -200,9 +201,19 @@ def run_scan(
         try:
             applicable = detector.applies(context)
             if not applicable:
-                detector_results.append(_not_applicable_result(detector.id))
+                detector_results.append(
+                    _with_not_scanned(
+                        _not_applicable_result(detector.id),
+                        _detector_not_scanned(detector),
+                    )
+                )
                 continue
-            detector_results.append(detector.run(context))
+            detector_results.append(
+                _with_not_scanned(
+                    detector.run(context),
+                    _detector_not_scanned(detector),
+                )
+            )
         except Exception as error:
             _LOGGER.debug("Detector %s failed", detector.id, exc_info=True)
             diagnostics.add(
@@ -212,7 +223,12 @@ def run_scan(
                     message=f"detector failed: {detector.id}: {error}",
                 )
             )
-            detector_results.append(_failed_detector_result(detector.id))
+            detector_results.append(
+                _with_not_scanned(
+                    _failed_detector_result(detector.id),
+                    _detector_not_scanned(detector),
+                )
+            )
 
     _emit_progress(progress, 5, "Building report")
     elapsed_ms = (monotonic_ns() - started_ns) // 1_000_000
@@ -223,7 +239,9 @@ def run_scan(
         detector_results=tuple(detector_results),
         diagnostics=diagnostics.finish(),
         elapsed_ms=elapsed_ms,
-        global_not_scanned=tuple(sorted({*_GLOBAL_NOT_SCANNED, *selected_not_scanned})),
+        scope=scope,
+        discovery=discovery_coverage,
+        global_not_scanned=_GLOBAL_NOT_SCANNED,
     )
 
 
@@ -257,3 +275,18 @@ def _failed_detector_result(detector_id: str) -> DetectorResult:
         diagnostics=(),
         coverage=Coverage(),
     )
+
+
+def _with_not_scanned(
+    result: DetectorResult, capabilities: tuple[str, ...]
+) -> DetectorResult:
+    coverage = replace(
+        result.coverage,
+        not_scanned=tuple(sorted({*result.coverage.not_scanned, *capabilities})),
+    )
+    return replace(result, coverage=coverage)
+
+
+def _detector_not_scanned(detector: Detector) -> tuple[str, ...]:
+    metadata = getattr(detector, "metadata", None)
+    return tuple(getattr(metadata, "not_scanned", ()))

@@ -25,6 +25,7 @@ from agentsec.models import (
     Severity,
     ThreatDatabase,
 )
+from agentsec.scopes import ScanScope
 from agentsec.threat_db import load_bundled_database
 
 FIXTURES = Path(__file__).parents[1] / "fixtures" / "shai_hulud"
@@ -51,7 +52,13 @@ def _database(*, payload: Path | None = None) -> ThreatDatabase:
 
 
 def _scan(root: Path, database: ThreatDatabase | None = None, limits: DiscoveryLimits = LIMITS):
-    return run_scan(root, [ShaiHuludDetector()], database or _database(), limits)
+    return run_scan(
+        root,
+        [ShaiHuludDetector()],
+        database or _database(),
+        limits,
+        scope=ScanScope.REPOSITORY,
+    )
 
 
 def _git_commit(root: Path, *, subject: str) -> str:
@@ -153,15 +160,10 @@ def test_untrusted_git_metadata_never_invokes_git_or_reads_external_history(
 
     assert git_calls == []
     assert not any(item.rule_id == "campaign-git-identity" for item in result.findings)
-    assert result.complete is False
-    assert result.exit_code() == 2
-    assert any(
-        diagnostic.kind is DiagnosticKind.ERROR
-        and diagnostic.path == root / ".git"
-        and diagnostic.message
-        == "Local Git history not scanned: strict metadata confinement unavailable"
-        for diagnostic in result.detector_results[0].diagnostics
-    )
+    assert result.complete is True
+    assert result.exit_code() == 0
+    assert "git.history" in result.not_scanned
+    assert result.detector_results[0].diagnostics == ()
 
 
 def test_positive_fixture_emits_exact_and_correlated_findings(tmp_path: Path) -> None:
@@ -254,13 +256,11 @@ def test_matching_local_git_identity_is_not_scanned_without_confinement(tmp_path
 
     result = _scan(tmp_path)
 
-    assert result.complete is False
-    assert result.exit_code() == 2
+    assert result.complete is True
+    assert result.exit_code() == 0
     assert not any(item.rule_id == "campaign-git-identity" for item in result.findings)
-    assert any(
-        item.message == "Local Git history not scanned: strict metadata confinement unavailable"
-        for item in result.detector_results[0].diagnostics
-    )
+    assert "git.history" in result.not_scanned
+    assert result.detector_results[0].diagnostics == ()
 
 
 @pytest.mark.parametrize(
@@ -435,7 +435,7 @@ def test_findings_are_deduplicated_and_deterministic(tmp_path: Path) -> None:
     ) == 1
 
 
-def test_symlinked_relevant_file_fails_closed(tmp_path: Path) -> None:
+def test_internal_symlink_alias_is_non_blocking_when_target_is_covered(tmp_path: Path) -> None:
     target = tmp_path / "target.json"
     target.write_text('{"lockfileVersion": 3, "packages": {}}', encoding="utf-8")
     try:
@@ -445,11 +445,12 @@ def test_symlinked_relevant_file_fails_closed(tmp_path: Path) -> None:
 
     result = _scan(tmp_path)
 
-    assert result.complete is False
-    assert result.exit_code() == 2
+    assert result.complete is True
+    assert result.exit_code() == 0
+    assert result.discovery.exclusions[0].reason.value == "internal_symlink_alias"
 
 
-def test_uninspectable_git_metadata_fails_closed(
+def test_uninspectable_git_metadata_remains_explicitly_out_of_scope(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     original_lstat = Path.lstat
@@ -463,8 +464,9 @@ def test_uninspectable_git_metadata_fails_closed(
 
     result = _scan(tmp_path)
 
-    assert result.complete is False
-    assert result.exit_code() == 2
+    assert result.complete is True
+    assert result.exit_code() == 0
+    assert "git.history" in result.not_scanned
 
 
 def test_detector_diagnostic_truncation_is_an_error(tmp_path: Path) -> None:

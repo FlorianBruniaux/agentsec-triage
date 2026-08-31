@@ -112,9 +112,10 @@ def test_redaction_matches_serialized_and_native_windows_root_forms() -> None:
 
 def test_json_matches_public_schema(empty_scan_result: ScanResult):
     payload = json.loads(render_json(empty_scan_result, redact=False))
-    schema = json.loads(Path("schemas/scan-result-v1.schema.json").read_text())
+    schema = json.loads(Path("schemas/scan-result-v2.schema.json").read_text())
 
     validate(instance=payload, schema=schema)
+    assert payload["schema_version"] == "2"
 
 
 def test_public_schema_is_meta_valid_and_matches_generated_digest() -> None:
@@ -129,8 +130,8 @@ def test_public_schema_is_meta_valid_and_matches_generated_digest() -> None:
 
 
 def test_public_schema_accepts_contested_confidence() -> None:
-    schema = json.loads(Path("schemas/scan-result-v1.schema.json").read_text())
-    confidence = schema["properties"]["findings"]["items"]["properties"]["confidence"]
+    schema = json.loads(Path("schemas/scan-result-v2.schema.json").read_text())
+    confidence = schema["$defs"]["finding"]["properties"]["confidence"]
 
     assert "contested" in confidence["enum"]
 
@@ -194,7 +195,7 @@ def test_public_schema_accepts_external_finding_without_remediation_url(
         elapsed_ms=0,
     )
     payload = json.loads(render_json(result, redact=False))
-    schema = json.loads(Path("schemas/scan-result-v1.schema.json").read_text())
+    schema = json.loads(Path("schemas/scan-result-v2.schema.json").read_text())
 
     validate(instance=payload, schema=schema)
     assert payload["findings"][0]["remediation_url"] is None

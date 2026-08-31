@@ -7,11 +7,14 @@ from agentsec.models import (
     Confidence,
     Coverage,
     DetectorResult,
+    DiscoveryCoverage,
+    ExclusionCount,
     Finding,
     ScanResult,
     Severity,
 )
 from agentsec.output.human import render_human
+from agentsec.scopes import ExclusionReason, ScanScope
 
 _ANSI_RESET = "\x1b[0m"
 
@@ -87,3 +90,36 @@ def test_render_human_with_color_still_contains_plain_evidence_text() -> None:
 
     assert "shai-hulud-keyv/startup-hook" in human
     assert "claude SessionStart hook" in human
+
+
+def test_render_human_separates_discovery_from_detector_coverage() -> None:
+    result = _result_with_finding(remediation_url=None)
+    result = ScanResult(
+        tool_version=result.tool_version,
+        database_version=result.database_version,
+        root=result.root,
+        detector_results=result.detector_results,
+        diagnostics=result.diagnostics,
+        elapsed_ms=result.elapsed_ms,
+        scope=ScanScope.SOURCE,
+        discovery=DiscoveryCoverage(
+            entries_seen=12,
+            directories_opened=3,
+            files_selected=5,
+            exclusions=(
+                ExclusionCount(ExclusionReason.BINARY_ASSET, paths=2, subtrees=0),
+            ),
+        ),
+    )
+
+    human = render_human(result, redact=False)
+
+    assert "Scope: source" in human
+    assert "Discovery: entries_seen=12 directories_opened=3 files_selected=5" in human
+    assert "binary_asset: paths=2 subtrees=0" in human
+    assert "Detector coverage:" in human
+    assert (
+        "shai-hulud-keyv [applicable]: files_seen=1 files_inspected=1 "
+        "bytes_inspected=10"
+    ) in human
+    assert "Coverage:" not in human

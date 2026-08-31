@@ -1,0 +1,159 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agentsec.dev/schemas/scan-result-v2.schema.json",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "tool_version",
+    "database_version",
+    "root",
+    "scope",
+    "complete",
+    "elapsed_ms",
+    "discovery",
+    "detectors",
+    "not_scanned",
+    "diagnostics",
+    "findings"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": { "const": "2" },
+    "tool_version": { "type": "string" },
+    "database_version": { "type": "string" },
+    "root": { "type": "string" },
+    "scope": { "enum": ["source", "dependencies", "repository"] },
+    "complete": { "type": "boolean" },
+    "elapsed_ms": { "type": "integer", "minimum": 0 },
+    "discovery": {
+      "type": "object",
+      "required": ["entries_seen", "directories_opened", "files_selected", "exclusions"],
+      "additionalProperties": false,
+      "properties": {
+        "entries_seen": { "type": "integer", "minimum": 0 },
+        "directories_opened": { "type": "integer", "minimum": 0 },
+        "files_selected": { "type": "integer", "minimum": 0 },
+        "exclusions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["reason", "paths", "subtrees"],
+            "additionalProperties": false,
+            "properties": {
+              "reason": {
+                "enum": [
+                  "binary_asset",
+                  "generated_or_cache",
+                  "installed_dependencies",
+                  "internal_symlink_alias",
+                  "outside_dependency_scope",
+                  "vcs_metadata"
+                ]
+              },
+              "paths": { "type": "integer", "minimum": 1 },
+              "subtrees": { "type": "integer", "minimum": 0 }
+            }
+          }
+        }
+      }
+    },
+    "detectors": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "detector_id",
+          "applicability",
+          "files_seen",
+          "files_inspected",
+          "bytes_inspected",
+          "not_scanned"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "detector_id": { "type": "string", "minLength": 1 },
+          "applicability": { "enum": ["applicable", "not_applicable"] },
+          "files_seen": { "type": "integer", "minimum": 0 },
+          "files_inspected": { "type": "integer", "minimum": 0 },
+          "bytes_inspected": { "type": "integer", "minimum": 0 },
+          "not_scanned": { "$ref": "#/$defs/capabilities" }
+        }
+      }
+    },
+    "not_scanned": { "$ref": "#/$defs/capabilities" },
+    "diagnostics": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/diagnostic" }
+    },
+    "findings": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/finding" }
+    }
+  },
+  "$defs": {
+    "identifier": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9]*(?:[._-][a-z0-9]+)*$"
+    },
+    "capabilities": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/identifier" }
+    },
+    "diagnostic": {
+      "type": "object",
+      "required": ["kind", "path", "message"],
+      "additionalProperties": false,
+      "properties": {
+        "kind": { "enum": ["error", "warning"] },
+        "path": { "type": "string" },
+        "message": { "type": "string" }
+      }
+    },
+    "finding": {
+      "type": "object",
+      "required": [
+        "detector_id",
+        "rule_id",
+        "severity",
+        "confidence",
+        "path",
+        "evidence",
+        "campaign_ids",
+        "technique_ids",
+        "line",
+        "remediation_url"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "detector_id": { "type": "string" },
+        "rule_id": { "type": "string" },
+        "severity": { "enum": ["critical", "high", "medium", "low", "info"] },
+        "confidence": { "enum": ["confirmed", "high", "review", "contested"] },
+        "path": { "type": "string" },
+        "evidence": { "type": "string" },
+        "campaign_ids": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/identifier" }
+        },
+        "technique_ids": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/identifier" }
+        },
+        "line": { "type": ["integer", "null"], "minimum": 1 },
+        "remediation_url": {
+          "anyOf": [
+            { "type": "null" },
+            {
+              "type": "string",
+              "format": "uri",
+              "pattern": "^https://[^/?#@:\\s]+(?::[0-9]{1,5})?(?:/[^?#\\s]*)?$"
+            }
+          ]
+        }
+      }
+    }
+  }
+}

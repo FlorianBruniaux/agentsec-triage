@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import hashlib
 import re
-import stat
 from dataclasses import dataclass
 from itertools import chain, islice
 from pathlib import Path
@@ -51,9 +50,6 @@ _SHELL_ENVIRONMENT_ASSIGNMENT = re.compile(
 _MAX_NPM_PACKAGE_NAME_LENGTH = 214
 _MAX_COMMAND_LENGTH = 1024 * 1024
 _MAX_ENV_SPLIT_DEPTH = 4
-_GIT_HISTORY_NOT_SCANNED = (
-    "Local Git history not scanned: strict metadata confinement unavailable"
-)
 _REMEDIATION_URL = "https://cc.bruniaux.com/security/"
 _TECHNIQUE_IDS = (
     "npm.compromised-version",
@@ -120,7 +116,7 @@ class ShaiHuludDetector:
     )
 
     def applies(self, context: ScanContext) -> bool:
-        return bool(context.files) or _git_metadata_state(context.root)[0]
+        return bool(context.files)
 
     def run(self, context: ScanContext) -> DetectorResult:
         findings: list[Finding] = []
@@ -227,18 +223,6 @@ class ShaiHuludDetector:
                     "Refusing to inspect "
                     f"{oversized_files} {noun} larger than "
                     f"max_file_bytes={context.limits.max_file_bytes}; scan incomplete",
-                )
-            )
-
-        has_git, git_diagnostic = _git_metadata_state(context.root)
-        if git_diagnostic is not None:
-            diagnostics.append(git_diagnostic)
-        elif has_git:
-            diagnostics.append(
-                Diagnostic(
-                    DiagnosticKind.ERROR,
-                    context.root / ".git",
-                    _GIT_HISTORY_NOT_SCANNED,
                 )
             )
 
@@ -855,36 +839,6 @@ def _runtime_entrypoint_is_campaign(
 
 def _command_basename(token: str) -> str:
     return token.replace("\\", "/").rsplit("/", 1)[-1].lower()
-
-
-def _git_metadata_state(root: Path) -> tuple[bool, Diagnostic | None]:
-    metadata = root / ".git"
-    try:
-        metadata_stat = metadata.lstat()
-    except FileNotFoundError:
-        return False, None
-    except (OSError, ValueError):
-        return True, Diagnostic(
-            DiagnosticKind.ERROR,
-            metadata,
-            "Unable to inspect local Git metadata",
-        )
-
-    attributes = getattr(metadata_stat, "st_file_attributes", 0)
-    reparse_flag = getattr(stat, "FILE_ATTRIBUTE_REPARSE_POINT", 0x400)
-    if stat.S_ISLNK(metadata_stat.st_mode) or attributes & reparse_flag:
-        return True, Diagnostic(
-            DiagnosticKind.ERROR,
-            metadata,
-            "Refusing unsafe local Git metadata path",
-        )
-    if not (stat.S_ISDIR(metadata_stat.st_mode) or stat.S_ISREG(metadata_stat.st_mode)):
-        return True, Diagnostic(
-            DiagnosticKind.ERROR,
-            metadata,
-            "Unsupported local Git metadata type",
-        )
-    return True, None
 
 
 def _finding(

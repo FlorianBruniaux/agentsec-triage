@@ -260,21 +260,91 @@ def test_scan_missing_root_is_incomplete_json_and_exits_two(tmp_path: Path) -> N
     assert "No indicators found in completed checks" not in human.stdout
 
 
-def test_scan_git_repository_reports_unscanned_history_and_exits_two(tmp_path: Path) -> None:
+def test_scan_git_repository_reports_history_as_out_of_scope_without_error(
+    tmp_path: Path,
+) -> None:
     (tmp_path / ".git").mkdir()
 
     completed = _run("scan", str(tmp_path), "--format", "json")
 
-    assert completed.returncode == 2
+    assert completed.returncode == 0
     assert completed.stderr == ""
     payload = json.loads(completed.stdout)
-    assert payload["complete"] is False
+    assert payload["complete"] is True
     assert payload["findings"] == []
-    assert any(
-        diagnostic["message"]
-        == "Local Git history not scanned: strict metadata confinement unavailable"
-        for diagnostic in payload["diagnostics"]
+    assert payload["diagnostics"] == []
+    assert "git.history" in payload["not_scanned"]
+    assert payload["discovery"]["exclusions"] == [
+        {"paths": 1, "reason": "vcs_metadata", "subtrees": 1}
+    ]
+
+
+def test_large_binary_asset_is_excluded_in_source_scope(tmp_path: Path) -> None:
+    (tmp_path / "asset.png").write_bytes(b"xx")
+
+    completed = _run(
+        "scan",
+        str(tmp_path),
+        "--scope",
+        "source",
+        "--max-file-bytes",
+        "1",
+        "--format",
+        "json",
     )
+
+    assert completed.returncode == 0
+    payload = json.loads(completed.stdout)
+    assert payload["complete"] is True
+    assert payload["discovery"]["files_selected"] == 0
+    assert payload["discovery"]["exclusions"] == [
+        {"paths": 1, "reason": "binary_asset", "subtrees": 0}
+    ]
+
+
+def test_large_regular_file_remains_blocking_in_repository_scope(
+    tmp_path: Path,
+) -> None:
+    (tmp_path / "asset.png").write_bytes(b"xx")
+
+    completed = _run(
+        "scan",
+        str(tmp_path),
+        "--scope",
+        "repository",
+        "--max-file-bytes",
+        "1",
+        "--format",
+        "json",
+    )
+
+    assert completed.returncode == 2
+    payload = json.loads(completed.stdout)
+    assert payload["complete"] is False
+    assert any("max_file_bytes=1" in item["message"] for item in payload["diagnostics"])
+
+
+@pytest.mark.parametrize("scope", ("source", "dependencies"))
+def test_oversized_lockfile_remains_blocking_in_applicable_scopes(
+    tmp_path: Path, scope: str
+) -> None:
+    (tmp_path / "package-lock.json").write_bytes(b"xx")
+
+    completed = _run(
+        "scan",
+        str(tmp_path),
+        "--scope",
+        scope,
+        "--max-file-bytes",
+        "1",
+        "--format",
+        "json",
+    )
+
+    assert completed.returncode == 2
+    payload = json.loads(completed.stdout)
+    assert payload["complete"] is False
+    assert any("max_file_bytes=1" in item["message"] for item in payload["diagnostics"])
 
 
 def test_scan_non_applicable_repository_is_completed_not_clean(tmp_path: Path) -> None:
@@ -335,7 +405,7 @@ def test_scan_positive_fixture_exits_one_and_names_exact_package_version(tmp_pat
         and finding["confidence"] == "confirmed"
         for finding in payload["findings"]
     )
-    schema = json.loads((PROJECT_ROOT / "schemas" / "scan-result-v1.schema.json").read_text())
+    schema = json.loads((PROJECT_ROOT / "schemas" / "scan-result-v2.schema.json").read_text())
     validate(instance=payload, schema=schema)
     payload["root"] = "<SCAN_ROOT>"
     payload["elapsed_ms"] = 0
@@ -426,7 +496,7 @@ def test_scan_total_byte_limit_is_exposed_and_incomplete_when_reached(tmp_path: 
 
     assert completed.returncode == 2
     payload = json.loads(completed.stdout)
-    assert payload["coverage"]["bytes_inspected"] == 0
+    assert payload["detectors"][0]["bytes_inspected"] == 0
     assert any("max_total_bytes=1" in item["message"] for item in payload["diagnostics"])
 
 

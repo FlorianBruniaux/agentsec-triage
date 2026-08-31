@@ -8,6 +8,13 @@ while the data-licensing decision remains unresolved.
 
 ### Added
 
+- Added explicit `source`, `dependencies`, and `repository` scan scopes. The
+  default `source` scope now reports measured exclusions for dependency,
+  generated, binary, VCS, and covered internal-symlink paths. JSON reports use
+  scan-result schema v2, which separates discovery counts from each detector's
+  effective coverage. Human output exposes the same boundary, and skipped Git
+  history is now an explicit unsupported capability instead of a scan error.
+
 - Added the approved scan-scope and batch-triage design plus its TDD
   implementation plan. They specify explicit `source`, `dependencies`, and
   `repository` scopes, scan-result schema v2, batch-result schema v1,

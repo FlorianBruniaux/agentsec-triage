@@ -9,6 +9,7 @@ from typing import Protocol
 
 from agentsec.engine.discovery import DiscoveredFile, DiscoveryLimits
 from agentsec.models import DetectorResult, ThreatDatabase
+from agentsec.scopes import ScanScope
 
 
 @dataclass(frozen=True, slots=True)
@@ -33,6 +34,7 @@ class ScanContext:
     files: tuple[DiscoveredFile, ...]
     database: ThreatDatabase
     limits: DiscoveryLimits
+    scope: ScanScope = ScanScope.SOURCE
     progress: Callable[[int, int], None] | None = None
 
 

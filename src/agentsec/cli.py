@@ -19,6 +19,7 @@ from agentsec.models import ThreatDatabase
 from agentsec.output.human import render_human
 from agentsec.output.json_output import render_json
 from agentsec.redaction import redact_text
+from agentsec.scopes import ScanScope
 from agentsec.threat_db import ThreatDatabaseError, load_bundled_database
 
 _DEFAULT_MAX_FILE_BYTES = 4_000_000
@@ -43,6 +44,13 @@ def build_parser() -> argparse.ArgumentParser:
 
     scan = commands.add_parser("scan", help="scan one repository")
     scan.add_argument("root", type=Path, help="repository root to inspect")
+    scan.add_argument(
+        "--scope",
+        type=ScanScope,
+        choices=tuple(ScanScope),
+        default=ScanScope.SOURCE,
+        help="scan source, installed dependencies, or the full repository",
+    )
     scan.add_argument(
         "--detector",
         action="append",
@@ -218,6 +226,7 @@ def _scan(arguments: argparse.Namespace) -> int:
         detectors,
         database,
         limits,
+        scope=arguments.scope,
         progress=progress,
     )
     if arguments.format == "json":
