@@ -1,0 +1,104 @@
+CHANGELOG.md
+  s_0df90997879182::t_458fa6a7e29849 34-35,44-55,99-101
+docs/competitive-analysis/BUILD-GATE.md
+  s_0df90997879182::t_aa3d9723fac5b9 137-145,154-159
+  s_ddf0a6779540bc::t_0a6f8f9c8f5acc 160
+docs/competitive-analysis/BENCHMARK-RESULTS.md
+  s_0df90997879182::t_aa3d9723fac5b9 98-101
+docs/competitive-analysis/BENCHMARK-DESIGN.md
+  s_0df90997879182::t_34a8fe7d9474b3 90-97,191-193
+  s_0df90997879182::t_f56567f85baf2a 57-58,60-61,68,99-111,128-129,133-136,143-144,147,159-161,186-190,219-222
+  s_0df90997879182::t_34d552b09132dd 197,200-201,204-208
+  s_9cf259c16931e6::t_4ae1d517167357 98
+scripts/run_competitive_benchmark.py
+  s_0df90997879182::t_2264cab7f096f2 9,55,103-110,113-114,120-123,167-169,665,861-867,871,879-880,902-903,946-948,969-971,1001-1015,1017-1029,1031-1034
+  s_0df90997879182::t_5e1b97cbe716b4 1101-1159
+  s_0df90997879182::t_a5150cdc15eb4a 16,329-391
+  s_0df90997879182::t_5ed47e0b9e98f1 669-763,769-796
+  s_0df90997879182::t_a40e3808c11556 963,995-997,1173,1181-1182,1185-1186,1252-1261,1284-1315,1318-1323,1338
+  s_0df90997879182::t_e264f8e49912ca 188-292,294-328,392-400
+  s_0df90997879182::t_f3337e37289b07 293,1016
+  s_0df90997879182::t_80ae38212897f7 800-803
+  s_0df90997879182::t_643e0ade73bf89 517-537,548-549,553,558-559,570-571,587,596,606-629
+  s_0df90997879182::t_c56921bce177e4 13,31-32,39,44-45,59-74,91-92,115-119,124-127
+  s_0df90997879182::t_94869a163fe10e 1030,1035-1036
+  s_0df90997879182::t_ea3859f247e3a1 1162,1174-1176
+  s_0df90997879182::t_6128958f26a0b6 1209,1214-1219
+  s_0df90997879182::t_9705f5b807b7bb 1391,1398-1402,1406-1411,1425-1426
+  s_0df90997879182::t_0983db6ed7414f 764-768
+  s_0df90997879182::t_a696a90d618c69 401-484
+  s_7a42d03307fc1d::t_34f04444856c4d 630,1037-1038
+research/competitive-runs/README.md
+  s_0df90997879182::t_aa3d9723fac5b9 16-26,38,64-68
+  s_0df90997879182::t_2d1233d3a4278e 52-57
+  s_0df90997879182::t_cfa45706b761c7 69
+docs/naming-comprehension-test-kit.md
+  s_0df90997879182::t_1631c6efd873ab 18-23,31-36,38-39,46-53,55-58,62,74-76,91-93,101-102
+tests/unit/test_license_prose_inventory.py
+  s_0df90997879182::t_c0bd435845a511 113-153
+research/competitive-runs/plan-blueprints.v1.json
+  s_0df90997879182::t_0faf996de5db66 1-109
+scripts/build_license_prose_inventory.py
+  s_0df90997879182::t_e2dbd3d9e0f181 159-162,200-201,249-250,343-346
+README.md
+  s_0df90997879182::t_aa3d9723fac5b9 106
+tests/unit/test_competitive_benchmark.py
+  s_0df90997879182::t_b163fcbf43cb03 106,112-115,119-130
+  s_0df90997879182::t_a9ec288b829d53 958
+  s_0df90997879182::t_6128958f26a0b6 84
+  s_0df90997879182::t_3032500207335b 971-982
+  s_0df90997879182::t_86e66eca9a65b9 134-154,329-503
+  s_0df90997879182::t_dbb828047ca9e0 954
+  s_0df90997879182::t_afbfa73f8d1449 310-328
+  s_0df90997879182::t_9797f3c85248c5 925-953,955-957,959-963
+  s_0df90997879182::t_fb97f9e6478269 5,261-271,825-832,851-858,868-924,964-968
+  s_0a442347250965::t_e137b3f5a07107 504-505,969-970
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "dafb31afc3f5b7dfef478b166432bff9d4c8c323",
+  "prompts": {},
+  "sessions": {
+    "s_0a442347250965": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a04233-7990-7c82-96d1-1418fd7722e9",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Florian BRUNIAUX <florian@bruniaux.com>"
+    },
+    "s_0df90997879182": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019fd73a-588d-7f03-ab50-494ca0e95848",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Florian BRUNIAUX <florian@bruniaux.com>"
+    },
+    "s_7a42d03307fc1d": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a057f3-ae04-7a63-893e-a0e019725d9c",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Florian BRUNIAUX <florian@bruniaux.com>"
+    },
+    "s_9cf259c16931e6": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a03e6c-f9af-7811-b19d-91365bbf6d38",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Florian BRUNIAUX <florian@bruniaux.com>"
+    },
+    "s_ddf0a6779540bc": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a05859-9375-7902-a523-1487fe47fe40",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Florian BRUNIAUX <florian@bruniaux.com>"
+    }
+  }
+}
