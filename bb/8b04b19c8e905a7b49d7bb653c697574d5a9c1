@@ -1,0 +1,27 @@
+src/agentsec/scopes.py
+  s_0df90997879182::t_842bce94c9f41b 1-136
+src/agentsec/models.py
+  s_0df90997879182::t_842bce94c9f41b 9-10,66-95
+  s_0df90997879182::t_504640d4f6f535 96-97
+tests/unit/test_models.py
+  s_0df90997879182::t_ee356a50c5b677 12-13,20,36-67
+  s_0df90997879182::t_8382a1bf9834ee 68-70
+tests/unit/test_scopes.py
+  s_0df90997879182::t_ee356a50c5b677 1-96
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "bb8b04b19c8e905a7b49d7bb653c697574d5a9c1",
+  "prompts": {},
+  "sessions": {
+    "s_0df90997879182": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019fd73a-588d-7f03-ab50-494ca0e95848",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Florian BRUNIAUX <florian@bruniaux.com>"
+    }
+  }
+}
