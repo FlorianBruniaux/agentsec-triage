@@ -1,0 +1,50 @@
+docs/competitive-analysis/BENCHMARK-DESIGN.md
+  s_0df90997879182::t_159e03db9ef306 75-80,145-156,159-160,163-169
+  s_0df90997879182::t_1530cc3e79cf3d 157-158,161-162,170-172
+  s_c2174b9e521e6b::t_b9cec00fd989df 173
+docs/competitive-analysis/BENCHMARK-RESULTS.md
+  s_0df90997879182::t_159e03db9ef306 94-121
+tests/unit/test_competitive_benchmark.py
+  s_0df90997879182::t_efa3a6733da581 247,278
+  s_0df90997879182::t_2849d05c05a5c1 237-245
+  s_0df90997879182::t_ba8c21621722fb 10-11,246,248,250-252,269,271-275,277
+  s_0df90997879182::t_dd2dc1739d5a53 222-236,249,253-268,270,276,279-309
+docs/competitive-analysis/BUILD-GATE.md
+  s_0df90997879182::t_1530cc3e79cf3d 141-142
+  s_0df90997879182::t_159e03db9ef306 132-140,143-146
+scripts/run_competitive_benchmark.py
+  s_0df90997879182::t_bc25cff42e55c9 64-66,254-263,265-267,547-548
+  s_d812a5cba40e21::t_a7da06096bf675 549
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "3de1e561f507bd92c3a1637fc8105c852a2d2b29",
+  "prompts": {},
+  "sessions": {
+    "s_0df90997879182": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019fd73a-588d-7f03-ab50-494ca0e95848",
+        "model": "gpt-5.6-terra"
+      },
+      "human_author": "Florian BRUNIAUX <florian@bruniaux.com>"
+    },
+    "s_c2174b9e521e6b": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0540b-8786-76e1-9f39-ced61d0ad7b7",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Florian BRUNIAUX <florian@bruniaux.com>"
+    },
+    "s_d812a5cba40e21": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a033c4-cc98-74d2-adf5-63f175b8463b",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Florian BRUNIAUX <florian@bruniaux.com>"
+    }
+  }
+}
