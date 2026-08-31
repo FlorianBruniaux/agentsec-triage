@@ -1,0 +1,23 @@
+docs/competitive-analysis/BENCHMARK-RESULTS.md
+  s_0df90997879182::t_cf642d366507a7 1-93
+CHANGELOG.md
+  s_0df90997879182::t_cf642d366507a7 11-17
+ROADMAP.md
+  s_0df90997879182::t_cf642d366507a7 31-32,44-46
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "330a806e017a4cd6e0e7795ff31ed3395915dc15",
+  "prompts": {},
+  "sessions": {
+    "s_0df90997879182": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019fd73a-588d-7f03-ab50-494ca0e95848",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Florian BRUNIAUX <florian@bruniaux.com>"
+    }
+  }
+}
