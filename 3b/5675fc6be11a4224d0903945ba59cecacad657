@@ -1,0 +1,56 @@
+research/competitive-runs/README.md
+  s_0df90997879182::t_2dae8cbff52888 38-48
+scripts/run_competitive_benchmark.py
+  s_0df90997879182::t_2dae8cbff52888 2
+  s_0df90997879182::t_20dcb62b794f7b 50-60,78,283-325,593-602,720
+docs/competitive-analysis/BENCHMARK-DESIGN.md
+  s_0df90997879182::t_2dae8cbff52888 73-76,78-85,142,164-165,167,184-186
+  s_0df90997879182::t_61e9bb664efbbb 87,202-203
+  s_7ff0217ab4c6a5::t_5bf7da73de71fd 86
+tests/unit/test_competitive_benchmark.py
+  s_0df90997879182::t_275fc3702245ad 86-100,330-406,431-477,523-561
+  s_0df90997879182::t_7efadf10da4f14 407-430
+  s_0df90997879182::t_ca7b8aaa7a242f 268-269,285-286
+  s_0df90997879182::t_944c58b250b905 153,478-522
+  s_95f49451e7d724::t_a85ca2b4b7753a 562-563
+docs/competitive-analysis/BENCHMARK-RESULTS.md
+  s_0df90997879182::t_2dae8cbff52888 98-101,111-112
+  s_0df90997879182::t_61e9bb664efbbb 14
+docs/competitive-analysis/BUILD-GATE.md
+  s_0df90997879182::t_2dae8cbff52888 117-118,120,130-133,147-149
+  s_0df90997879182::t_61e9bb664efbbb 239-241,243-244
+docs/competitive-analysis/PRODUCT-DECISIONS.md
+  s_0df90997879182::t_61e9bb664efbbb 7,106
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "3b5675fc6be11a4224d0903945ba59cecacad657",
+  "prompts": {},
+  "sessions": {
+    "s_0df90997879182": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019fd73a-588d-7f03-ab50-494ca0e95848",
+        "model": "gpt-5.6-terra"
+      },
+      "human_author": "Florian BRUNIAUX <florian@bruniaux.com>"
+    },
+    "s_7ff0217ab4c6a5": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a057fe-fc73-7570-b291-f5263063d475",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Florian BRUNIAUX <florian@bruniaux.com>"
+    },
+    "s_95f49451e7d724": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a05804-0ee0-78c3-a3c7-1595cc229a93",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Florian BRUNIAUX <florian@bruniaux.com>"
+    }
+  }
+}
