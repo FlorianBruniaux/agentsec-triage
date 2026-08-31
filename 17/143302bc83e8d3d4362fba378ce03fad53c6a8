@@ -23,6 +23,7 @@ ROADMAP.md
   s_0df90997879182::t_46b4fd08084c8a 17-19,112-113
 README.md
   s_0df90997879182::t_46b4fd08084c8a 23,70-77,82-83
+  s_0df90997879182::t_f898f9aaea655c 77
 ---
 {
   "schema_version": "authorship/3.0.0",
@@ -34,6 +35,22 @@ README.md
       "agent_id": {
         "tool": "codex",
         "id": "019fd73a-588d-7f03-ab50-494ca0e95848",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Florian BRUNIAUX <florian@bruniaux.com>"
+    },
+    "s_bd1e403875ee43": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "953892dc-6069-48d6-8505-998f61d64787",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "Florian BRUNIAUX <florian@bruniaux.com>"
+    },
+    "s_d4bdd746a22829": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0532f-5cd1-7421-8380-ceb7233a8ef0",
         "model": "gpt-5.6-sol"
       },
       "human_author": "Florian BRUNIAUX <florian@bruniaux.com>"
