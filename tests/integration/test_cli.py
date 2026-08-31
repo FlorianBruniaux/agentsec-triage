@@ -141,7 +141,8 @@ def test_progress_always_uses_stderr_without_corrupting_json(tmp_path: Path) -> 
     assert "[2/5] Validating repository" in completed.stderr
     assert (
         f"[2/5] Repository validated: root={tmp_path.resolve()} "
-        "type=directory scan_mode=read-only detectors=shai-hulud-keyv"
+        "type=directory scan_mode=read-only "
+        "detectors=clawhavoc-skill,shai-hulud-keyv"
         in completed.stderr
     )
     assert "[2/5] Safety limits:" in completed.stderr

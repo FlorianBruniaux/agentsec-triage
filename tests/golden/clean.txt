@@ -4,6 +4,7 @@ Complete: yes
 Discovery: entries_seen=0 directories_opened=1 files_selected=0
 Exclusions: none
 Detector coverage:
+  clawhavoc-skill [not_applicable]: files_seen=0 files_inspected=0 bytes_inspected=0
   shai-hulud-keyv [not_applicable]: files_seen=0 files_inspected=0 bytes_inspected=0
 No applicable detectors; no indicators found in completed checks.
 Findings:
@@ -23,3 +24,7 @@ Not scanned:
   remediation.automatic
   remote.ci
   remote.repositories
+  skill.registry_history
+  skill.remote_payloads
+  skill.runtime_behavior
+  skill.unreferenced_companion_files

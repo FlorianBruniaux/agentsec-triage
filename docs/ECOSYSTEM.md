@@ -20,8 +20,9 @@ The strongest product territory still available is narrower:
 > could not verify.
 
 AgentSec Triage currently implements that contract for evidence associated
-with Shai-Hulud/Keyv. It does not yet have enough detector breadth,
-distribution, or public validation to own this position.
+with Shai-Hulud/Keyv and one exact ClawHavoc fake-prerequisite domain. It does
+not yet have enough detector breadth, distribution, or public validation to
+own this position.
 
 ## Sources and evidence levels
 

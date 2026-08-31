@@ -31,6 +31,15 @@ while the data-licensing decision remains unresolved.
   exit code `2` for incomplete scans, so exporting SARIF cannot turn partial
   coverage into a successful verdict. Batch SARIF and a GitHub Action remain
   outside this change.
+- Added the stable `clawhavoc-skill` detector for an exact campaign domain in
+  repository-local `SKILL.md` files and explicitly delegated same-skill setup
+  instructions. The detector follows only bounded local Markdown references,
+  rejects hostname-suffix near misses, reports missing or unreadable applicable
+  instructions as incomplete, and returns `high/high` review evidence instead
+  of treating a filename, delegation, or skill presence as confirmed
+  compromise. Added positive, near-miss, reference-boundary, and diagnostic
+  regression tests plus explicit registry, remote-payload, runtime, and
+  unreferenced-file coverage limits.
 
 - Added explicit `source`, `dependencies`, and `repository` scan scopes. The
   default `source` scope now reports measured exclusions for dependency,

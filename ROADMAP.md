@@ -26,6 +26,9 @@ Implemented in the current alpha codebase:
 - `shai-hulud-keyv` detector for supported npm, pnpm, Yarn, and text Bun
   lockfiles, installed package metadata, payload hashes, and repository startup
   configuration;
+- `clawhavoc-skill` detector for the exact sourced fake-prerequisite campaign
+  domain in `SKILL.md` and explicitly delegated local setup instructions,
+  without classifying a filename or delegation as compromise;
 - a fully executed Python 3.11–3.13 GitHub Actions matrix on Linux, macOS,
   and Windows, plus guide and landing feed-mirror validation;
 - seven digest-approved, network-disabled competitor `clean-control` runs with
@@ -83,8 +86,8 @@ The remaining release and product work is tracked with acceptance criteria:
 
 ## P1: Detector expansion
 
-- Add delayed-skill instruction coverage with sourced positive and near-miss
-  fixtures before expanding to additional ClawHavoc and ToxicSkills evidence.
+- Expand the first exact-domain ClawHavoc rule with additional sourced
+  ClawHavoc and ToxicSkills indicators and synthetic near-miss fixtures.
 - Add generic agent-skill and repository-persistence checks without treating
   every hook or instruction file as malicious.
 - Add MCP configuration and vulnerable-version checks backed by exact sources.

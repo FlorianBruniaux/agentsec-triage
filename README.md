@@ -15,7 +15,7 @@ inputs, and limits reported by that run.
 | Question | Answer |
 | --- | --- |
 | What does it scan? | **Source**, **installed dependencies**, or the **full repository**, according to an explicit scope. |
-| What does it detect today? | Evidence associated with the documented **Shai-Hulud/Keyv campaign**: compromised package versions, known payload hashes, lifecycle commands, Claude Code hooks, and VS Code startup tasks. |
+| What does it detect today? | Evidence associated with the documented **Shai-Hulud/Keyv campaign**, plus exact **ClawHavoc** campaign-domain references in `SKILL.md` and explicitly delegated local setup instructions. |
 | Which package formats are covered? | Supported `npm`, `pnpm`, `Yarn`, and `Bun` text lockfiles. Installed `node_modules` metadata requires `--scope dependencies` or `--scope repository`. Binary `bun.lockb` is **unsupported**. |
 | How does it run? | **Deterministically**, **read-only**, and **offline by default**. It does not follow symlinks outside the scan root or invoke Git on the target repository. |
 | What does it return? | Human-readable, versioned `JSON`, or `SARIF 2.1.0` with measured **discovery exclusions**, per-detector **coverage**, findings, diagnostics, and completion status. |

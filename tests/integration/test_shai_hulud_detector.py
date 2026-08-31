@@ -412,7 +412,10 @@ def test_applicability_and_registry_are_explicit(tmp_path: Path) -> None:
             limits=LIMITS,
         )
     ) is False
-    assert [item.id for item in get_detectors()] == ["shai-hulud-keyv"]
+    assert [item.id for item in get_detectors()] == [
+        "clawhavoc-skill",
+        "shai-hulud-keyv",
+    ]
 
 
 def test_findings_are_deduplicated_and_deterministic(tmp_path: Path) -> None:

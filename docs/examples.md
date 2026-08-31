@@ -38,6 +38,7 @@ agentsec scan /path/to/repository --format json --progress=never
 
 # Run one detector explicitly
 agentsec scan /path/to/repository --detector shai-hulud-keyv
+agentsec scan /path/to/repository --detector clawhavoc-skill
 
 # Lower the aggregate read budget
 agentsec scan /path/to/repository --max-total-bytes 100000000
@@ -50,6 +51,7 @@ agentsec doctor
 agentsec db info
 agentsec detectors list
 agentsec detectors explain shai-hulud-keyv
+agentsec detectors explain clawhavoc-skill
 ```
 
 ## Batch triage
@@ -135,8 +137,10 @@ JSON, SARIF, and human reports remain on `stdout`.
 
 ## Current detector coverage
 
-The current detector checks evidence associated with the Shai-Hulud Keyv and
-cacheable campaign.
+AgentSec ships two campaign-oriented detector families. Each one reports its
+own inspected files, limitations, and `not_scanned` capabilities.
+
+### Shai-Hulud Keyv and cacheable
 
 | Area | Behavior |
 | --- | --- |
@@ -153,6 +157,27 @@ Finding confidence is part of the verdict. `confirmed` means an exact known IOC
 match. `high` means strongly correlated evidence. `review` is a heuristic
 that needs human analysis. A finding is evidence to investigate, not automatic
 proof of compromise.
+
+### ClawHavoc fake prerequisites
+
+The `clawhavoc-skill` detector checks repository-local `SKILL.md` files for an
+exact URL host recorded in the bundled threat database for the sourced fake
+OpenClawCLI prerequisite campaign. It also inspects same-skill Markdown setup,
+installation, prerequisite, or requirements files when `SKILL.md` references
+them through a Markdown link or an inline-code path.
+
+The detector does not classify `SKILL.md`, a setup filename, or a delegated
+file as malicious by itself. A hostname suffix such as
+`openclawcli.vercel.app.example.test` does not match. A positive exact-domain
+reference is `high/high` evidence to review, not `confirmed` compromise.
+Missing, unreadable, invalid UTF-8, oversized, or budget-exceeding delegated
+instructions make the applicable detector incomplete.
+
+It does not inspect unreferenced companion files, registry history, remote
+payload content, or runtime behavior. If the finding appears, preserve the
+skill and delegated file, do not follow or execute the referenced instructions,
+verify the skill origin and version outside AgentSec, and open a broader
+incident investigation if execution may already have occurred.
 
 ## Coverage limits
 

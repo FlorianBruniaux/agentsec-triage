@@ -3,6 +3,19 @@
   "database_version": "2.27.0",
   "detectors": [
     {
+      "applicability": "not_applicable",
+      "bytes_inspected": 0,
+      "detector_id": "clawhavoc-skill",
+      "files_inspected": 0,
+      "files_seen": 0,
+      "not_scanned": [
+        "skill.registry_history",
+        "skill.remote_payloads",
+        "skill.runtime_behavior",
+        "skill.unreferenced_companion_files"
+      ]
+    },
+    {
       "applicability": "applicable",
       "bytes_inspected": 332,
       "detector_id": "shai-hulud-keyv",
@@ -72,7 +85,11 @@
     "host.processes",
     "remediation.automatic",
     "remote.ci",
-    "remote.repositories"
+    "remote.repositories",
+    "skill.registry_history",
+    "skill.remote_payloads",
+    "skill.runtime_behavior",
+    "skill.unreferenced_companion_files"
   ],
   "root": "<SCAN_ROOT>",
   "schema_version": "2",
