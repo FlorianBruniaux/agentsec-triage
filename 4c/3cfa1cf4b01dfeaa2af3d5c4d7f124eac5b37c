@@ -1,0 +1,41 @@
+action.yml
+  s_0df90997879182::t_b398c519e32591 1-10,12-14,16-27,29-47
+  s_0df90997879182::t_07c94e46cdc1e8 11,28
+  s_0df90997879182::t_46b4fd08084c8a 15
+tests/integration/test_local_action.py
+  s_0df90997879182::t_cd05fce9e318f5 22-23,28,35,155-215
+  s_0df90997879182::t_0347774ad16fac 65,135-154
+  s_0df90997879182::t_f6dc4afb5f4c7d 1-21,24-27,29-34,36-64,66-134,216-259
+docs/examples/agentsec-local-action.yml
+  s_0df90997879182::t_0347774ad16fac 31,41
+  s_0df90997879182::t_b398c519e32591 1-30,32-40,42-45
+CHANGELOG.md
+  s_0df90997879182::t_46b4fd08084c8a 11-19
+llms.txt
+  s_0df90997879182::t_46b4fd08084c8a 14-15
+scripts/run_local_action.py
+  s_0df90997879182::t_aa8ff081c6c408 1-40,43-167
+  s_0df90997879182::t_24426e9aa1d4ce 41-42
+docs/examples.md
+  s_0df90997879182::t_46b4fd08084c8a 307-334
+ROADMAP.md
+  s_0df90997879182::t_46b4fd08084c8a 17-19,92-93
+README.md
+  s_0df90997879182::t_46b4fd08084c8a 23,70-77,82-83
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "4c3cfa1cf4b01dfeaa2af3d5c4d7f124eac5b37c",
+  "prompts": {},
+  "sessions": {
+    "s_0df90997879182": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019fd73a-588d-7f03-ab50-494ca0e95848",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Florian BRUNIAUX <florian@bruniaux.com>"
+    }
+  }
+}
