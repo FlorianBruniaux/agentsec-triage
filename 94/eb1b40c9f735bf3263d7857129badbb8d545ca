@@ -1,0 +1,22 @@
+CHANGELOG.md
+  s_0df90997879182::t_8c84ba9c4aade3 11-15
+docs/designs/2026-08-31-scan-scopes-batch-design.md
+  s_0df90997879182::t_475ca4b8a953d9 1-2,5-303
+  s_0df90997879182::t_3636f8e33e1fdf 3-4
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "94eb1b40c9f735bf3263d7857129badbb8d545ca",
+  "prompts": {},
+  "sessions": {
+    "s_0df90997879182": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019fd73a-588d-7f03-ab50-494ca0e95848",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Florian BRUNIAUX <florian@bruniaux.com>"
+    }
+  }
+}
