@@ -8,7 +8,8 @@ incomplete checks; they never certify a repository or system as clean.
 
 ## Core
 
-- [Project overview](https://github.com/FlorianBruniaux/agentsec-triage/blob/main/README.md)
+- [Start here](https://github.com/FlorianBruniaux/agentsec-triage/blob/main/README.md)
+- [Technical project overview](https://github.com/FlorianBruniaux/agentsec-triage/blob/main/docs/project-overview.md)
 - [Installation](https://github.com/FlorianBruniaux/agentsec-triage/blob/main/docs/installation.md)
 - [Examples and verdicts](https://github.com/FlorianBruniaux/agentsec-triage/blob/main/docs/examples.md)
 - [Repository-local action](https://github.com/FlorianBruniaux/agentsec-triage/blob/main/action.yml)

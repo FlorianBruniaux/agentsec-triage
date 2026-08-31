@@ -8,6 +8,13 @@ while the data-licensing decision remains unresolved.
 
 ### Added
 
+- Added a 16:9 AgentSec workflow infographic that presents repository inputs,
+  bounded scanning, campaign detection, coverage-aware reporting, response
+  outputs, and the primary CLI command without claiming system certification.
+- Added a focused project overview for product surfaces, the intelligence and
+  scan data flow, canonical files, detector-promotion requirements, report
+  contracts, consumer synchronization, and the release boundary.
+
 - Added deterministic `human` and schema-validated `json` formats to
   `agentsec detectors explain`. Detector-explain v1 projects canonical detector
   rules, sources, inputs, applicability, limitations, remediation, and
@@ -250,6 +257,12 @@ while the data-licensing decision remains unresolved.
   schema digest.
 
 ### Changed
+
+- Reordered and shortened the README around the first user decision. The page
+  now leads with the product promise, workflow image, and a goal-command-result
+  table; it then states current detectors, exit semantics, scan scopes, safety
+  limits, outputs, and the shortest documentation routes. Deeper architecture
+  and source-of-truth material moved to `docs/project-overview.md`.
 
 - Reworked the project overview around the shipped product surfaces, execution
   flow, and canonical sources of truth. The README now distinguishes threat

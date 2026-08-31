@@ -83,6 +83,7 @@ def test_docs_explain_progress_and_large_repository_traversal() -> None:
 def test_public_markdown_links_resolve_locally() -> None:
     for document in (
         "README.md",
+        "docs/project-overview.md",
         "docs/installation.md",
         "docs/examples.md",
         "PROMPT.md",
