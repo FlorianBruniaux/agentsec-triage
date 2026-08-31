@@ -8,6 +8,9 @@ while the data-licensing decision remains unresolved.
 
 ### Added
 
+- Added a compact author profile to the repository README with tracked links to
+  the author's background, blog, and public projects.
+
 - Added a 16:9 AgentSec workflow infographic that presents repository inputs,
   bounded scanning, campaign detection, coverage-aware reporting, response
   outputs, and the primary CLI command without claiming system certification.
