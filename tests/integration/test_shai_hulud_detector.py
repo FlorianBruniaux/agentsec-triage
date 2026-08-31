@@ -438,7 +438,7 @@ def test_findings_are_deduplicated_and_deterministic(tmp_path: Path) -> None:
     ) == 1
 
 
-def test_internal_symlink_alias_is_non_blocking_when_target_is_covered(tmp_path: Path) -> None:
+def test_internal_symlink_alias_is_covered_or_fails_closed(tmp_path: Path) -> None:
     target = tmp_path / "target.json"
     target.write_text('{"lockfileVersion": 3, "packages": {}}', encoding="utf-8")
     try:
@@ -448,9 +448,17 @@ def test_internal_symlink_alias_is_non_blocking_when_target_is_covered(tmp_path:
 
     result = _scan(tmp_path)
 
-    assert result.complete is True
-    assert result.exit_code() == 0
-    assert result.discovery.exclusions[0].reason.value == "internal_symlink_alias"
+    if result.complete:
+        assert result.exit_code() == 0
+        assert result.discovery.exclusions[0].reason.value == "internal_symlink_alias"
+        return
+
+    assert os.name == "nt"
+    assert result.exit_code() == 2
+    assert result.discovery.exclusions == ()
+    assert len(result.diagnostics) == 1
+    assert result.diagnostics[0].kind is DiagnosticKind.ERROR
+    assert "1 symlinked repository path" in result.diagnostics[0].message
 
 
 def test_uninspectable_git_metadata_remains_explicitly_out_of_scope(

@@ -22,7 +22,9 @@ from agentsec.output.sarif_output import render_sarif
 from agentsec.scopes import ExclusionReason
 
 
-def _result(*, findings: tuple[Finding, ...]) -> ScanResult:
+def _result(
+    *, findings: tuple[Finding, ...], root: Path = Path("/repo")
+) -> ScanResult:
     detector = DetectorResult(
         detector_id="shai-hulud-keyv",
         applicability=Applicability.APPLICABLE,
@@ -30,7 +32,7 @@ def _result(*, findings: tuple[Finding, ...]) -> ScanResult:
         diagnostics=(
             Diagnostic(
                 DiagnosticKind.ERROR,
-                Path("/repo/package-lock.json"),
+                root / "package-lock.json",
                 "Unable to inspect authoritative lockfile",
             ),
         ),
@@ -44,12 +46,12 @@ def _result(*, findings: tuple[Finding, ...]) -> ScanResult:
     return ScanResult(
         tool_version="0.1.0a0",
         database_version="2.27.0",
-        root=Path("/repo"),
+        root=root,
         detector_results=(detector,),
         diagnostics=(
             Diagnostic(
                 DiagnosticKind.WARNING,
-                Path("/repo/.git"),
+                root / ".git",
                 "VCS metadata excluded",
             ),
         ),
@@ -221,19 +223,23 @@ def test_sarif_maps_severity_rule_and_location(
     ]
 
 
-def test_sarif_redaction_hides_root_paths_and_secret_shaped_evidence() -> None:
+def test_sarif_redaction_hides_root_paths_and_secret_shaped_evidence(
+    tmp_path: Path,
+) -> None:
+    root = tmp_path / "repo"
     finding = Finding(
         detector_id="shai-hulud-keyv",
         rule_id="startup-hook",
         severity=Severity.MEDIUM,
         confidence=Confidence.REVIEW,
         path=Path("ghp_abcdefghijklmnopqrstuvwxyz0123456789/settings.json"),
-        evidence="token ghp_abcdefghijklmnopqrstuvwxyz0123456789",
+        evidence=f"token ghp_abcdefghijklmnopqrstuvwxyz0123456789 in {root}",
     )
 
-    rendered = render_sarif(_result(findings=(finding,)), redact=True)
+    rendered = render_sarif(_result(findings=(finding,), root=root), redact=True)
 
-    assert "/repo" not in rendered
+    assert str(root) not in rendered
+    assert root.as_posix() not in rendered
     assert "ghp_abcdefghijklmnopqrstuvwxyz0123456789" not in rendered
     assert "<SCAN_ROOT>" in rendered
     assert "<REDACTED_SECRET>" in rendered

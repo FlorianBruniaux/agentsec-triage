@@ -655,7 +655,10 @@ def test_batch_scans_positional_roots_in_order(tmp_path: Path) -> None:
     payload = json.loads(completed.stdout)
     assert payload["schema_version"] == "1"
     assert payload["scope"] == "source"
-    assert [item["root"] for item in payload["results"]] == [str(first), str(second)]
+    assert [item["root"] for item in payload["results"]] == [
+        first.resolve().as_posix(),
+        second.resolve().as_posix(),
+    ]
 
 
 def test_batch_accepts_root_file_and_redacts_each_root(tmp_path: Path) -> None:
