@@ -8,6 +8,11 @@ while the data-licensing decision remains unresolved.
 
 ### Added
 
+- Added evidence-backed product decisions that separate five parity
+  requirements, three differentiation bets, rejected V0.1 scope, measurable
+  proof, and the accepted SARIF, delayed-skill, source-action, explain, and
+  response-playbook sequence.
+
 - Published reviewed `clean-control` observations for seven digest-approved
   competitor images. The report records exit status, completion evidence,
   diagnostics, scratch writes, captured-output digests, and comparison limits

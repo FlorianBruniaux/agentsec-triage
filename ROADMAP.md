@@ -39,6 +39,9 @@ credential stores, and automatic remediation remain explicitly out of scope.
 
 ## Public work tracking
 
+The accepted parity requirements, differentiation bets, rejected scope, and
+delivery order live in `docs/competitive-analysis/PRODUCT-DECISIONS.md`.
+
 Completed infrastructure work:
 
 - [#1: restore actual GitHub Actions execution](https://github.com/FlorianBruniaux/agentsec-triage/issues/1),
@@ -80,7 +83,8 @@ The remaining release and product work is tracked with acceptance criteria:
 
 ## P1: Detector expansion
 
-- Add ClawHavoc and ToxicSkills repository detectors with synthetic fixtures.
+- Add delayed-skill instruction coverage with sourced positive and near-miss
+  fixtures before expanding to additional ClawHavoc and ToxicSkills evidence.
 - Add generic agent-skill and repository-persistence checks without treating
   every hook or instruction file as malicious.
 - Add MCP configuration and vulnerable-version checks backed by exact sources.
@@ -92,7 +96,9 @@ remediation, and stable `not_scanned` capability IDs.
 
 ## P2: Distribution and integrations
 
-- Provide a GitHub Action with pinned, checksummed releases.
+- Preserve fail-closed scan coverage in deterministic SARIF 2.1.0 output.
+- Provide a commit-pinned source GitHub Action before the license gate permits
+  pinned, checksummed release installation.
 - Add documented pre-commit and CI recipes without making local hooks mandatory.
 - Let the Claude Code Ultimate Guide consume a pinned AgentSec release artifact.
 - Replace hardcoded landing security versions, dates, counts, and stale source
