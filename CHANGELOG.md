@@ -8,6 +8,11 @@ while the data-licensing decision remains unresolved.
 
 ### Added
 
+- Added the approved scan-scope and batch-triage design. It specifies explicit
+  `source`, `dependencies`, and `repository` scopes, scan-result schema v2,
+  batch-result schema v1, measurable exclusions, non-followed internal symlink
+  aliases, and migration constraints without claiming Git-tracked coverage.
+
 - Added documentation tests that keep public repository visibility distinct
   from gated-data redistribution rights and that require competitive benchmark
   documentation to reflect the completed seven-image build gate.
