@@ -20,6 +20,7 @@ inputs, and limits reported by that run.
 | How does it run? | **Deterministically**, **read-only**, and **offline by default**. It does not follow symlinks outside the scan root or invoke Git on the target repository. |
 | What does it return? | Human-readable, versioned `JSON`, or `SARIF 2.1.0` with measured **discovery exclusions**, per-detector **coverage**, findings, diagnostics, and completion status. |
 | What do exit codes mean? | `0`: completed checks found nothing; `1`: findings require action or review; `2`: the scan is incomplete or failed. |
+| Can it run in GitHub Actions? | A repository-local composite [`action.yml`](action.yml) runs the checked-out source and preserves exit codes. Remote action use and release installation remain blocked by the data-license gate. |
 | What does it not do? | It does not certify a repository as **clean** and does not replace antivirus, `EDR`, `SAST`, dependency, or secret scanning. |
 | What is the current status? | **Alpha**, public source repository, and **no authorized package or tagged release**. See the [changelog](CHANGELOG.md). |
 
@@ -66,10 +67,20 @@ exclusions, detector coverage, and `not_scanned` capabilities under explicit
 `agentsec.*` properties. SARIF output preserves the scan exit code; an
 incomplete scan still exits `2`.
 
+The repository-local composite action invokes that SARIF path without fetching
+or installing AgentSec. It stages the report outside the scan root, validates
+the completion metadata, publishes the configured file, and returns the exact
+scanner exit class. See the [pinned local-action example](docs/examples/agentsec-local-action.yml).
+This is not a remotely consumable release: no authorized package, release
+checksum, or provenance artifact exists while the data-license decision is
+open.
+
 ## Documentation
 
 - [Installation](docs/installation.md): source setup, verification, and Windows commands.
 - [Examples](docs/examples.md): scans, verdicts, JSON, SARIF, coverage limits, and benchmark.
+- [Local action manifest](action.yml): checked-out source wrapper with fail-closed SARIF.
+- [Pinned action workflow](docs/examples/agentsec-local-action.yml): local consumer example with full third-party action SHAs.
 - [Copy-ready LLM prompt](PROMPT.md): ask an LLM to run a read-only repository triage.
 - [LLM index](llms.txt): compact map of canonical project documentation.
 - [Security policy](SECURITY.md): vulnerabilities, false results, and IOC corrections.

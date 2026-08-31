@@ -1,0 +1,45 @@
+name: AgentSec local source example
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  agentsec:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7, official tag verified 2026-08-31
+
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0, official tag verified 2026-08-31
+        with:
+          python-version: "3.13"
+
+      - name: Run repository-local AgentSec
+        id: agentsec
+        continue-on-error: true
+        uses: ./
+        with:
+          path: .
+          scope: source
+          sarif-file: ${{ runner.temp }}/agentsec.sarif
+          redact: "true"
+
+      - name: Upload the SARIF report
+        if: >-
+          always() &&
+          (github.event_name != 'pull_request' ||
+          github.event.pull_request.head.repo.fork == false)
+        uses: github/codeql-action/upload-sarif@cdf488f595d80d6e07e03d4674febd5ab45fa938 # v4 commit, official annotated tag verified 2026-08-31
+        with:
+          sarif_file: ${{ runner.temp }}/agentsec.sarif
+
+      - name: Preserve the AgentSec verdict
+        if: always() && steps.agentsec.outcome == 'failure'
+        run: exit 1

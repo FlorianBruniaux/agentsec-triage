@@ -14,6 +14,9 @@ Implemented in the current alpha codebase:
 - bounded in-process batch triage for explicit repository roots;
 - human, scan-result v2, SARIF 2.1.0, and batch-result v1 output with
   per-detector coverage and exit codes;
+- a repository-local composite GitHub Action that runs checked-out source,
+  validates fail-closed SARIF, and preserves scanner exit codes without
+  downloading an unpublished release;
 - redaction for report preparation;
 - schema-validated threat database import and deterministic runtime artifact;
 - validated authoring-to-runtime projection counts with explicit ignored reasons;
@@ -106,8 +109,8 @@ remediation, and stable `not_scanned` capability IDs.
 ## P2: Distribution and integrations
 
 - Preserve fail-closed scan coverage in deterministic SARIF 2.1.0 output.
-- Provide a commit-pinned source GitHub Action before the license gate permits
-  pinned, checksummed release installation.
+- Promote the repository-local action to remote consumption only after a
+  pinned, checksummed release and signed provenance are authorized.
 - Add documented pre-commit and CI recipes without making local hooks mandatory.
 - Let the Claude Code Ultimate Guide consume a pinned AgentSec release artifact.
 - Replace hardcoded landing security versions, dates, counts, and stale source

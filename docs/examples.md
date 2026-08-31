@@ -329,6 +329,34 @@ currently available for `scan`; `batch` continues to support human and JSON
 output only. AgentSec does not upload the file or configure a code-scanning
 service.
 
+## Repository-local GitHub Action
+
+The root [`action.yml`](../action.yml) is a local composite action. It runs the
+AgentSec source already present below `GITHUB_ACTION_PATH`; it does not call a
+package index, download a release, or fetch threat intelligence. Python 3.11 or
+newer must already be selected on the runner.
+
+The copy-ready [consumer workflow](examples/agentsec-local-action.yml) pins
+`actions/checkout`, `actions/setup-python`, and
+`github/codeql-action/upload-sarif` to full commit SHAs. Those SHAs were
+resolved from each official repository's `v7`, `v7.0.0`, or annotated `v4` tag
+on 2026-08-31. The workflow uses `continue-on-error` only long enough to upload
+an available report, then fails the job again when the AgentSec step failed.
+
+The action accepts `path`, `scope`, `sarif-file`, and `redact`. An empty
+`sarif-file` writes `agentsec.sarif` below `RUNNER_TEMP`. A configured report
+must also remain outside the repository being scanned. The wrapper creates the
+report in runner-owned temporary storage, validates SARIF completion and exit
+metadata, publishes it atomically, exposes `sarif-file` and `exit-code`, then
+returns the scanner's `0`, `1`, or `2` status.
+
+This alpha action is intentionally local. Do not replace `uses: ./` with a
+remote `uses: FlorianBruniaux/agentsec-triage@...` reference yet. The project
+has no authorized package, tag, release checksum, or signed provenance
+artifact, and the gated-data review in `LICENSE-DECISION.md` remains open. The
+example is therefore a source-checkout integration test, not a public
+installation recipe for another repository.
+
 ## Local performance benchmark
 
 The optional wrapper measures one explicitly supplied repository:

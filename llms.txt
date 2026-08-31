@@ -11,6 +11,8 @@ diagnostics, and incomplete coverage; it does not certify a system as clean.
 - [Project overview](https://github.com/FlorianBruniaux/agentsec-triage/blob/main/README.md)
 - [Installation](https://github.com/FlorianBruniaux/agentsec-triage/blob/main/docs/installation.md)
 - [Examples and verdicts](https://github.com/FlorianBruniaux/agentsec-triage/blob/main/docs/examples.md)
+- [Repository-local action](https://github.com/FlorianBruniaux/agentsec-triage/blob/main/action.yml)
+- [Pinned local-action workflow](https://github.com/FlorianBruniaux/agentsec-triage/blob/main/docs/examples/agentsec-local-action.yml)
 - [Copy-ready audit prompt](https://github.com/FlorianBruniaux/agentsec-triage/blob/main/PROMPT.md)
 
 ## Security and intelligence

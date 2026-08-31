@@ -1,0 +1,47 @@
+name: AgentSec local repository scan
+description: Run the checked-out AgentSec source and emit fail-closed SARIF 2.1.0
+author: Florian Bruniaux
+
+inputs:
+  path:
+    description: Repository path to scan, relative to the GitHub workspace
+    required: false
+    default: "."
+  scope:
+    description: "AgentSec scan scope: source, dependencies, or repository"
+    required: false
+    default: source
+  sarif-file:
+    description: SARIF path outside the scan root; empty uses RUNNER_TEMP
+    required: false
+    default: ""
+  redact:
+    description: Replace the scan root and recognized secret-shaped evidence
+    required: false
+    default: "true"
+
+outputs:
+  sarif-file:
+    description: Absolute path of the validated SARIF report
+    value: ${{ steps.scan.outputs.sarif-file }}
+  exit-code:
+    description: "AgentSec exit code: 0 completed, 1 findings, 2 incomplete"
+    value: ${{ steps.scan.outputs.exit-code }}
+
+runs:
+  using: composite
+  steps:
+    - name: Run checked-out AgentSec source
+      id: scan
+      shell: bash
+      env:
+        AGENTSEC_PATH: ${{ inputs.path }}
+        AGENTSEC_REDACT: ${{ inputs.redact }}
+        AGENTSEC_SARIF_FILE: ${{ inputs.sarif-file }}
+        AGENTSEC_SCOPE: ${{ inputs.scope }}
+      run: |
+        python "$GITHUB_ACTION_PATH/scripts/run_local_action.py"
+
+branding:
+  icon: shield
+  color: red

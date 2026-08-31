@@ -28,14 +28,23 @@ while the data-licensing decision remains unresolved.
   three times, removes runtime duration before digest comparison, rejects
   semantic or exit-code drift, preserves findings and coverage evidence, and
   confines its machine report to the ignored local benchmark directory.
+- Added a repository-local composite GitHub Action for checked-out AgentSec
+  source. Its tested runner stages SARIF outside the scan root, validates the
+  report's completion and exit metadata, publishes to a configurable path, and
+  returns the scanner's exact `0`, `1`, or `2` class. A consumer example pins
+  checkout, Python setup, and SARIF upload actions to full SHAs verified against
+  their official tags. Remote AgentSec action use, package installation,
+  release checksums, and provenance remain blocked by the existing data-license
+  gate.
+
 - Added deterministic SARIF 2.1.0 output for `agentsec scan`. Findings map to
   stable detector/rule IDs, SARIF severity levels, relative URI-encoded
   locations, confidence, campaign, technique, and remediation properties. Run
   properties retain completion, diagnostics, discovery exclusions,
   per-detector coverage, and unsupported capabilities. The invocation preserves
   exit code `2` for incomplete scans, so exporting SARIF cannot turn partial
-  coverage into a successful verdict. Batch SARIF and a GitHub Action remain
-  outside this change.
+  coverage into a successful verdict. Batch SARIF remains outside the current
+  alpha; the repository-local Action is recorded separately above.
 - Added the stable `clawhavoc-skill` detector for an exact campaign domain in
   repository-local `SKILL.md` files and explicitly delegated same-skill setup
   instructions. The detector follows only bounded local Markdown references,
