@@ -9,12 +9,15 @@ from agentsec.models import (
     DetectorResult,
     Diagnostic,
     DiagnosticKind,
+    DiscoveryCoverage,
+    ExclusionCount,
     Finding,
     ScanResult,
     Severity,
     ThreatDatabase,
 )
 from agentsec.output.human import render_human
+from agentsec.scopes import ExclusionReason
 
 
 def test_incomplete_scan_cannot_return_clean_exit_code():
@@ -28,6 +31,41 @@ def test_incomplete_scan_cannot_return_clean_exit_code():
     )
     assert result.complete is False
     assert result.exit_code() == 2
+
+
+def test_discovery_coverage_sorts_and_freezes_exclusion_counts() -> None:
+    coverage = DiscoveryCoverage(
+        entries_seen=9,
+        directories_opened=3,
+        files_selected=4,
+        exclusions=(
+            ExclusionCount(ExclusionReason.GENERATED_OR_CACHE, paths=2, subtrees=1),
+            ExclusionCount(ExclusionReason.BINARY_ASSET, paths=1, subtrees=0),
+        ),
+    )
+
+    assert tuple(item.reason for item in coverage.exclusions) == (
+        ExclusionReason.BINARY_ASSET,
+        ExclusionReason.GENERATED_OR_CACHE,
+    )
+
+
+@pytest.mark.parametrize(
+    "factory",
+    (
+        lambda: ExclusionCount(ExclusionReason.BINARY_ASSET, paths=-1, subtrees=0),
+        lambda: ExclusionCount(ExclusionReason.BINARY_ASSET, paths=0, subtrees=-1),
+        lambda: DiscoveryCoverage(
+            entries_seen=-1,
+            directories_opened=0,
+            files_selected=0,
+            exclusions=(),
+        ),
+    ),
+)
+def test_discovery_coverage_rejects_negative_counts(factory: object) -> None:
+    with pytest.raises(ValueError, match="non-negative"):
+        factory()  # type: ignore[operator]
 
 
 def test_findings_return_one_and_serialize_in_stable_order():

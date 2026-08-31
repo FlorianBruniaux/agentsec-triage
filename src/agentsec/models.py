@@ -6,6 +6,8 @@ from enum import StrEnum
 from pathlib import PurePath
 from types import MappingProxyType
 
+from agentsec.scopes import ExclusionReason
+
 
 class Severity(StrEnum):
     CRITICAL = "critical"
@@ -59,6 +61,38 @@ class Coverage:
     files_inspected: int = 0
     bytes_inspected: int = 0
     not_scanned: tuple[str, ...] = ()
+
+
+@dataclass(frozen=True, slots=True)
+class ExclusionCount:
+    reason: ExclusionReason
+    paths: int
+    subtrees: int
+
+    def __post_init__(self) -> None:
+        if self.paths < 0 or self.subtrees < 0:
+            raise ValueError("exclusion counts must be non-negative")
+
+
+@dataclass(frozen=True, slots=True)
+class DiscoveryCoverage:
+    entries_seen: int = 0
+    directories_opened: int = 0
+    files_selected: int = 0
+    exclusions: tuple[ExclusionCount, ...] = ()
+
+    def __post_init__(self) -> None:
+        if (
+            self.entries_seen < 0
+            or self.directories_opened < 0
+            or self.files_selected < 0
+        ):
+            raise ValueError("discovery counts must be non-negative")
+        ordered = tuple(sorted(self.exclusions, key=lambda item: item.reason.value))
+        reasons = tuple(item.reason for item in ordered)
+        if len(reasons) != len(set(reasons)):
+            raise ValueError("discovery exclusions must have unique reasons")
+        object.__setattr__(self, "exclusions", ordered)
 
 
 @dataclass(frozen=True, slots=True)
