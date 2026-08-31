@@ -1,0 +1,92 @@
+src/agentsec/detectors/clawhavoc_skill.py
+  s_0df90997879182::t_e1e8bfc22f63d5 1-4,10,21,24,29-40,46-51,54-61,63-66,68-69,200-201,214
+  s_0df90997879182::t_7a80cdf03ae56b 228-231
+  s_0df90997879182::t_c4c45459afada4 5,25,27,77-78,126,129,133-135,144-189,191-199,210,219-222,232-243,245-270
+  s_0df90997879182::t_8fdeda3b00ee5d 204-208,284-306
+  s_0df90997879182::t_89da7b27e79d75 7,28,123,190,271-283
+  s_0df90997879182::t_1ef8b8b83a0fa9 136-143
+  s_0df90997879182::t_2515b3350f1baa 6,8-9,11-20,22-23,45,67,70-76,79-122,124-125,127-128,130-132,202-203,209,211-213,215-218
+  s_0df90997879182::t_3b5e3741bdc0e5 244
+  s_0df90997879182::t_4715baa47c729d 41-44,52-53,62
+  s_0df90997879182::t_ed81ee9cee9f3b 26,223-227
+README.md
+  s_0df90997879182::t_59a090fed22dfd 18
+tests/fixtures/clawhavoc_skill/positive/setup-installation.md
+  s_0df90997879182::t_1727d270884577 1-3
+docs/examples.md
+  s_0df90997879182::t_59a090fed22dfd 41,54,140-143,161-180
+  s_a76087f74be2bb::t_14bb3952b014a2 181
+src/agentsec/detectors/registry.py
+  s_0df90997879182::t_e1e8bfc22f63d5 8,11-14
+tests/integration/test_clawhavoc_skill_detector.py
+  s_0df90997879182::t_f93308f79b14b6 156-177
+  s_0df90997879182::t_b00f012d9aad21 22,27,141-155
+  s_0df90997879182::t_a6ebb16dae6c43 4-6,8-18,20-21,23-26,28-29,37-62
+  s_0df90997879182::t_1727d270884577 3,19,63-91
+  s_0df90997879182::t_03114839957b4b 92-104
+  s_0df90997879182::t_5ff991a40561b2 105-122
+  s_0df90997879182::t_4715baa47c729d 178-196
+  s_0df90997879182::t_f4a448cbd838bf 123-140
+  s_0df90997879182::t_376255094872bb 1-2,7,30-36
+ROADMAP.md
+  s_0df90997879182::t_59a090fed22dfd 29-31,89-90
+tests/unit/test_runner.py
+  s_0df90997879182::t_b2e2389e4cdb30 271,274-278
+tests/fixtures/clawhavoc_skill/near_miss/setup-installation.md
+  s_0df90997879182::t_03114839957b4b 1-3
+tests/fixtures/clawhavoc_skill/near_miss/SKILL.md
+  s_0df90997879182::t_03114839957b4b 1-3
+tests/unit/test_security_feed.py
+  s_0df90997879182::t_b2e2389e4cdb30 70-73
+CHANGELOG.md
+  s_0df90997879182::t_59a090fed22dfd 34-43
+tests/golden/finding.json
+  s_0df90997879182::t_4715baa47c729d 14-15,91-92
+  s_0df90997879182::t_b2e2389e4cdb30 6-13,16-17,88-90
+  s_9cf259c16931e6::t_6649426e086a12 5
+tests/golden/clean.txt
+  s_0df90997879182::t_b2e2389e4cdb30 7,27-29
+  s_0df90997879182::t_4715baa47c729d 30
+docs/ECOSYSTEM.md
+  s_0df90997879182::t_59a090fed22dfd 23-25
+tests/integration/test_cli.py
+  s_0df90997879182::t_b2e2389e4cdb30 144-145
+tests/integration/test_shai_hulud_detector.py
+  s_0df90997879182::t_b2e2389e4cdb30 415-418
+tests/fixtures/clawhavoc_skill/positive/SKILL.md
+  s_0df90997879182::t_1727d270884577 1-3
+exports/security-feed.v1.json
+  s_0df90997879182::t_4c84d57be4f32e 23-55
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "406c9bb1e15b5e99dc1b9a51d67deffc8f02ffd1",
+  "prompts": {},
+  "sessions": {
+    "s_0df90997879182": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019fd73a-588d-7f03-ab50-494ca0e95848",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Florian BRUNIAUX <florian@bruniaux.com>"
+    },
+    "s_9cf259c16931e6": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a03e6c-f9af-7811-b19d-91365bbf6d38",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Florian BRUNIAUX <florian@bruniaux.com>"
+    },
+    "s_a76087f74be2bb": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a01f2a-b167-78f0-a126-7450029bd920",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Florian BRUNIAUX <florian@bruniaux.com>"
+    }
+  }
+}
