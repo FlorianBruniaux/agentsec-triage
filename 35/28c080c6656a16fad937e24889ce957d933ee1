@@ -1,0 +1,28 @@
+README.md
+  s_0df90997879182::t_b8423d8696aaa7 80
+ROADMAP.md
+  s_0df90997879182::t_1b50c3ce4f30a3 86-87,99-101
+  s_0df90997879182::t_de2043261fd9bc 42-44
+llms.txt
+  s_0df90997879182::t_303fab38552cc1 29
+CHANGELOG.md
+  s_0df90997879182::t_abd0d03d931bfe 11-15
+docs/competitive-analysis/PRODUCT-DECISIONS.md
+  s_0df90997879182::t_78740b9cb51de7 1-104
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "3528c080c6656a16fad937e24889ce957d933ee1",
+  "prompts": {},
+  "sessions": {
+    "s_0df90997879182": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019fd73a-588d-7f03-ab50-494ca0e95848",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Florian BRUNIAUX <florian@bruniaux.com>"
+    }
+  }
+}
