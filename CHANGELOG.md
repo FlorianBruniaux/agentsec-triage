@@ -20,6 +20,10 @@ while the data-licensing decision remains unresolved.
   applies aggregate exit precedence `2 > 1 > 0`, supports redaction and
   publishes batch-result schema v1 with embedded scan-result v2 reports.
 
+- Packaged scan-result v1, scan-result v2, and batch-result v1 with canonical
+  SHA-256 digests. `agentsec doctor` now verifies the active scan and batch
+  contracts independently and reports each validated artifact by name.
+
 - Added the approved scan-scope and batch-triage design plus its TDD
   implementation plan. They specify explicit `source`, `dependencies`, and
   `repository` scopes, scan-result schema v2, batch-result schema v1,

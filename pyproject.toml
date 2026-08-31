@@ -34,6 +34,10 @@ packages = ["src/agentsec"]
 [tool.hatch.build.targets.wheel.force-include]
 "schemas/scan-result-v1.schema.json" = "agentsec/resources/scan-result-v1.schema.json"
 "schemas/scan-result-v1.schema.sha256" = "agentsec/resources/scan-result-v1.schema.sha256"
+"schemas/scan-result-v2.schema.json" = "agentsec/resources/scan-result-v2.schema.json"
+"schemas/scan-result-v2.schema.sha256" = "agentsec/resources/scan-result-v2.schema.sha256"
+"schemas/batch-result-v1.schema.json" = "agentsec/resources/batch-result-v1.schema.json"
+"schemas/batch-result-v1.schema.sha256" = "agentsec/resources/batch-result-v1.schema.sha256"
 
 [tool.hatch.build.targets.sdist]
 exclude = [

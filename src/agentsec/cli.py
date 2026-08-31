@@ -32,6 +32,41 @@ _DEFAULT_MAX_DIAGNOSTICS = 100
 _DEFAULT_MAX_ENTRIES = 1_000_000
 _DEFAULT_MAX_DIRECTORIES = 100_000
 
+_SCHEMA_CONTRACTS = {
+    "scan-result-v2": (
+        "scan-result-v2.schema.json",
+        "https://agentsec.dev/schemas/scan-result-v2.schema.json",
+        {
+            "schema_version",
+            "tool_version",
+            "database_version",
+            "root",
+            "scope",
+            "complete",
+            "elapsed_ms",
+            "discovery",
+            "detectors",
+            "not_scanned",
+            "diagnostics",
+            "findings",
+        },
+    ),
+    "batch-result-v1": (
+        "batch-result-v1.schema.json",
+        "https://agentsec.dev/schemas/batch-result-v1.schema.json",
+        {
+            "schema_version",
+            "tool_version",
+            "database_version",
+            "scope",
+            "complete",
+            "elapsed_ms",
+            "summary",
+            "results",
+        },
+    ),
+}
+
 
 class _ArgumentParser(argparse.ArgumentParser):
     def error(self, message: str) -> NoReturn:
@@ -542,12 +577,17 @@ def _doctor() -> int:
     if database is None:
         return 2
     try:
-        raw_schema = _read_schema_bytes()
-        expected_digest = _read_schema_digest()
-        if sha256(_canonical_text_bytes(raw_schema)).hexdigest() != expected_digest:
-            raise ValueError("schema integrity digest mismatch")
-        schema = json.loads(raw_schema)
-        _validate_schema_contract(schema)
+        for label, (filename, schema_id, required_fields) in _SCHEMA_CONTRACTS.items():
+            raw_schema = _read_schema_bytes(filename)
+            expected_digest = _read_schema_digest(filename.replace(".json", ".sha256"))
+            if sha256(_canonical_text_bytes(raw_schema)).hexdigest() != expected_digest:
+                raise ValueError(f"{label} schema integrity digest mismatch")
+            schema = json.loads(raw_schema)
+            _validate_schema_contract(
+                schema,
+                schema_id=schema_id,
+                required_fields=required_fields,
+            )
     except (
         ModuleNotFoundError,
         OSError,
@@ -564,7 +604,8 @@ def _doctor() -> int:
                 f"Python: {sys.version.split()[0]}",
                 f"database: {database.version}",
                 "resource: available",
-                "schema: valid",
+                "scan-result-v2: valid",
+                "batch-result-v1: valid",
             )
         )
     )
@@ -575,28 +616,26 @@ def _canonical_text_bytes(raw: bytes) -> bytes:
     return raw.replace(b"\r\n", b"\n").replace(b"\r", b"\n")
 
 
-def _read_schema_bytes() -> bytes:
-    schema = resources.files("agentsec.resources").joinpath("scan-result-v1.schema.json")
+def _read_schema_bytes(filename: str) -> bytes:
+    schema = resources.files("agentsec.resources").joinpath(filename)
     try:
         return schema.read_bytes()
     except FileNotFoundError:
         source_schema = (
-            Path(__file__).resolve().parents[2] / "schemas" / "scan-result-v1.schema.json"
+            Path(__file__).resolve().parents[2] / "schemas" / filename
         )
         return source_schema.read_bytes()
 
 
-def _read_schema_digest() -> str:
-    digest = resources.files("agentsec.resources").joinpath(
-        "scan-result-v1.schema.sha256"
-    )
+def _read_schema_digest(filename: str) -> str:
+    digest = resources.files("agentsec.resources").joinpath(filename)
     try:
         raw = digest.read_text(encoding="ascii")
     except FileNotFoundError:
         source_digest = (
             Path(__file__).resolve().parents[2]
             / "schemas"
-            / "scan-result-v1.schema.sha256"
+            / filename
         )
         raw = source_digest.read_text(encoding="ascii")
     if re.fullmatch(r"[0-9a-f]{64}\n", raw) is None:
@@ -604,32 +643,25 @@ def _read_schema_digest() -> str:
     return raw[:-1]
 
 
-def _validate_schema_contract(schema: object) -> None:
+def _validate_schema_contract(
+    schema: object,
+    *,
+    schema_id: str,
+    required_fields: set[str],
+) -> None:
     if not isinstance(schema, dict):
         raise ValueError("schema root must be an object")
     if schema.get("$schema") != "https://json-schema.org/draft/2020-12/schema":
         raise ValueError("schema has an invalid $schema")
-    if schema.get("$id") != "https://agentsec.dev/schemas/scan-result-v1.schema.json":
+    if schema.get("$id") != schema_id:
         raise ValueError("schema has an invalid $id")
     if schema.get("type") != "object":
         raise ValueError("schema root type must be object")
     required = schema.get("required")
-    expected_fields = {
-        "schema_version",
-        "tool_version",
-        "database_version",
-        "root",
-        "complete",
-        "elapsed_ms",
-        "coverage",
-        "not_scanned",
-        "diagnostics",
-        "findings",
-    }
-    if not isinstance(required, list) or set(required) != expected_fields:
+    if not isinstance(required, list) or set(required) != required_fields:
         raise ValueError("schema has invalid required fields")
     properties = schema.get("properties")
-    if not isinstance(properties, dict) or not expected_fields.issubset(properties):
+    if not isinstance(properties, dict) or not required_fields.issubset(properties):
         raise ValueError("schema has invalid properties")
 
 

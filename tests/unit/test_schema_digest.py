@@ -62,3 +62,12 @@ def test_digest_builder_normalizes_schema_line_endings(tmp_path: Path) -> None:
     expected = f"{sha256(lf_bytes).hexdigest()}\n"
     assert lf_output.read_text(encoding="ascii") == expected
     assert crlf_output.read_text(encoding="ascii") == expected
+
+
+def test_default_check_validates_all_public_schema_digests() -> None:
+    result = _run("--check")
+
+    assert result.returncode == 0
+    assert "scan-result-v1.schema.json" in result.stdout
+    assert "scan-result-v2.schema.json" in result.stdout
+    assert "batch-result-v1.schema.json" in result.stdout

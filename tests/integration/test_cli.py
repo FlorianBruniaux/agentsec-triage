@@ -622,21 +622,28 @@ def test_doctor_validates_local_resources_and_schema_without_network() -> None:
     assert "Python:" in completed.stdout
     assert "database: 2.27.0" in completed.stdout
     assert "resource: available" in completed.stdout
-    assert "schema: valid" in completed.stdout
+    assert "scan-result-v2: valid" in completed.stdout
+    assert "batch-result-v1: valid" in completed.stdout
 
 
 def test_doctor_accepts_crlf_schema_bytes(
     monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
 ) -> None:
-    raw_schema = (PROJECT_ROOT / "schemas" / "scan-result-v1.schema.json").read_bytes()
+    raw_schema = (PROJECT_ROOT / "schemas" / "scan-result-v2.schema.json").read_bytes()
     canonical_schema = raw_schema.replace(b"\r\n", b"\n").replace(b"\r", b"\n")
     crlf_schema = canonical_schema.replace(b"\n", b"\r\n")
-    monkeypatch.setattr(cli, "_read_schema_bytes", lambda: crlf_schema)
+    monkeypatch.setattr(
+        cli,
+        "_read_schema_bytes",
+        lambda filename: crlf_schema
+        if filename == "scan-result-v2.schema.json"
+        else (PROJECT_ROOT / "schemas" / filename).read_bytes(),
+    )
 
     result = cli._doctor()
 
     assert result == 0
-    assert "schema: valid" in capsys.readouterr().out
+    assert "scan-result-v2: valid" in capsys.readouterr().out
 
 
 def test_doctor_from_wheel_without_dependencies_validates_packaged_schema(tmp_path: Path) -> None:
@@ -659,6 +666,10 @@ def test_doctor_from_wheel_without_dependencies_validates_packaged_schema(tmp_pa
     with zipfile.ZipFile(wheel) as archive:
         assert "agentsec/resources/security-intelligence.json" in archive.namelist()
         assert "agentsec/resources/scan-result-v1.schema.sha256" in archive.namelist()
+        assert "agentsec/resources/scan-result-v2.schema.json" in archive.namelist()
+        assert "agentsec/resources/scan-result-v2.schema.sha256" in archive.namelist()
+        assert "agentsec/resources/batch-result-v1.schema.json" in archive.namelist()
+        assert "agentsec/resources/batch-result-v1.schema.sha256" in archive.namelist()
         metadata_name = next(name for name in archive.namelist() if name.endswith("METADATA"))
         metadata = BytesParser().parsebytes(archive.read(metadata_name))
     assert metadata.get_all("License-File", []) == []
@@ -681,7 +692,8 @@ def test_doctor_from_wheel_without_dependencies_validates_packaged_schema(tmp_pa
 
     assert completed.returncode == 0
     assert completed.stderr == ""
-    assert "schema: valid" in completed.stdout
+    assert "scan-result-v2: valid" in completed.stdout
+    assert "batch-result-v1: valid" in completed.stdout
 
     module_completed = subprocess.run(
         [str(python), "-m", "agentsec", "doctor"],
@@ -729,7 +741,7 @@ def test_doctor_invalid_schema_returns_concise_error_without_traceback(
     monkeypatch.setattr(
         cli,
         "_read_schema_digest",
-        lambda: sha256(content.encode("utf-8")).hexdigest(),
+        lambda filename: sha256(content.encode("utf-8")).hexdigest(),
     )
 
     assert cli.main(["doctor"]) == 2
@@ -745,12 +757,17 @@ def test_doctor_rejects_schema_that_is_not_the_prevalidated_artifact(
     mutation: str, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
 ) -> None:
     class MutatedSchemaResource:
+        def __init__(self, filename: str = "") -> None:
+            self.filename = filename
+
         def joinpath(self, *names: str) -> MutatedSchemaResource:
-            return self
+            return MutatedSchemaResource(names[-1])
 
         def read_bytes(self) -> bytes:
+            if self.filename != "scan-result-v2.schema.json":
+                return (PROJECT_ROOT / "schemas" / self.filename).read_bytes()
             schema = json.loads(
-                (PROJECT_ROOT / "schemas" / "scan-result-v1.schema.json").read_text(
+                (PROJECT_ROOT / "schemas" / "scan-result-v2.schema.json").read_text(
                     encoding="utf-8"
                 )
             )
@@ -766,7 +783,7 @@ def test_doctor_rejects_schema_that_is_not_the_prevalidated_artifact(
     monkeypatch.setattr(
         cli,
         "_read_schema_digest",
-        lambda: (PROJECT_ROOT / "schemas" / "scan-result-v1.schema.sha256")
+        lambda filename: (PROJECT_ROOT / "schemas" / filename)
         .read_text(encoding="ascii")
         .strip(),
     )
@@ -783,10 +800,10 @@ def test_doctor_rejects_schema_digest_mismatch(
     monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
 ) -> None:
     database = load_bundled_database()
-    schema = (PROJECT_ROOT / "schemas" / "scan-result-v1.schema.json").read_bytes()
+    schema = (PROJECT_ROOT / "schemas" / "scan-result-v2.schema.json").read_bytes()
     monkeypatch.setattr(cli, "_load_database", lambda: database)
-    monkeypatch.setattr(cli, "_read_schema_bytes", lambda: schema)
-    monkeypatch.setattr(cli, "_read_schema_digest", lambda: "0" * 64)
+    monkeypatch.setattr(cli, "_read_schema_bytes", lambda filename: schema)
+    monkeypatch.setattr(cli, "_read_schema_digest", lambda filename: "0" * 64)
 
     assert cli.main(["doctor"]) == 2
 
@@ -810,7 +827,7 @@ def test_schema_digest_reader_rejects_malformed_digest(
     monkeypatch.setattr(cli.resources, "files", lambda package: DigestResource())
 
     with pytest.raises(ValueError, match="schema integrity digest is invalid"):
-        cli._read_schema_digest()
+        cli._read_schema_digest("scan-result-v2.schema.sha256")
 
 
 def _checked(arguments: list[str], *, env: dict[str, str] | None = None) -> None:
