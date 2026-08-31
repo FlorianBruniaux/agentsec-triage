@@ -1,0 +1,24 @@
+docs/competitive-analysis/BUILD-GATE.md
+  s_0df90997879182::t_9a67e4298d433c 158-159
+tests/unit/test_competitive_benchmark.py
+  s_0df90997879182::t_f7b8786c18e60a 903-932,945-946,955,965,971,974,984,991
+  s_0df90997879182::t_2b2419190ebd3f 941,944,952
+scripts/run_competitive_benchmark.py
+  s_0df90997879182::t_32c0199b0b04ac 1032-1047
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "d5e05152c9091c627c7e4f269084af0c6ea48d32",
+  "prompts": {},
+  "sessions": {
+    "s_0df90997879182": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019fd73a-588d-7f03-ab50-494ca0e95848",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Florian BRUNIAUX <florian@bruniaux.com>"
+    }
+  }
+}
