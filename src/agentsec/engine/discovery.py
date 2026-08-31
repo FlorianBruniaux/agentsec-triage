@@ -136,15 +136,22 @@ class _DirectoryEntry:
     listed_as_directory: bool
 
 
+@dataclass(frozen=True, slots=True)
+class _SkippedLink:
+    path: Path
+    identity: tuple[int, int]
+
+
 @dataclass(slots=True)
 class _TraversalState:
     entries_seen: int = 0
     directories_opened: int = 0
-    symlinked_paths: int = 0
+    skipped_links: list[_SkippedLink] = field(default_factory=list)
     nested_repositories: int = 0
     next_progress_file_count: int = _PROGRESS_FILE_INTERVAL
     stopped: bool = False
     exclusions: dict[ExclusionReason, list[int]] = field(default_factory=dict)
+    covered_paths: dict[Path, tuple[int, int]] = field(default_factory=dict)
 
     def exclude(self, reason: ExclusionReason, *, subtree: bool) -> None:
         counts = self.exclusions.setdefault(reason, [0, 0])
@@ -209,12 +216,26 @@ def discover(
         state=state,
         progress=progress,
     )
-    if state.symlinked_paths:
-        suffix = "path" if state.symlinked_paths == 1 else "paths"
+    unresolved_links = 0
+    for link in state.skipped_links:
+        alias_subtree = _internal_alias_subtree(
+            link,
+            scan_root=scan_root,
+            covered_paths=state.covered_paths,
+        )
+        if alias_subtree is None:
+            unresolved_links += 1
+        else:
+            state.exclude(
+                ExclusionReason.INTERNAL_SYMLINK_ALIAS,
+                subtree=alias_subtree,
+            )
+    if unresolved_links:
+        suffix = "path" if unresolved_links == 1 else "paths"
         diagnostics.add(
             scan_root,
             "Refusing to inspect "
-            f"{state.symlinked_paths} symlinked repository {suffix}; scan incomplete",
+            f"{unresolved_links} symlinked repository {suffix}; scan incomplete",
         )
     if state.nested_repositories:
         repository = "repository" if state.nested_repositories == 1 else "repositories"
@@ -317,6 +338,7 @@ def _scan_directory(
             os.close(opened.file_descriptor)
         return False
     state.directories_opened += 1
+    state.covered_paths[path] = _file_identity(expected_stat)
 
     try:
         if depth > 0 and any(entry.name == ".git" for entry in opened.entries):
@@ -367,7 +389,9 @@ def _scan_directory(
             if entry_stat is None:
                 continue
             if _is_link_like(entry_stat):
-                state.symlinked_paths += 1
+                state.skipped_links.append(
+                    _SkippedLink(candidate, _file_identity(entry_stat))
+                )
                 continue
             if stat.S_ISDIR(entry_stat.st_mode) and not _is_link_like(entry_stat):
                 directory_decision = classify_directory(relative_candidate, scope)
@@ -416,6 +440,7 @@ def _scan_directory(
                     symlink=False,
                 )
             )
+            state.covered_paths[candidate] = _file_identity(entry_stat)
             if len(discovered) >= state.next_progress_file_count:
                 if progress is not None:
                     progress(
@@ -629,6 +654,51 @@ def _supports_fd_traversal() -> bool:
 
 def _file_identity(entry_stat: os.stat_result) -> tuple[int, int]:
     return entry_stat.st_dev, entry_stat.st_ino
+
+
+def _internal_alias_subtree(
+    link: _SkippedLink,
+    *,
+    scan_root: Path,
+    covered_paths: dict[Path, tuple[int, int]],
+) -> bool | None:
+    try:
+        before = link.path.lstat()
+        if (
+            _file_identity(before) != link.identity
+            or not stat.S_ISLNK(before.st_mode)
+        ):
+            return None
+        raw_target = os.readlink(link.path)
+        after = link.path.lstat()
+        if (
+            _file_identity(after) != link.identity
+            or not stat.S_ISLNK(after.st_mode)
+        ):
+            return None
+        unresolved_target = Path(raw_target)
+        if not unresolved_target.is_absolute():
+            unresolved_target = link.path.parent / unresolved_target
+        target = unresolved_target.resolve(strict=True)
+        target.relative_to(scan_root)
+        expected_target_identity = covered_paths.get(target)
+        if expected_target_identity is None:
+            return None
+        target_stat = target.lstat()
+        if (
+            _is_link_like(target_stat)
+            or _file_identity(target_stat) != expected_target_identity
+        ):
+            return None
+        final_link_stat = link.path.lstat()
+        if (
+            _file_identity(final_link_stat) != link.identity
+            or not stat.S_ISLNK(final_link_stat.st_mode)
+        ):
+            return None
+        return stat.S_ISDIR(target_stat.st_mode)
+    except (OSError, RuntimeError, ValueError):
+        return None
 
 
 def _safe_lstat(path: Path, diagnostics: _DiagnosticBuffer) -> os.stat_result | None:

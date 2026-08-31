@@ -116,6 +116,115 @@ def test_external_symlink_is_reported_but_not_followed(tmp_path: Path):
     assert "1 symlinked repository path" in diagnostics[0].message
 
 
+def test_internal_symlink_alias_is_excluded_without_following(tmp_path: Path) -> None:
+    target = tmp_path / "real.txt"
+    target.write_text("canonical")
+    (tmp_path / "alias.txt").symlink_to(target.name)
+
+    result = discover(tmp_path, LIMITS, scope=ScanScope.REPOSITORY)
+
+    assert [item.relative_path.as_posix() for item in result.files] == ["real.txt"]
+    assert result.diagnostics == ()
+    assert tuple(
+        (item.reason, item.paths, item.subtrees)
+        for item in result.coverage.exclusions
+    ) == ((ExclusionReason.INTERNAL_SYMLINK_ALIAS, 1, 0),)
+
+
+def test_internal_directory_alias_is_excluded_when_canonical_tree_is_covered(
+    tmp_path: Path,
+) -> None:
+    target = tmp_path / "real"
+    target.mkdir()
+    (target / "payload.txt").write_text("canonical")
+    (tmp_path / "alias").symlink_to(target.name, target_is_directory=True)
+
+    result = discover(tmp_path, LIMITS, scope=ScanScope.REPOSITORY)
+
+    assert [item.relative_path.as_posix() for item in result.files] == [
+        "real/payload.txt"
+    ]
+    assert result.diagnostics == ()
+    alias = next(
+        item
+        for item in result.coverage.exclusions
+        if item.reason is ExclusionReason.INTERNAL_SYMLINK_ALIAS
+    )
+    assert (alias.paths, alias.subtrees) == (1, 1)
+
+
+def test_broken_internal_symlink_remains_blocking(tmp_path: Path) -> None:
+    (tmp_path / "broken").symlink_to("missing.txt")
+
+    result = discover(tmp_path, LIMITS, scope=ScanScope.REPOSITORY)
+
+    assert result.files == ()
+    assert any(
+        diagnostic.kind is DiagnosticKind.ERROR
+        and "1 symlinked repository path" in diagnostic.message
+        for diagnostic in result.diagnostics
+    )
+    assert result.coverage.exclusions == ()
+
+
+def test_alias_to_source_pruned_tree_remains_blocking(tmp_path: Path) -> None:
+    installed = tmp_path / "node_modules"
+    installed.mkdir()
+    (installed / "payload.js").write_text("not covered")
+    (tmp_path / "installed-alias").symlink_to(
+        installed.name, target_is_directory=True
+    )
+
+    result = discover(tmp_path, LIMITS, scope=ScanScope.SOURCE)
+
+    assert any(
+        diagnostic.kind is DiagnosticKind.ERROR
+        and "1 symlinked repository path" in diagnostic.message
+        for diagnostic in result.diagnostics
+    )
+    reasons = {item.reason for item in result.coverage.exclusions}
+    assert ExclusionReason.INSTALLED_DEPENDENCIES in reasons
+    assert ExclusionReason.INTERNAL_SYMLINK_ALIAS not in reasons
+
+
+def test_internal_alias_changed_after_revalidation_remains_blocking(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    target = tmp_path / "real.txt"
+    target.write_text("canonical")
+    outside = tmp_path.parent / "outside-agentsec-alias-race.txt"
+    outside.write_text("external")
+    alias = tmp_path / "alias.txt"
+    alias.symlink_to(target.name)
+    original_lstat = Path.lstat
+    alias_lstat_calls = 0
+
+    def mutate_after_second_alias_lstat(path: Path):
+        nonlocal alias_lstat_calls
+        result = original_lstat(path)
+        if path == alias:
+            alias_lstat_calls += 1
+            if alias_lstat_calls == 2:
+                alias.unlink()
+                alias.symlink_to(outside)
+        return result
+
+    monkeypatch.setattr(Path, "lstat", mutate_after_second_alias_lstat)
+
+    result = discover(tmp_path, LIMITS, scope=ScanScope.REPOSITORY)
+
+    assert alias_lstat_calls >= 3
+    assert any(
+        diagnostic.kind is DiagnosticKind.ERROR
+        and "1 symlinked repository path" in diagnostic.message
+        for diagnostic in result.diagnostics
+    )
+    assert all(
+        item.reason is not ExclusionReason.INTERNAL_SYMLINK_ALIAS
+        for item in result.coverage.exclusions
+    )
+
+
 def test_external_directory_symlink_is_reported_but_not_traversed(tmp_path: Path):
     outside = tmp_path.parent / "outside-agentsec-directory"
     outside.mkdir()
