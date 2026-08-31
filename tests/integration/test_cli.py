@@ -532,6 +532,88 @@ def test_db_info_reports_generated_database_version_and_ioc_counts() -> None:
     assert "projected_campaign_indicators=1/17" in completed.stdout
 
 
+def test_batch_scans_positional_roots_in_order(tmp_path: Path) -> None:
+    first = tmp_path / "first"
+    second = tmp_path / "second"
+    first.mkdir()
+    second.mkdir()
+
+    completed = _run("batch", str(first), str(second), "--format", "json")
+
+    assert completed.returncode == 0
+    assert completed.stderr == ""
+    payload = json.loads(completed.stdout)
+    assert payload["schema_version"] == "1"
+    assert payload["scope"] == "source"
+    assert [item["root"] for item in payload["results"]] == [str(first), str(second)]
+
+
+def test_batch_accepts_root_file_and_redacts_each_root(tmp_path: Path) -> None:
+    roots = (tmp_path / "first", tmp_path / "second")
+    for root in roots:
+        root.mkdir()
+    path_file = tmp_path / "roots.txt"
+    path_file.write_text("\n".join(str(root) for root in roots), encoding="utf-8")
+
+    completed = _run(
+        "batch", "--from-file", str(path_file), "--format", "json", "--redact"
+    )
+
+    assert completed.returncode == 0
+    payload = json.loads(completed.stdout)
+    assert [item["root"] for item in payload["results"]] == [
+        "<SCAN_ROOT_1>",
+        "<SCAN_ROOT_2>",
+    ]
+    assert str(tmp_path) not in completed.stdout
+
+
+def test_batch_rejects_mixed_or_missing_root_inputs(tmp_path: Path) -> None:
+    root = tmp_path / "root"
+    root.mkdir()
+    path_file = tmp_path / "roots.txt"
+    path_file.write_text(str(root), encoding="utf-8")
+
+    mixed = _run("batch", str(root), "--from-file", str(path_file))
+    missing = _run("batch")
+
+    assert mixed.returncode == 2
+    assert "choose positional roots or --from-file" in mixed.stderr
+    assert missing.returncode == 2
+    assert "requires roots or --from-file" in missing.stderr
+
+
+def test_batch_propagates_scope_and_aggregate_exit_precedence(tmp_path: Path) -> None:
+    finding = tmp_path / "finding"
+    incomplete = tmp_path / "incomplete"
+    installed = finding / "node_modules" / "keyv"
+    installed.mkdir(parents=True)
+    incomplete.mkdir()
+    (installed / "package.json").write_text(
+        '{"name":"keyv","version":"6.0.0"}', encoding="utf-8"
+    )
+    (incomplete / "package-lock.json").write_text("not-json", encoding="utf-8")
+
+    completed = _run(
+        "batch",
+        str(finding),
+        str(incomplete),
+        "--scope",
+        "dependencies",
+        "--format",
+        "json",
+        "--progress",
+        "always",
+    )
+
+    assert completed.returncode == 2
+    payload = json.loads(completed.stdout)
+    assert payload["scope"] == "dependencies"
+    assert payload["summary"]["exit_1"] == 1
+    assert payload["summary"]["exit_2"] == 1
+    assert "[" in completed.stderr
+
+
 def test_doctor_validates_local_resources_and_schema_without_network() -> None:
     completed = _run("doctor")
 

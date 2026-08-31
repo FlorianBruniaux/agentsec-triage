@@ -15,6 +15,11 @@ while the data-licensing decision remains unresolved.
   effective coverage. Human output exposes the same boundary, and skipped Git
   history is now an explicit unsupported capability instead of a scan error.
 
+- Added bounded `agentsec batch` triage for explicit roots or a UTF-8
+  `--from-file` list. It reuses the in-process scanner, preserves input order,
+  applies aggregate exit precedence `2 > 1 > 0`, supports redaction and
+  publishes batch-result schema v1 with embedded scan-result v2 reports.
+
 - Added the approved scan-scope and batch-triage design plus its TDD
   implementation plan. They specify explicit `source`, `dependencies`, and
   `repository` scopes, scan-result schema v2, batch-result schema v1,

@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agentsec.dev/schemas/batch-result-v1.schema.json",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "tool_version",
+    "database_version",
+    "scope",
+    "complete",
+    "elapsed_ms",
+    "summary",
+    "results"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": { "const": "1" },
+    "tool_version": { "type": "string" },
+    "database_version": { "type": "string" },
+    "scope": { "enum": ["source", "dependencies", "repository"] },
+    "complete": { "type": "boolean" },
+    "elapsed_ms": { "type": "integer", "minimum": 0 },
+    "summary": {
+      "type": "object",
+      "required": [
+        "repositories",
+        "exit_0",
+        "exit_1",
+        "exit_2",
+        "findings",
+        "files_selected",
+        "files_inspected",
+        "bytes_inspected",
+        "errors",
+        "warnings"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "repositories": { "type": "integer", "minimum": 1 },
+        "exit_0": { "type": "integer", "minimum": 0 },
+        "exit_1": { "type": "integer", "minimum": 0 },
+        "exit_2": { "type": "integer", "minimum": 0 },
+        "findings": { "type": "integer", "minimum": 0 },
+        "files_selected": { "type": "integer", "minimum": 0 },
+        "files_inspected": { "type": "integer", "minimum": 0 },
+        "bytes_inspected": { "type": "integer", "minimum": 0 },
+        "errors": { "type": "integer", "minimum": 0 },
+        "warnings": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "results": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "https://agentsec.dev/schemas/scan-result-v2.schema.json" }
+    }
+  }
+}

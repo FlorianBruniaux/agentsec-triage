@@ -12,10 +12,12 @@ from pathlib import Path
 from typing import NoReturn
 
 from agentsec import __version__
+from agentsec.batch import BatchInputError, read_root_file, run_batch
 from agentsec.detectors.registry import get_detectors
 from agentsec.engine.discovery import DiscoveryLimits
 from agentsec.engine.runner import ProgressCallback, ProgressState, run_scan
 from agentsec.models import ThreatDatabase
+from agentsec.output.batch_output import render_batch_human, render_batch_json
 from agentsec.output.human import render_human
 from agentsec.output.json_output import render_json
 from agentsec.redaction import redact_text
@@ -132,6 +134,52 @@ def build_parser() -> argparse.ArgumentParser:
         help="maximum directories opened (maximum: 100000)",
     )
 
+    batch = commands.add_parser("batch", help="scan explicit repository roots")
+    batch.add_argument("roots", nargs="*", type=Path, help="repository roots to inspect")
+    batch.add_argument(
+        "--from-file",
+        type=Path,
+        help="UTF-8 file containing one repository root per line",
+    )
+    batch.add_argument(
+        "--scope",
+        type=ScanScope,
+        choices=tuple(ScanScope),
+        default=ScanScope.SOURCE,
+        help="scan source, installed dependencies, or each full repository",
+    )
+    batch.add_argument(
+        "--detector",
+        action="append",
+        dest="detector_ids",
+        help="run one detector ID; repeat to select more than one",
+    )
+    batch.add_argument("--format", choices=("human", "json"), default="human")
+    batch.add_argument("--redact", action="store_true")
+    batch.add_argument(
+        "--progress",
+        nargs="?",
+        const="always",
+        default="auto",
+        choices=("auto", "always", "never"),
+        help="show child scan phases on stderr",
+    )
+    batch.add_argument("-v", "--verbose", action="store_true")
+    batch.add_argument(
+        "--max-file-bytes", type=_max_file_bytes, default=_DEFAULT_MAX_FILE_BYTES
+    )
+    batch.add_argument(
+        "--max-total-bytes", type=_non_negative, default=_DEFAULT_MAX_TOTAL_BYTES
+    )
+    batch.add_argument("--max-files", type=_non_negative, default=_DEFAULT_MAX_FILES)
+    batch.add_argument(
+        "--max-git-commits", type=_non_negative, default=_DEFAULT_MAX_GIT_COMMITS
+    )
+    batch.add_argument("--max-entries", type=_max_entries, default=_DEFAULT_MAX_ENTRIES)
+    batch.add_argument(
+        "--max-directories", type=_max_directories, default=_DEFAULT_MAX_DIRECTORIES
+    )
+
     detectors = commands.add_parser("detectors", help="inspect built-in detectors")
     detector_commands = detectors.add_subparsers(dest="detectors_command", required=True)
     detector_commands.add_parser("list", help="list detector IDs")
@@ -150,6 +198,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         arguments = build_parser().parse_args(argv)
         if arguments.command == "scan":
             return _scan(arguments)
+        if arguments.command == "batch":
+            return _batch(arguments)
         if arguments.command == "detectors":
             return _detectors(arguments)
         if arguments.command == "db":
@@ -237,6 +287,61 @@ def _scan(arguments: argparse.Namespace) -> int:
     return result.exit_code()
 
 
+def _batch(arguments: argparse.Namespace) -> int:
+    if arguments.roots and arguments.from_file is not None:
+        print(
+            "agentsec: choose positional roots or --from-file, not both",
+            file=sys.stderr,
+        )
+        return 2
+    if not arguments.roots and arguments.from_file is None:
+        print("agentsec: batch requires roots or --from-file", file=sys.stderr)
+        return 2
+    try:
+        roots = (
+            read_root_file(arguments.from_file)
+            if arguments.from_file is not None
+            else tuple(arguments.roots)
+        )
+    except BatchInputError as error:
+        print(f"agentsec: {error}", file=sys.stderr)
+        return 2
+    database = _load_database(redact=arguments.redact)
+    if database is None:
+        return 2
+    try:
+        detectors = get_detectors(arguments.detector_ids)
+    except ValueError as error:
+        print(f"agentsec: {error}", file=sys.stderr)
+        return 2
+    limits = DiscoveryLimits(
+        max_file_bytes=arguments.max_file_bytes,
+        max_files=arguments.max_files,
+        max_diagnostics=_DEFAULT_MAX_DIAGNOSTICS,
+        max_total_bytes=arguments.max_total_bytes,
+        max_git_commits=arguments.max_git_commits,
+        max_entries=arguments.max_entries,
+        max_directories=arguments.max_directories,
+    )
+    try:
+        result = run_batch(
+            roots,
+            detectors,
+            database,
+            limits,
+            scope=arguments.scope,
+            progress=_batch_progress_reporter(arguments),
+        )
+    except BatchInputError as error:
+        print(f"agentsec: {error}", file=sys.stderr)
+        return 2
+    if arguments.format == "json":
+        print(render_batch_json(result, redact=arguments.redact), end="")
+    else:
+        print(render_batch_human(result, redact=arguments.redact), end="")
+    return result.exit_code()
+
+
 def _color_enabled(mode: str) -> bool:
     if mode == "always":
         return True
@@ -309,6 +414,32 @@ def _progress_reporter(arguments: argparse.Namespace) -> ProgressCallback | None
             redact_text(message, arguments.root) if arguments.redact else message
         )
         print(f"[{stage}/5] {visible_message}", file=sys.stderr, flush=True)
+
+    return report
+
+
+def _batch_progress_reporter(arguments: argparse.Namespace) -> ProgressCallback | None:
+    mode = arguments.progress
+    enabled = mode == "always" or (
+        mode == "auto" and (arguments.verbose or sys.stderr.isatty())
+    )
+    if mode == "never" or not enabled:
+        return None
+
+    def report(
+        stage: int,
+        message: str,
+        detail: bool,
+        state: ProgressState | None = None,
+    ) -> None:
+        if detail and not arguments.verbose:
+            return
+        if state is not None:
+            message = (
+                f"files={state.files} directories={state.directories} "
+                f"entries={state.entries}"
+            )
+        print(f"[{stage}/5] {message}", file=sys.stderr, flush=True)
 
     return report
 
