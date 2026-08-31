@@ -32,19 +32,21 @@ classification.
 
 ### 2. Third-party expression
 
-For every `UNKNOWN` row in `docs/LICENSE-PROSE-REVIEW.md` and every prose field
-outside that 28-field subset, choose one disposition:
+For every `UNKNOWN` row in `docs/LICENSE-PROSE-INVENTORY.json`, choose one
+disposition:
 
 - document independent authorship from reviewed facts;
 - obtain and record redistribution permission;
 - replace the field with an independently written factual summary;
 - remove the field from distributed sources and generated artifacts.
 
-The current evidence review found 430 `notes:` or `description:` keys in the
-2.27.0 authoring database. The recorded subset covers 28. Their local
-provenance is `VERIFIED`, all 28 classifications remain `UNKNOWN`, and 402
-current fields remain outside the field-level review. The Aguara note also
-needs a factual rewrite.
+The deterministic inventory covers all 430 `notes:` or `description:` keys in
+the 2.27.0 authoring database. Local provenance is verified for the historical
+28-field scanning-tool subset, 402 fields remain unreviewed, and every legal
+classification remains `UNKNOWN`. The inventory records 93 source locators
+across 77 fields; a locator supports review but does not prove authorship,
+permission, or attribution sufficiency. The Aguara note also needs a factual
+rewrite.
 
 ### 3. Attribution and packaging
 

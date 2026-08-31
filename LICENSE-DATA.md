@@ -56,9 +56,9 @@ GitHub release.
 Before granting CC BY-SA 4.0 for the gated data or publishing package and
 source-archive artifacts:
 
-1. Resolve the 28 `UNKNOWN` entries in the reviewed 28-field scanning-tool
-   subset and classify the 402 current prose keys outside that subset, as
-   recorded in [the prose review](docs/LICENSE-PROSE-REVIEW.md).
+1. Resolve all 430 `UNKNOWN` entries in the deterministic
+   [`LICENSE-PROSE-INVENTORY.json`](docs/LICENSE-PROSE-INVENTORY.json) through
+   evidenced independent authorship, permission, rewrite, or removal.
 2. Confirm ownership or permission for every protected contribution.
 3. Rewrite or remove third-party expression that cannot be redistributed.
 4. Record the required attribution and adaptation notices.

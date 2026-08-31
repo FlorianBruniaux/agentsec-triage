@@ -27,11 +27,12 @@ while the data-licensing decision remains unresolved.
   requirements, three differentiation bets, rejected V0.1 scope, measurable
   proof, and the accepted SARIF, delayed-skill, source-action, explain, and
   response-playbook sequence.
-- Added a provisional naming brief. `RepoVigil` is the first candidate, with
-  `BeforeTrust` and `CampaignScope` as fallbacks after current GitHub, local
-  corpus, PyPI, npm, crates.io, and `.com` or `.dev` RDAP screening. Trademark,
-  registrar, social-handle, and unaided-comprehension checks remain blocking;
-  no rename is authorized.
+- Refreshed the provisional naming screen against official GitHub, PyPI, npm,
+  crates.io, and RDAP endpoints. `RepoVigil` remains the first candidate and
+  `BeforeTrust` the only current fallback. `CampaignScope` is blocked by exact
+  GitHub and `.com` collisions. Added a reproducible blind comprehension-test
+  kit; trademark review, crates.io recheck, and human results remain blocking,
+  so no rename is authorized.
 
 - Published reviewed `clean-control` observations for seven digest-approved
   competitor images. The report records exit status, completion evidence,
@@ -39,6 +40,12 @@ while the data-licensing decision remains unresolved.
   without publishing raw third-party output or claiming detection parity. It
   also records the AgentSec baseline and the gated requirements for the next
   positive, near-miss, unsupported, and confinement fixture matrix.
+- Added eight deterministic teardown plans for SkillSpector, AgentShield, and
+  agent-bom. The runner now requires a separate digest-bound approval receipt
+  before Docker discovery and rejects absent, malformed, non-approved,
+  mismatched, or stale receipts. This is a procedural audit gate, not identity
+  authentication. No approval receipt or competitor execution was created, so
+  every prepared observation remains `not_tested`.
 - Added a local AgentSec fixture-matrix harness that runs each inert fixture
   three times, removes runtime duration before digest comparison, rejects
   semantic or exit-code drift, preserves findings and coverage evidence, and
@@ -76,12 +83,13 @@ while the data-licensing decision remains unresolved.
   misplaced targets. Generated timelines, packaged intelligence JSON, and the
   public feed retain the relationship.
 
-- Added a local-evidence review for the 28 imported scanning-tool notes and a
-  concise owner decision packet. The review corrects the earlier count: the
-  imported database has 419 recursive `notes:` or `description:` keys and the
-  current database has 430. Provenance for the reviewed subset is `VERIFIED`,
-  all 28 classifications are `UNKNOWN`, 402 current prose keys remain outside
-  the field-level review, and the gated-data publication block remains active.
+- Added a deterministic inventory for all 430 current `notes` and `description`
+  fields in the threat database. It records stable escaped field paths, full
+  value digests, 93 source locators across 77 fields, review state, and required
+  action. The generator rejects duplicate paths and provides a byte-for-byte
+  `--check` mode. Historical local provenance remains verified for 28 fields,
+  all 430 legal classifications remain `UNKNOWN`, and the gated-data
+  publication block remains active.
 
 - Added explicit `source`, `dependencies`, and `repository` scan scopes. The
   default `source` scope now reports measured exclusions for dependency,

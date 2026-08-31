@@ -30,7 +30,8 @@ Implemented in the current alpha codebase:
   rule mapping, and destructive automation forbidden;
 - console-script and `python -m agentsec` entry points;
 - an opt-in redacted local benchmark without published performance claims;
-- a factual license evidence inventory that preserves the publication gate;
+- a deterministic 430-field prose inventory with stable source locators,
+  value digests, review state, required action, and a byte-for-byte drift check;
 - a schema-enforced correction and retraction ledger that preserves earlier
   events and publishes explicit affected-event references;
 - a public source repository with a separate unresolved gated-data license;
@@ -44,10 +45,14 @@ Implemented in the current alpha codebase:
   and Windows, plus guide and landing feed-mirror validation;
 - seven digest-approved, network-disabled competitor `clean-control` runs with
   reviewed aggregate observations and no published raw output;
+- eight validated positive, near-miss, unsupported, and confinement plans for
+  the first three teardown candidates, with a separate procedural approval
+  receipt required before Docker discovery and every result still `not_tested`;
 - a three-run deterministic AgentSec fixture-baseline harness that keeps its
   machine report under the ignored local benchmark boundary;
-- a provisional naming brief with registry and domain screening, three
-  candidates, an unaided-comprehension gate, and no authorized rename;
+- a provisional naming brief with dated official registry and domain evidence,
+  a reproducible blind comprehension kit, one blocked candidate, and no
+  authorized rename;
 - source, package, safety, integration, and golden regression tests.
 
 Git history, host state, remote repositories, remote CI, network traffic,
@@ -61,23 +66,25 @@ delivery order live in `docs/competitive-analysis/PRODUCT-DECISIONS.md`.
 Completed infrastructure work:
 
 - [#1: restore actual GitHub Actions execution](https://github.com/FlorianBruniaux/agentsec-triage/issues/1),
-  verified by [run #33320781608](https://github.com/FlorianBruniaux/agentsec-triage/actions/runs/33320781608).
+  verified by [run #33397458301](https://github.com/FlorianBruniaux/agentsec-triage/actions/runs/33397458301).
 - [#3: run seven digest-approved clean-control benchmarks](https://github.com/FlorianBruniaux/agentsec-triage/issues/3),
   recorded in `docs/competitive-analysis/BENCHMARK-RESULTS.md` with bounded raw
   output retained only in the ignored local run directory.
+- [#2: convert competitive evidence into product decisions](https://github.com/FlorianBruniaux/agentsec-triage/issues/2),
+  recorded in `docs/competitive-analysis/PRODUCT-DECISIONS.md` and implemented
+  through the accepted alpha sequence.
 
 The remaining release and product work is tracked with acceptance criteria:
 
 - [#6: resolve the public-source and gated-data license boundary](https://github.com/FlorianBruniaux/agentsec-triage/issues/6);
 - [#4: run the fixture matrix with an AgentSec baseline](https://github.com/FlorianBruniaux/agentsec-triage/issues/4);
 - [#7: publish benchmark results and top-three teardowns](https://github.com/FlorianBruniaux/agentsec-triage/issues/7);
-- [#2: convert competitive evidence into product decisions](https://github.com/FlorianBruniaux/agentsec-triage/issues/2);
 - [#5: select a collision-resistant product name](https://github.com/FlorianBruniaux/agentsec-triage/issues/5).
 
 ## P0: Make the alpha releasable
 
-- Resolve the 28 `UNKNOWN` classifications in the reviewed scanning-tool subset
-  and classify the 402 current prose keys outside that subset.
+- Resolve every `UNKNOWN` classification in the generated 430-field inventory
+  through evidenced independent authorship, permission, rewrite, or removal.
 - Record the owner's explicit data-license, third-party-content, attribution,
   packaging, and release decisions.
 - Resolve the threat-data review in `LICENSE-DECISION.md`; the MIT code-license
@@ -85,7 +92,6 @@ The remaining release and product work is tracked with acceptance criteria:
 - Select the final data license and combined-package SPDX metadata with exact
   path scope and attribution.
 - Keep the fully verified alpha history on local `main` before any release tag.
-- Fix failures found outside the local macOS environment.
 - Create the annotated `v0.1.0-alpha` tag only after every release gate passes.
 - Publish checksums and a signed provenance statement with release artifacts.
 
@@ -119,9 +125,6 @@ remediation, and stable `not_scanned` capability IDs.
   pinned, checksummed release and signed provenance are authorized.
 - Add documented pre-commit and CI recipes without making local hooks mandatory.
 - Let the Claude Code Ultimate Guide consume a pinned AgentSec release artifact.
-- Replace hardcoded landing security versions, dates, counts, and stale source
-  paths with generated data.
-- Add an AgentSec installation and scan CTA to `https://cc.bruniaux.com/security/`.
 - Route finding remediation URLs to individual playbooks only after stable
   public playbook URLs exist and automated link checks cover them.
 
