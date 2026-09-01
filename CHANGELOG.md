@@ -8,6 +8,8 @@ while the data-licensing decision remains unresolved.
 
 ### Added
 
+- Added a generated README neighborhood that connects AgentSec Triage to the guide security feed, ctxharness configuration checks, and the plugin security workflows.
+
 - Added two MCP-ecosystem vulnerability records to the threat database
   (version 2.28.0): CVE-2026-82233 (SiYuan `asset.upload` MCP tool path
   traversal, fixed in 3.8.1) and CVE-2026-53965 (official MCP PHP SDK

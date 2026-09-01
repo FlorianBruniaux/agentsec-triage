@@ -174,6 +174,19 @@ surfaces, sources of truth, and integration boundaries.
 
 The related educational security page is <https://cc.bruniaux.com/security/>.
 
+<!-- BEGIN GENERATED RELATED PROJECTS -->
+<!-- Source: https://github.com/FlorianBruniaux/FlorianBruniaux/blob/main/ecosystem/projects.json; project: agentsec-triage -->
+## Explore the ecosystem
+
+These projects extend the workflow without duplicating this tool:
+
+- **Learn with [Claude Code Ultimate Guide](https://github.com/FlorianBruniaux/claude-code-ultimate-guide)**: the guide already consumes the scanner's versioned security feed.
+- **Validate with [ctxharness](https://github.com/FlorianBruniaux/ctxharness)**: cover configuration security and context integrity together.
+- **Automate with [claude-code-plugins](https://github.com/FlorianBruniaux/claude-code-plugins)**: pair specialist triage with the security-suite workflows.
+
+[Browse the complete open-source galaxy](https://github.com/FlorianBruniaux#open-source-galaxy)
+<!-- END GENERATED RELATED PROJECTS -->
+
 ## License status
 
 Project-owned code and original documentation use the [MIT License](LICENSE).
