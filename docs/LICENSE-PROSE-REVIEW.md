@@ -39,6 +39,15 @@ Result for the current 430-field inventory:
 - publication: still blocked until every `UNKNOWN` classification is resolved
   by source comparison, independent rewrite, permission, or removal.
 
+Update 2026-09-01 (not part of the original 2026-08-31 review above): two
+subsequent threat-intelligence records (CVE-2026-82233, CVE-2026-53965) added
+three more prose fields, bringing the inventory to 433 fields. These three
+fields were freshly authored this session from public NVD and GitHub Security
+Advisory text, not imported from the canonical guide, so they are outside the
+28-field historically-verified subset below. They carry review state
+`UNREVIEWED` and classification `UNKNOWN` under the same rule stated above and
+require the same source comparison before publication.
+
 `VERIFIED` means the stated local evidence was observed. `UNKNOWN` means the
 available local evidence is insufficient. Neither state grants redistribution
 rights. `LOCAL_PROVENANCE_VERIFIED` is a review state, not an authorship or

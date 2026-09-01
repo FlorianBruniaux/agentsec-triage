@@ -264,7 +264,7 @@ def test_extractor_is_deterministic_and_reconciles_the_current_database(tmp_path
 
     payload = json.loads(first.read_text(encoding="utf-8"))
     entries = payload["entries"]
-    assert payload["field_count"] == 430
+    assert payload["field_count"] == 433
     assert len(entries) == payload["field_count"]
     assert entries == sorted(entries, key=lambda entry: entry["field_path"])
     assert {entry["classification"] for entry in entries} == {"UNKNOWN"}
@@ -272,5 +272,5 @@ def test_extractor_is_deterministic_and_reconciles_the_current_database(tmp_path
     assert len(reviewed) == 28
     assert all(entry["field_path"].startswith("scanning_tools[") for entry in reviewed)
     assert all(entry["field_path"].endswith(".notes") for entry in reviewed)
-    assert sum(entry["review_state"] == "UNREVIEWED" for entry in entries) == 402
+    assert sum(entry["review_state"] == "UNREVIEWED" for entry in entries) == 405
     assert all(len(entry["value_sha256"]) == 64 for entry in entries)

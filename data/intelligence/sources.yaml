@@ -1,6 +1,6 @@
 schema_version: "1"
 kind: sources
-updated: "2026-08-24"
+updated: "2026-09-01"
 sources:
   - id: aikido-keyv-2026
     title: Keyv and Friends Compromised in npm Supply Chain Attack
@@ -246,4 +246,53 @@ sources:
     supports:
       - Formal CVE record for the CoSnitch command-injection/information-disclosure chain in Microsoft Copilot Web.
     reviewed_date: "2026-08-24"
+    status: active
+
+  - id: ghsa-siyuan-asset-upload-2026
+    title: "SiYuan MCP asset.upload Reads Arbitrary Absolute File Paths (Workspace Boundary Bypass)"
+    publisher: siyuan-note (GitHub Security Advisory)
+    url: https://github.com/siyuan-note/siyuan/security/advisories/GHSA-p23f-cm6q-2qp8
+    source_type: advisory
+    published_date: "2026-08-13"
+    topics: [mcp, path-traversal, prompt-injection]
+    supports:
+      - "The asset.upload MCP tool in SiYuan before v3.8.1 accepted arbitrary absolute file paths with no workspace boundary check, so a prompt-injected instruction could direct the built-in AI agent to copy files such as SSH keys or credentials from outside the workspace into the asset directory."
+      - Fixed in SiYuan v3.8.1, released 2026-08-18.
+    reviewed_date: "2026-09-01"
+    status: active
+
+  - id: nvd-cve-2026-82233
+    title: CVE-2026-82233 Detail
+    publisher: NIST NVD
+    url: https://nvd.nist.gov/vuln/detail/CVE-2026-82233
+    source_type: database
+    published_date: "2026-08-28"
+    topics: [mcp, path-traversal, cve]
+    supports:
+      - Formal CVE record (CNA VulnCheck) for the SiYuan asset.upload MCP tool path traversal, rated medium (CVSS 3.1 5.7 / CVSS 4.0 6.9).
+    reviewed_date: "2026-09-01"
+    status: active
+
+  - id: github-ghsa-mcp-php-sdk-sse-2026
+    title: "DoS: client HttpTransport SSE buffer (sseBuffer .= chunk) grows unbounded when server withholds the event delimiter"
+    publisher: modelcontextprotocol/php-sdk (GitHub Security Advisory)
+    url: https://github.com/modelcontextprotocol/php-sdk/security/advisories/GHSA-7m52-jw36-44r3
+    source_type: advisory
+    topics: [mcp, denial-of-service, php-sdk]
+    supports:
+      - "The official MCP PHP SDK (Composer package mcp/sdk) HttpTransport component appends every incoming Server-Sent Events chunk to an unbounded in-memory buffer, flushing only on the SSE event delimiter, so a malicious, compromised, or man-in-the-middle MCP server that withholds the delimiter can exhaust the client process's memory and deny service."
+      - Fixed in mcp/sdk 0.7.1; affected versions 0.5.0 through 0.7.0.
+    reviewed_date: "2026-09-01"
+    status: active
+
+  - id: nvd-cve-2026-53965
+    title: CVE-2026-53965 Detail
+    publisher: NIST NVD
+    url: https://nvd.nist.gov/vuln/detail/CVE-2026-53965
+    source_type: database
+    published_date: "2026-08-25"
+    topics: [mcp, denial-of-service, cve]
+    supports:
+      - Formal CVE record (CNA GitHub, Inc.) for the unbounded SSE buffer growth denial-of-service in the official MCP PHP SDK's HttpTransport, rated medium (CVSS 4.0 6.9 per the GitHub CNA record; third-party rescoring to CVSS 3.1 8.7 exists and is not independently confirmed here).
+    reviewed_date: "2026-09-01"
     status: active

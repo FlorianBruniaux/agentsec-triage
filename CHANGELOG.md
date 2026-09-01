@@ -8,6 +8,20 @@ while the data-licensing decision remains unresolved.
 
 ### Added
 
+- Added two MCP-ecosystem vulnerability records to the threat database
+  (version 2.28.0): CVE-2026-82233 (SiYuan `asset.upload` MCP tool path
+  traversal, fixed in 3.8.1) and CVE-2026-53965 (official MCP PHP SDK
+  `HttpTransport` unbounded SSE buffer denial of service, fixed in 0.7.1).
+  Both are documented-only (`not_detected`); neither has an AgentSec detector,
+  since one targets a third-party desktop application's bundled MCP tool and
+  the other targets a runtime PHP dependency, outside AgentSec's local
+  repository scan surface. Sourced with NVD and the upstream GitHub Security
+  Advisories in `data/intelligence/sources.yaml` and `data/intelligence/events.yaml`.
+  The license prose inventory grew from 430 to 433 fields as a result; the
+  three new fields are `UNREVIEWED`/`UNKNOWN` pending the same owner review
+  required for the rest of the database (see `docs/LICENSE-INVENTORY.md`,
+  `docs/LICENSE-PROSE-REVIEW.md`, and `docs/LICENSE-OWNER-DECISION-PACKET.md`).
+
 - Added a compact author profile to the repository README with tracked links to
   the author's background, blog, and public projects.
 

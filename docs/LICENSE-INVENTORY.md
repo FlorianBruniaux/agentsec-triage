@@ -82,6 +82,16 @@ sibling `sources` list, or an exact top-level source match, and leaves 353
 fields with an empty locator list rather than infer a source. The review also
 found that the Aguara note contains a stale observatory claim.
 
+Update 2026-09-01: three subsequent threat-intelligence records (CVE-2026-82233,
+CVE-2026-53965) added three more `description:`/`mitigation:`/`notes:` fields,
+bringing the generated inventory to 433 fields in the 2.28.0 authoring database.
+The three new fields have not been through the locator-resolution or
+classification pass described above; they remain `UNREVIEWED` and `UNKNOWN`
+pending the same review this section requires for the rest of the database.
+The 419/2.26.0, 430/2.27.0, 93-locator, 77-field, and 353-empty-locator figures
+above describe the state at the time of that review and are left unchanged
+rather than recomputed here.
+
 Every prose field must be reviewed against its cited source and classified as
 one of:
 
@@ -155,7 +165,7 @@ After the reviewed data scope is explicitly approved:
 | Code license | MIT selected on 2026-08-15 | Resolved |
 | Code copyright notice | Florian Bruniaux, 2026 | Resolved |
 | Data license | CC BY-SA 4.0 is the candidate | Approve after prose review |
-| Third-party prose | 430 fields are inventoried; 28 have `LOCAL_PROVENANCE_VERIFIED`, 402 are `UNREVIEWED`, and all classifications are `UNKNOWN` | Complete source comparison, independent rewrite, permission, or removal |
+| Third-party prose | 433 fields are inventoried (430 as of the 2.27.0 review plus 3 added 2026-09-01, see the update note above); 28 have `LOCAL_PROVENANCE_VERIFIED`, 405 are `UNREVIEWED`, and all classifications are `UNKNOWN` | Complete source comparison, independent rewrite, permission, or removal |
 | Attribution packaging | Not implemented | Define notices and artifact inclusion |
 | Package and gated-data release | Blocked | Open only after every item above is complete |
 

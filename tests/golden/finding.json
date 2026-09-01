@@ -1,6 +1,6 @@
 {
   "complete": true,
-  "database_version": "2.27.0",
+  "database_version": "2.28.0",
   "detectors": [
     {
       "applicability": "not_applicable",

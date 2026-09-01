@@ -1810,6 +1810,22 @@
     },
     {
       "classification": "UNKNOWN",
+      "field_path": "cve_database[id=CVE-2026-53965].description",
+      "required_action": "No source locator is available. Record the source and rights evidence, then rewrite independently, obtain permission, or remove.",
+      "review_state": "UNREVIEWED",
+      "source_locators": [],
+      "value_sha256": "84fb9f5ac2a010dcae39e7b7d92c69bd0e3da21b0087ee51c0404c9feed6d4d3"
+    },
+    {
+      "classification": "UNKNOWN",
+      "field_path": "cve_database[id=CVE-2026-53965].notes",
+      "required_action": "No source locator is available. Record the source and rights evidence, then rewrite independently, obtain permission, or remove.",
+      "review_state": "UNREVIEWED",
+      "source_locators": [],
+      "value_sha256": "08992261e6423a8e93b27fe86d6c268a2a3edcac7cb7643e4f1e27486f9e5e0e"
+    },
+    {
+      "classification": "UNKNOWN",
       "field_path": "cve_database[id=CVE-2026-54316].description",
       "required_action": "No source locator is available. Record the source and rights evidence, then rewrite independently, obtain permission, or remove.",
       "review_state": "UNREVIEWED",
@@ -1935,6 +1951,14 @@
       "review_state": "UNREVIEWED",
       "source_locators": [],
       "value_sha256": "a658d582566eff41912a4d26d9040631b2afa837290933ddfae0bef9cca5f5e4"
+    },
+    {
+      "classification": "UNKNOWN",
+      "field_path": "cve_database[id=CVE-2026-82233].description",
+      "required_action": "No source locator is available. Record the source and rights evidence, then rewrite independently, obtain permission, or remove.",
+      "review_state": "UNREVIEWED",
+      "source_locators": [],
+      "value_sha256": "f380b171c7770c9d6bfc6cce605e71517903532359728b3191bdcf8667748632"
     },
     {
       "classification": "UNKNOWN",
@@ -3611,7 +3635,7 @@
       "value_sha256": "73b78f2e17a32be437e3bf99a4fe5cca78419a9d6f53bb69c4e90aa62212aef0"
     }
   ],
-  "field_count": 430,
+  "field_count": 433,
   "schema_version": "license-prose-inventory-v1",
-  "source_sha256": "0bf835946fed9a2a0ddb014e72159831367eb898a890ddc33ac6db2b50a76acb"
+  "source_sha256": "2f3267ab9415154c4af149a5f98d9a2e0a7550121f9454a8e6d1a462ae46a746"
 }

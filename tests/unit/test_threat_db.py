@@ -18,7 +18,7 @@ EXPECTED_AUTHORING_COVERAGE = {
     "campaigns_total": 17,
     "commit_indicators_projected": 1,
     "cves_projected": 0,
-    "cves_total": 114,
+    "cves_total": 116,
     "domains_projected": 7,
     "domains_total": 7,
     "ignored_missing_platform": 64,
@@ -41,7 +41,7 @@ def test_bundled_database_contains_keyv_campaign_iocs():
     from agentsec.threat_db import load_bundled_database
 
     database = load_bundled_database()
-    assert database.version == "2.27.0"
+    assert database.version == "2.28.0"
     assert "6.0.0" in database.package_versions["keyv"]
     assert "@keyv/" not in database.wildcard_package_versions
     assert "6.0.0" in database.contested_wildcard_package_versions["@keyv/"]
@@ -312,7 +312,7 @@ def test_builder_normalizes_canonical_source_deterministically(tmp_path: Path):
     ]
 
     assert [result.returncode for result in results] == [0, 0]
-    assert all("version=2.27.0" in result.stdout for result in results)
+    assert all("version=2.28.0" in result.stdout for result in results)
     assert first_output.read_bytes() == second_output.read_bytes()
 
     payload = json.loads(first_output.read_text(encoding="utf-8"))
@@ -431,7 +431,7 @@ def test_runtime_loader_rejects_projection_counts_that_disagree_with_runtime_or_
     elif mutation == "projected_commit_indicators":
         coverage["commit_indicators_projected"] = 0
     elif mutation == "cves_exceed_total":
-        coverage["cves_projected"] = 115
+        coverage["cves_projected"] = 117
     elif mutation == "techniques_exceed_total":
         coverage["attack_techniques_projected"] = 41
     elif mutation == "hashes_exceed_total":
@@ -530,8 +530,8 @@ def test_runtime_loader_rejects_duplicate_commit_indicators(
     ("original", "replacement"),
     [
         (
-            '"version": "2.27.0"',
-            '"version": "2.27.0",\n  "version": "do-not-leak"',
+            '"version": "2.28.0"',
+            '"version": "2.28.0",\n  "version": "do-not-leak"',
         ),
         (
             '"author": "claude"',

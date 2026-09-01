@@ -40,11 +40,15 @@ disposition:
 - replace the field with an independently written factual summary;
 - remove the field from distributed sources and generated artifacts.
 
-The deterministic inventory covers all 430 `notes:` or `description:` keys in
-the 2.27.0 authoring database. Local provenance is verified for the historical
-28-field scanning-tool subset, 402 fields remain unreviewed, and every legal
-classification remains `UNKNOWN`. The inventory records 93 source locators
-across 77 fields; a locator supports review but does not prove authorship,
+The deterministic inventory covers all `notes:` or `description:` keys in the
+authoring database: 430 as reviewed on 2026-08-31 in the 2.27.0 database, and
+433 as of 2026-09-01 after two subsequent threat-intelligence records added
+three fields (see `docs/LICENSE-INVENTORY.md` and `docs/LICENSE-PROSE-REVIEW.md`
+for the update notes). Local provenance is verified for the historical 28-field
+scanning-tool subset only; the remaining 405 fields are unreviewed, and every
+legal classification remains `UNKNOWN`. The 93-locator, 77-field resolution
+figure describes the 2026-08-31 review and has not been recomputed for the
+three newest fields; a locator supports review but does not prove authorship,
 permission, or attribution sufficiency. The Aguara note also needs a factual
 rewrite.
 

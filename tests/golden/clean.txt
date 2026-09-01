@@ -1,4 +1,4 @@
-AgentSec 0.1.0a0 | threat database 2.27.0
+AgentSec 0.1.0a0 | threat database 2.28.0
 Scope: source
 Complete: yes
 Discovery: entries_seen=0 directories_opened=1 files_selected=0

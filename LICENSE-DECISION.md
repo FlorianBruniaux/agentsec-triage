@@ -50,8 +50,10 @@ rights, or share-alike questions.
 
 Before package, archive, GitHub release, or tag distribution:
 
-1. Resolve all 430 `UNKNOWN` rows in the generated prose inventory and identify
-   the owners of code, schema, data selection, descriptions, and later edits.
+1. Resolve all `UNKNOWN` rows in the generated prose inventory (433 as of
+   2026-09-01, see [`docs/LICENSE-INVENTORY.md`](docs/LICENSE-INVENTORY.md))
+   and identify the owners of code, schema, data selection, descriptions, and
+   later edits.
 2. Confirm what the guide's CC BY-SA 4.0 notice covers. Record any additional
    terms attached to imported or contributed material.
 3. Review attribution, notice, adaptation, database-right, and share-alike
