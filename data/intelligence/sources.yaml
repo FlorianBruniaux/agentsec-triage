@@ -1,7 +1,864 @@
 schema_version: "1"
 kind: sources
-updated: "2026-09-01"
+updated: "2026-09-24"
 sources:
+  - id: review-2026-09-cve-2026-90999
+    title: Sentry Seer fabricated-event code execution
+    publisher: CERT/CC
+    url: https://www.kb.cert.org/vuls/id/212479
+    source_type: advisory
+    published_date: '2026-09-16'
+    topics:
+    - agent-security
+    supports:
+    - CERT/CC describes untrusted public-DSN events becoming coding-agent instructions when automatic
+      remediation is enabled, leading to execution in the agent environment and access to connected
+      repositories.
+    - 'Reviewed remediation: Pause automatic coding-agent handoff, restrict package installation and
+      scope repository credentials while awaiting vendor remediation.'
+    reviewed_date: '2026-09-24'
+    status: active
+  - id: review-2026-09-advisory-plugin4shell-2026-001
+    title: Plugin4Shell plugin pin verification bypass
+    publisher: AIR Security
+    url: https://www.air.security/blog-posts/plugin4shell
+    source_type: research
+    published_date: '2026-09-17'
+    topics:
+    - agent-security
+    supports:
+    - AIR reports plugin checkout can resolve an attacker-controlled default branch instead of the
+      reviewed commit. The SHA-shaped branch variant depends on Git host rules; Gemini uses a FETCH_HEAD
+      variant.
+    - 'Reviewed remediation: AIR reports fixes in Claude Code 2.1.179 and Codex 0.146.0. For other
+      affected installers, verify current vendor guidance or disable affected plugin updates.'
+    reviewed_date: '2026-09-24'
+    status: active
+  - id: review-2026-09-advisory-codex-2026-001
+    title: Overpatch sandbox write-boundary escape
+    publisher: Accomplish AI
+    url: https://www.accomplish.ai/blog/escaping-the-openai-codex-sandbox-twice/
+    source_type: research
+    published_date: '2026-09-15'
+    topics:
+    - agent-security
+    supports:
+    - Accomplish reported that attacker-controlled patch paths could expand write authorization beyond
+      the Codex workspace. The researcher identifies CLI 0.149.0 as fixed.
+    - 'Reviewed remediation: Update Codex CLI to 0.149.0 or later.'
+    - Accomplish reported that a Desktop-installed JavaScript helper exposed a privileged trust token
+      within shared memory, enabling host execution even in read-only mode. The researcher identifies
+      Desktop build 26.818.21641 as fixed.
+    - 'Reviewed remediation: Update Codex Desktop to build 26.818.21641 or later; a CLI-only update
+      does not establish that the Desktop helper is patched.'
+    reviewed_date: '2026-09-24'
+    status: active
+  - id: review-2026-09-advisory-cc-2026-004
+    title: Claude Code late-September permission fixes
+    publisher: Anthropic
+    url: https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md
+    source_type: maintainer
+    published_date: '2026-09-23'
+    topics:
+    - agent-security
+    supports:
+    - Releases through 2.1.281 correct symlink write checks, workspace trust before background hooks,
+      inherited setting restrictions, NUL permission rules and managed MCP handling.
+    - 'Reviewed remediation: Update Claude Code to 2.1.281 or later and review trust, permission and
+      managed MCP settings.'
+    reviewed_date: '2026-09-24'
+    status: active
+  - id: github-ghsa-5648-rgj9-v224
+    title: 'GHSA-5648-rgj9-v224: @zereight/mcp-gitlab'
+    publisher: GitHub Advisory Database and upstream maintainers
+    url: https://github.com/advisories/GHSA-5648-rgj9-v224
+    source_type: advisory
+    published_date: '2026-09-15'
+    topics:
+    - mcp
+    - agent-security
+    supports:
+    - GraphQL operations can bypass read-only and project filters. Other findings concern deployment-dependent
+      transport authentication, session exhaustion and untrusted CI logs.
+    - 'Advisory metadata lists @zereight/mcp-gitlab < 2.1.30; patched: 2.1.30.'
+    reviewed_date: '2026-09-24'
+    status: active
+  - id: github-ghsa-vmp7-252j-cwp7
+    title: 'CVE-2026-61568: @zereight/mcp-gitlab'
+    publisher: GitHub Advisory Database and upstream maintainers
+    url: https://github.com/advisories/GHSA-vmp7-252j-cwp7
+    source_type: advisory
+    published_date: '2026-09-15'
+    topics:
+    - mcp
+    - agent-security
+    supports:
+    - Streamable HTTP accepts attacker-origin browser traffic at initialization. In remote-authorization
+      mode, tool listing and GitLab calls still require a token; the advisory does not establish a
+      tokenless takeover in that mode.
+    - 'Advisory metadata lists @zereight/mcp-gitlab < 2.1.30; patched: 2.1.30.'
+    reviewed_date: '2026-09-24'
+    status: active
+  - id: github-ghsa-2h44-8472-frjj
+    title: 'CVE-2026-61559: @zereight/mcp-gitlab'
+    publisher: GitHub Advisory Database and upstream maintainers
+    url: https://github.com/advisories/GHSA-2h44-8472-frjj
+    source_type: advisory
+    published_date: '2026-09-15'
+    topics:
+    - mcp
+    - agent-security
+    supports:
+    - With ENABLE_DYNAMIC_API_URL=true, an HTTP caller can redirect credential-bearing GitLab requests
+      through X-GitLab-API-URL to an untrusted destination.
+    - 'Advisory metadata lists @zereight/mcp-gitlab >= 0.0.1, < 2.1.27; patched: 2.1.27.'
+    reviewed_date: '2026-09-24'
+    status: active
+  - id: github-ghsa-cv3r-c5h8-f4g5
+    title: 'CVE-2026-61560: @zereight/mcp-gitlab'
+    publisher: GitHub Advisory Database and upstream maintainers
+    url: https://github.com/advisories/GHSA-cv3r-c5h8-f4g5
+    source_type: advisory
+    published_date: '2026-09-16'
+    topics:
+    - mcp
+    - agent-security
+    supports:
+    - An exposed SSE transport and unrestricted upload_markdown path can disclose server-readable files,
+      including GitLab tokens, to a reachable GitLab project.
+    - 'Advisory metadata lists @zereight/mcp-gitlab < 2.1.27; patched: 2.1.27.'
+    reviewed_date: '2026-09-24'
+    status: active
+  - id: github-ghsa-qg2g-g9w3-m5h8
+    title: 'CVE-2026-58197: github.com/stacklok/toolhive'
+    publisher: GitHub Advisory Database and upstream maintainers
+    url: https://github.com/advisories/GHSA-qg2g-g9w3-m5h8
+    source_type: advisory
+    published_date: '2026-09-18'
+    topics:
+    - mcp
+    - agent-security
+    supports:
+    - A compromised MCP container using the default permissive network profile can reach host services
+      and unauthenticated ToolHive control endpoints without escaping the container.
+    - 'Advisory metadata lists ToolHive CLI < 0.30.1; ToolHive Studio < 0.38.0; patched: CLI 0.30.1;
+      Studio 0.38.0.'
+    reviewed_date: '2026-09-24'
+    status: active
+  - id: github-ghsa-5gm3-9crp-6g3v
+    title: 'CVE-2026-77339: github.com/f1bonacc1/process-compose'
+    publisher: GitHub Advisory Database and upstream maintainers
+    url: https://github.com/advisories/GHSA-5gm3-9crp-6g3v
+    source_type: advisory
+    published_date: '2026-09-18'
+    topics:
+    - mcp
+    - agent-security
+    supports:
+    - When MCP SSE is enabled, browser DNS rebinding can reach Process Compose tools. The separate
+      REST API token middleware does not protect this MCP listener.
+    - 'Advisory metadata lists github.com/f1bonacc1/process-compose < 1.120.0; patched: 1.120.0.'
+    reviewed_date: '2026-09-24'
+    status: active
+  - id: github-ghsa-xwmw-prc4-v3cr
+    title: 'GHSA-xwmw-prc4-v3cr: github.com/obot-platform/obot'
+    publisher: GitHub Advisory Database and upstream maintainers
+    url: https://github.com/advisories/GHSA-xwmw-prc4-v3cr
+    source_type: advisory
+    published_date: '2026-09-18'
+    topics:
+    - mcp
+    - agent-security
+    supports:
+    - A logged-in Obot user following an attacker authorization URL can issue an OAuth token accepted
+      beyond the requested MCP audience, without the intended consent boundary.
+    - 'Advisory metadata lists github.com/obot-platform/obot < 0.23.0; patched: 0.23.0.'
+    reviewed_date: '2026-09-24'
+    status: active
+  - id: github-ghsa-pr6h-vr44-xq8j
+    title: 'GHSA-pr6h-vr44-xq8j: github.com/obot-platform/obot'
+    publisher: GitHub Advisory Database and upstream maintainers
+    url: https://github.com/advisories/GHSA-pr6h-vr44-xq8j
+    source_type: advisory
+    published_date: '2026-09-18'
+    topics:
+    - mcp
+    - agent-security
+    supports:
+    - Obot registry endpoints remain anonymously readable when OBOT_SERVER_ENABLE_REGISTRY_AUTH=true.
+      The disclosed data is catalog metadata, not credential values or authenticated server access.
+    - 'Advisory metadata lists github.com/obot-platform/obot < 0.23.0; patched: 0.23.0.'
+    reviewed_date: '2026-09-24'
+    status: active
+  - id: github-ghsa-jgh3-fggc-mcpm
+    title: 'GHSA-jgh3-fggc-mcpm: github.com/obot-platform/obot'
+    publisher: GitHub Advisory Database and upstream maintainers
+    url: https://github.com/advisories/GHSA-jgh3-fggc-mcpm
+    source_type: advisory
+    published_date: '2026-09-18'
+    topics:
+    - mcp
+    - agent-security
+    supports:
+    - Obot users with Power User or higher privileges can register a remote MCP URL that causes server
+      requests to internal destinations, including through OAuth metadata discovery.
+    - 'Advisory metadata lists github.com/obot-platform/obot < 0.23.0; patched: 0.23.0.'
+    reviewed_date: '2026-09-24'
+    status: active
+  - id: github-ghsa-jjhp-8crj-mppq
+    title: 'CVE-2026-61647: @roomi-fields/notebooklm-mcp'
+    publisher: GitHub Advisory Database and upstream maintainers
+    url: https://github.com/advisories/GHSA-jjhp-8crj-mppq
+    source_type: advisory
+    published_date: '2026-09-22'
+    topics:
+    - mcp
+    - agent-security
+    supports:
+    - Vault batch output accepts paths outside the intended directory. Version 2.0.3 sanitizes slug_prefix,
+      but vault containment requires NOTEBOOKLM_VAULT_ROOT; leaving it unset preserves unrestricted
+      writes.
+    - 'Advisory metadata lists @roomi-fields/notebooklm-mcp >= 1.6.0, < 2.0.3; patched: 2.0.3.'
+    reviewed_date: '2026-09-24'
+    status: active
+  - id: github-ghsa-798p-78g2-v556
+    title: 'CVE-2026-61612: @aborruso/ckan-mcp-server'
+    publisher: GitHub Advisory Database and upstream maintainers
+    url: https://github.com/advisories/GHSA-798p-78g2-v556
+    source_type: advisory
+    published_date: '2026-09-22'
+    topics:
+    - mcp
+    - agent-security
+    supports:
+    - CKAN server URL validation checks hostname text without validating the resolved address. Unauthenticated
+      self-hosted HTTP deployments can reach internal services; stdio requires control of tool arguments.
+    - 'Advisory metadata lists @aborruso/ckan-mcp-server <= 0.4.107; patched: 0.4.108.'
+    reviewed_date: '2026-09-24'
+    status: active
+  - id: github-ghsa-cc5h-2pwp-pvcc
+    title: 'CVE-2026-77248: mcp-atlassian'
+    publisher: GitHub Advisory Database and upstream maintainers
+    url: https://github.com/advisories/GHSA-cc5h-2pwp-pvcc
+    source_type: advisory
+    published_date: '2026-09-22'
+    topics:
+    - mcp
+    - agent-security
+    supports:
+    - Shared-credential HTTP deployments combine missing caller authentication with unrestricted attachment
+      reads, exposing host files through Atlassian uploads.
+    - 'Advisory metadata lists mcp-atlassian < 0.22.0; patched: 0.22.0.'
+    reviewed_date: '2026-09-24'
+    status: active
+  - id: github-ghsa-wv8v-v4c5-v75j
+    title: 'CVE-2026-77246: mcp-atlassian'
+    publisher: GitHub Advisory Database and upstream maintainers
+    url: https://github.com/advisories/GHSA-wv8v-v4c5-v75j
+    source_type: advisory
+    published_date: '2026-09-22'
+    topics:
+    - mcp
+    - agent-security
+    supports:
+    - HTTP callers can combine service headers pointing to a selected Atlassian endpoint with unrestricted
+      attachment paths to exfiltrate server-readable files.
+    - 'Advisory metadata lists mcp-atlassian < 0.22.0; patched: 0.22.0.'
+    reviewed_date: '2026-09-24'
+    status: active
+  - id: github-ghsa-w66g-j6c4-hcfc
+    title: 'CVE-2026-77251: mcp-atlassian'
+    publisher: GitHub Advisory Database and upstream maintainers
+    url: https://github.com/advisories/GHSA-w66g-j6c4-hcfc
+    source_type: advisory
+    published_date: '2026-09-22'
+    topics:
+    - mcp
+    - agent-security
+    supports:
+    - Jira project and Confluence space filters can be bypassed by query construction or missing checks
+      on agile endpoints, within the credentials available to the server.
+    - 'Advisory metadata lists mcp-atlassian < 0.22.0; patched: 0.22.0.'
+    reviewed_date: '2026-09-24'
+    status: active
+  - id: github-ghsa-vc25-24vv-fxxm
+    title: 'CVE-2026-77253: mcp-atlassian'
+    publisher: GitHub Advisory Database and upstream maintainers
+    url: https://github.com/advisories/GHSA-vc25-24vv-fxxm
+    source_type: advisory
+    published_date: '2026-09-22'
+    topics:
+    - mcp
+    - agent-security
+    supports:
+    - HTTP callers with upload access can submit server-local paths to attachment operations, including
+      the Jira issue-update attachment flow.
+    - 'Advisory metadata lists mcp-atlassian < 0.22.0; patched: 0.22.0.'
+    reviewed_date: '2026-09-24'
+    status: active
+  - id: github-ghsa-2xj6-xx86-cwwc
+    title: 'CVE-2026-77255: mcp-atlassian'
+    publisher: GitHub Advisory Database and upstream maintainers
+    url: https://github.com/advisories/GHSA-2xj6-xx86-cwwc
+    source_type: advisory
+    published_date: '2026-09-22'
+    topics:
+    - mcp
+    - agent-security
+    supports:
+    - Jira update_issue accepts attachment paths without a workspace boundary, allowing the MCP process
+      to disclose files using its own privileges.
+    - 'Advisory metadata lists mcp-atlassian < 0.22.0; patched: 0.22.0.'
+    reviewed_date: '2026-09-24'
+    status: active
+  - id: github-ghsa-3r68-hf9h-887v
+    title: 'CVE-2026-77243: mcp-atlassian'
+    publisher: GitHub Advisory Database and upstream maintainers
+    url: https://github.com/advisories/GHSA-3r68-hf9h-887v
+    source_type: advisory
+    published_date: '2026-09-22'
+    topics:
+    - mcp
+    - agent-security
+    supports:
+    - ENABLED_TOOLS and TOOLSETS filter tool listings but not direct tool calls. READ_ONLY_MODE retains
+      separate call-time enforcement.
+    - 'Advisory metadata lists mcp-atlassian < 0.22.0; patched: 0.22.0.'
+    reviewed_date: '2026-09-24'
+    status: active
+  - id: github-ghsa-mrq8-fv7v-hhjg
+    title: 'CVE-2026-77257: mcp-atlassian'
+    publisher: GitHub Advisory Database and upstream maintainers
+    url: https://github.com/advisories/GHSA-mrq8-fv7v-hhjg
+    source_type: advisory
+    published_date: '2026-09-22'
+    topics:
+    - mcp
+    - agent-security
+    supports:
+    - In HTTP or multi-user deployments, write-capable callers can upload server-readable files to
+      accessible Atlassian issues or pages. This primitive is file disclosure, not direct execution.
+    - 'Advisory metadata lists mcp-atlassian < 0.22.0; patched: 0.22.0.'
+    reviewed_date: '2026-09-24'
+    status: active
+  - id: github-ghsa-f4p7-qx46-wc5j
+    title: 'CVE-2026-77260: mcp-atlassian'
+    publisher: GitHub Advisory Database and upstream maintainers
+    url: https://github.com/advisories/GHSA-f4p7-qx46-wc5j
+    source_type: advisory
+    published_date: '2026-09-22'
+    topics:
+    - mcp
+    - agent-security
+    supports:
+    - The attachment read direction remains unrestricted after the earlier download write fix, including
+      attachments passed through Jira update_issue.
+    - 'Advisory metadata lists mcp-atlassian < 0.22.0; patched: 0.22.0.'
+    reviewed_date: '2026-09-24'
+    status: active
+  - id: github-ghsa-h7wj-5v37-59r2
+    title: 'CVE-2026-77269: mcp-atlassian'
+    publisher: GitHub Advisory Database and upstream maintainers
+    url: https://github.com/advisories/GHSA-h7wj-5v37-59r2
+    source_type: advisory
+    published_date: '2026-09-22'
+    topics:
+    - mcp
+    - agent-security
+    supports:
+    - Confluence upload tools lack path containment. The advisory distinguishes the similar Jira upload
+      mixin from a directly registered MCP tool.
+    - 'Advisory metadata lists mcp-atlassian < 0.22.0; patched: 0.22.0.'
+    reviewed_date: '2026-09-24'
+    status: active
+  - id: github-ghsa-mfv2-4wvm-9pgp
+    title: 'CVE-2026-77266: mcp-atlassian'
+    publisher: GitHub Advisory Database and upstream maintainers
+    url: https://github.com/advisories/GHSA-mfv2-4wvm-9pgp
+    source_type: advisory
+    published_date: '2026-09-22'
+    topics:
+    - mcp
+    - agent-security
+    supports:
+    - Jira and Confluence upload implementations read caller-supplied paths without the containment
+      checks used in the download direction.
+    - 'Advisory metadata lists mcp-atlassian < 0.22.0; patched: 0.22.0.'
+    reviewed_date: '2026-09-24'
+    status: active
+  - id: github-ghsa-49xv-9743-pw8w
+    title: 'CVE-2026-77265: mcp-atlassian'
+    publisher: GitHub Advisory Database and upstream maintainers
+    url: https://github.com/advisories/GHSA-49xv-9743-pw8w
+    source_type: advisory
+    published_date: '2026-09-22'
+    topics:
+    - mcp
+    - agent-security
+    supports:
+    - Header URL validation and connection establishment resolve DNS separately, leaving a rebinding
+      window before the initial outbound request.
+    - 'Advisory metadata lists mcp-atlassian < 0.22.0; patched: 0.22.0.'
+    reviewed_date: '2026-09-24'
+    status: active
+  - id: github-ghsa-f26r-j276-ggg4
+    title: 'CVE-2026-77270: mcp-atlassian'
+    publisher: GitHub Advisory Database and upstream maintainers
+    url: https://github.com/advisories/GHSA-f26r-j276-ggg4
+    source_type: advisory
+    published_date: '2026-09-22'
+    topics:
+    - mcp
+    - agent-security
+    supports:
+    - Attachment upload methods do not apply the path restrictions used by downloads; a permitted caller
+      can disclose readable server files.
+    - 'Advisory metadata lists mcp-atlassian < 0.22.0; patched: 0.22.0.'
+    reviewed_date: '2026-09-24'
+    status: active
+  - id: github-ghsa-6529-c226-h328
+    title: 'CVE-2026-77261: mcp-atlassian'
+    publisher: GitHub Advisory Database and upstream maintainers
+    url: https://github.com/advisories/GHSA-6529-c226-h328
+    source_type: advisory
+    published_date: '2026-09-22'
+    topics:
+    - mcp
+    - agent-security
+    supports:
+    - SSRF redirect validation is attached to the header-PAT client but omitted from basic-auth and
+      OAuth clients.
+    - 'Advisory metadata lists mcp-atlassian < 0.22.0; patched: 0.22.0.'
+    reviewed_date: '2026-09-24'
+    status: active
+  - id: github-ghsa-6cr4-ccf3-x7h4
+    title: 'CVE-2026-77259: mcp-atlassian'
+    publisher: GitHub Advisory Database and upstream maintainers
+    url: https://github.com/advisories/GHSA-6cr4-ccf3-x7h4
+    source_type: advisory
+    published_date: '2026-09-22'
+    topics:
+    - mcp
+    - agent-security
+    supports:
+    - A caller with attachment write access to a Confluence page can exfiltrate server-readable files
+      through the unvalidated upload path.
+    - 'Advisory metadata lists mcp-atlassian < 0.22.0; patched: 0.22.0.'
+    reviewed_date: '2026-09-24'
+    status: active
+  - id: github-ghsa-4596-2p6p-28cv
+    title: 'CVE-2026-77268: mcp-atlassian'
+    publisher: GitHub Advisory Database and upstream maintainers
+    url: https://github.com/advisories/GHSA-4596-2p6p-28cv
+    source_type: advisory
+    published_date: '2026-09-22'
+    topics:
+    - mcp
+    - agent-security
+    supports:
+    - OAuth token fallback files use default filesystem permissions rather than owner-only permissions,
+      exposing credentials on shared hosts.
+    - 'Advisory metadata lists mcp-atlassian < 0.22.0; patched: 0.22.0.'
+    reviewed_date: '2026-09-24'
+    status: active
+  - id: github-ghsa-p6hp-93wp-fh6p
+    title: 'CVE-2026-77262: mcp-atlassian'
+    publisher: GitHub Advisory Database and upstream maintainers
+    url: https://github.com/advisories/GHSA-p6hp-93wp-fh6p
+    source_type: advisory
+    published_date: '2026-09-22'
+    topics:
+    - mcp
+    - agent-security
+    supports:
+    - The Confluence upload path lacks the containment added to downloads, allowing tool callers to
+      upload readable server files to a selected Confluence endpoint.
+    - 'Advisory metadata lists mcp-atlassian < 0.22.0; patched: 0.22.0.'
+    reviewed_date: '2026-09-24'
+    status: active
+  - id: github-ghsa-g2r2-3j32-j27x
+    title: 'CVE-2026-77272: mcp-atlassian'
+    publisher: GitHub Advisory Database and upstream maintainers
+    url: https://github.com/advisories/GHSA-g2r2-3j32-j27x
+    source_type: advisory
+    published_date: '2026-09-22'
+    topics:
+    - mcp
+    - agent-security
+    supports:
+    - The OAuth setup callback reflects an unescaped error parameter into HTML while the setup server
+      is running and reachable.
+    - 'Advisory metadata lists mcp-atlassian < 0.22.0; patched: 0.22.0.'
+    reviewed_date: '2026-09-24'
+    status: active
+  - id: github-ghsa-5wf4-jqxh-8gm3
+    title: 'CVE-2026-77267: mcp-atlassian'
+    publisher: GitHub Advisory Database and upstream maintainers
+    url: https://github.com/advisories/GHSA-5wf4-jqxh-8gm3
+    source_type: advisory
+    published_date: '2026-09-22'
+    topics:
+    - mcp
+    - agent-security
+    supports:
+    - Some header-derived Atlassian URLs reach API clients without the SSRF validation intended by
+      an earlier fix.
+    - 'Advisory metadata lists mcp-atlassian < 0.22.0; patched: 0.22.0.'
+    reviewed_date: '2026-09-24'
+    status: active
+  - id: github-ghsa-6vmq-24h2-pj7j
+    title: 'CVE-2026-77271: mcp-atlassian'
+    publisher: GitHub Advisory Database and upstream maintainers
+    url: https://github.com/advisories/GHSA-6vmq-24h2-pj7j
+    source_type: advisory
+    published_date: '2026-09-22'
+    topics:
+    - mcp
+    - agent-security
+    supports:
+    - Download containment defaults to the process working directory. When that directory holds application
+      modules, attachment downloads can overwrite executable code for a later restart.
+    - 'Advisory metadata lists mcp-atlassian < 0.22.0; patched: 0.22.0.'
+    reviewed_date: '2026-09-24'
+    status: active
+  - id: github-ghsa-hgcf-4mq8-5266
+    title: 'CVE-2026-77274: mcp-atlassian'
+    publisher: GitHub Advisory Database and upstream maintainers
+    url: https://github.com/advisories/GHSA-hgcf-4mq8-5266
+    source_type: advisory
+    published_date: '2026-09-22'
+    topics:
+    - mcp
+    - agent-security
+    supports:
+    - Header-based Atlassian URLs can pass one URL parser while the downstream HTTP client resolves
+      a different destination, bypassing SSRF restrictions.
+    - 'Advisory metadata lists mcp-atlassian < 0.22.0; patched: 0.22.0.'
+    reviewed_date: '2026-09-24'
+    status: active
+  - id: github-ghsa-wrhw-j3f9-8vc6
+    title: 'CVE-2026-77244: mcp-atlassian'
+    publisher: GitHub Advisory Database and upstream maintainers
+    url: https://github.com/advisories/GHSA-wrhw-j3f9-8vc6
+    source_type: advisory
+    published_date: '2026-09-22'
+    topics:
+    - mcp
+    - agent-security
+    supports:
+    - HTTP deployments using shared server credentials can accept unauthenticated callers or arbitrary
+      non-empty tokens and act with the operator credentials.
+    - 'Advisory metadata lists mcp-atlassian < 0.22.0; patched: 0.22.0.'
+    reviewed_date: '2026-09-24'
+    status: active
+  - id: github-ghsa-f6pj-qv47-g96w
+    title: 'CVE-2026-77247: mcp-atlassian'
+    publisher: GitHub Advisory Database and upstream maintainers
+    url: https://github.com/advisories/GHSA-f6pj-qv47-g96w
+    source_type: advisory
+    published_date: '2026-09-22'
+    topics:
+    - mcp
+    - agent-security
+    supports:
+    - Write-capable attachment callers can make Jira or Confluence read server-local files and upload
+      them using the configured Atlassian credentials.
+    - 'Advisory metadata lists mcp-atlassian < 0.22.0; patched: 0.22.0.'
+    reviewed_date: '2026-09-24'
+    status: active
+  - id: github-ghsa-v9m3-wfh8-5646
+    title: 'CVE-2026-77249: mcp-atlassian'
+    publisher: GitHub Advisory Database and upstream maintainers
+    url: https://github.com/advisories/GHSA-v9m3-wfh8-5646
+    source_type: advisory
+    published_date: '2026-09-22'
+    topics:
+    - mcp
+    - agent-security
+    supports:
+    - The Jira user-permission lookup bypasses the guarded HTTP session, allowing an attacker-controlled
+      Atlassian endpoint to redirect requests to internal services.
+    - 'Advisory metadata lists mcp-atlassian < 0.22.0; patched: 0.22.0.'
+    reviewed_date: '2026-09-24'
+    status: active
+  - id: github-ghsa-g5xv-mhgm-v5f6
+    title: 'CVE-2026-77250: mcp-atlassian'
+    publisher: GitHub Advisory Database and upstream maintainers
+    url: https://github.com/advisories/GHSA-g5xv-mhgm-v5f6
+    source_type: advisory
+    published_date: '2026-09-22'
+    topics:
+    - mcp
+    - agent-security
+    supports:
+    - OAuth fallback token files inherit the process umask, exposing plaintext access and refresh tokens
+      to other local users even when keyring storage succeeds.
+    - 'Advisory metadata lists mcp-atlassian < 0.22.0; patched: 0.22.0.'
+    reviewed_date: '2026-09-24'
+    status: active
+  - id: github-ghsa-93xw-j965-9mx3
+    title: 'CVE-2026-77258: mcp-atlassian'
+    publisher: GitHub Advisory Database and upstream maintainers
+    url: https://github.com/advisories/GHSA-93xw-j965-9mx3
+    source_type: advisory
+    published_date: '2026-09-22'
+    topics:
+    - mcp
+    - agent-security
+    supports:
+    - Confluence attachment upload omits path validation and can disclose files readable by the MCP
+      process to a caller-controlled page.
+    - 'Advisory metadata lists mcp-atlassian < 0.22.0; patched: 0.22.0.'
+    reviewed_date: '2026-09-24'
+    status: active
+  - id: anthropic-changelog-september-2026
+    title: Claude Code September permission and plugin fixes
+    publisher: Anthropic
+    url: https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md
+    source_type: maintainer
+    published_date: '2026-09-11'
+    topics:
+    - agent-security
+    supports:
+    - The 2.1.265 through 2.1.269 entries document containment, managed-policy, path-rule, secret-redaction
+      and archive-permission fixes.
+    - Release notes do not identify the withheld GitSpawn ultrareview configuration key.
+    reviewed_date: '2026-09-12'
+    status: active
+  - id: manifold-gitspawn-2026-09
+    title: GitSpawn repository configuration research
+    publisher: Manifold Security
+    url: https://www.manifold.security/blog/ai-coding-agents-git-hijack
+    source_type: research
+    published_date: '2026-09-01'
+    topics:
+    - agent-security
+    supports:
+    - Repository delivery must preserve .git/config; ordinary clone, fetch and pull do not copy
+      that configuration.
+    - The September 1 retest reports remaining paths in Claude ultrareview, Hermes, Qwen and Grok;
+      their current patch status is not established here.
+    reviewed_date: '2026-09-12'
+    status: active
+  - id: microsoft-ghsa-q2f8-hh8x-wpc2
+    title: 'VS Code: Nested configuration Restricted Mode bypass'
+    publisher: Microsoft
+    url: https://github.com/microsoft/vscode/security/advisories/GHSA-q2f8-hh8x-wpc2
+    source_type: advisory
+    published_date: '2026-09-08'
+    topics:
+    - agent-security
+    supports:
+    - CVE-2026-70334 is fixed in VS Code 1.136.2.
+    - Restricted workspace settings expressed as nested objects can take effect without workspace
+      trust, allowing settings intended to remain blocked.
+    reviewed_date: '2026-09-12'
+    status: active
+  - id: microsoft-ghsa-hr37-8jwr-q8p8
+    title: 'VS Code: Agent URL authority and domain policy bypass'
+    publisher: Microsoft
+    url: https://github.com/microsoft/vscode/security/advisories/GHSA-hr37-8jwr-q8p8
+    source_type: advisory
+    published_date: '2026-09-08'
+    topics:
+    - agent-security
+    supports:
+    - CVE-2026-81379 is fixed in VS Code 1.136.2.
+    - Agent web and browser tools can bypass denied destinations through inconsistent URL parsing
+      or ignored valid administrator patterns when network filtering is enabled.
+    reviewed_date: '2026-09-12'
+    status: active
+  - id: microsoft-ghsa-x5qc-gqm7-93qp
+    title: 'VS Code: Webview resource root escape'
+    publisher: Microsoft
+    url: https://github.com/microsoft/vscode/security/advisories/GHSA-x5qc-gqm7-93qp
+    source_type: advisory
+    published_date: '2026-09-08'
+    topics:
+    - agent-security
+    supports:
+    - CVE-2026-81383 is fixed in VS Code 1.136.2.
+    - A webview using non-file resource schemes can exploit inconsistent separator handling to
+      read content outside the extension's allowed resource roots.
+    reviewed_date: '2026-09-12'
+    status: active
+  - id: microsoft-ghsa-rvgr-2w56-2j67
+    title: 'VS Code: Copilot Chat ADO token endpoint override'
+    publisher: Microsoft
+    url: https://github.com/microsoft/vscode/security/advisories/GHSA-rvgr-2w56-2j67
+    source_type: advisory
+    published_date: '2026-09-08'
+    topics:
+    - agent-security
+    supports:
+    - CVE-2026-81381 is fixed in VS Code 1.136.2.
+    - Repository settings can redirect authenticated Azure DevOps Code Search requests to an attacker
+      endpoint and expose the user's token.
+    reviewed_date: '2026-09-12'
+    status: active
+  - id: microsoft-ghsa-vww8-mqc2-4x8v
+    title: 'VS Code: Chat remote media request before filtering'
+    publisher: Microsoft
+    url: https://github.com/microsoft/vscode/security/advisories/GHSA-vww8-mqc2-4x8v
+    source_type: advisory
+    published_date: '2026-09-08'
+    topics:
+    - agent-security
+    supports:
+    - CVE-2026-81380 is fixed in VS Code 1.136.2.
+    - Rendering agent-provided remote media can initiate a request before the chat policy removes
+      the element, potentially leaking data encoded in its URL, including on history restoration.
+    reviewed_date: '2026-09-12'
+    status: active
+  - id: microsoft-ghsa-g6p5-6xp8-5jwg
+    title: 'VS Code: MCP gallery metadata path traversal'
+    publisher: Microsoft
+    url: https://github.com/microsoft/vscode/security/advisories/GHSA-g6p5-6xp8-5jwg
+    source_type: advisory
+    published_date: '2026-09-08'
+    topics:
+    - agent-security
+    supports:
+    - CVE-2026-81377 is fixed in VS Code 1.136.2.
+    - Installing or updating attacker-controlled MCP gallery metadata can write beyond per-server
+      storage; uninstalling the entry can delete an unintended directory.
+    reviewed_date: '2026-09-12'
+    status: active
+  - id: microsoft-ghsa-4xcg-6mm5-hj26
+    title: 'VS Code: Mapped IPv6 deny-only policy bypass'
+    publisher: Microsoft
+    url: https://github.com/microsoft/vscode/security/advisories/GHSA-4xcg-6mm5-hj26
+    source_type: advisory
+    published_date: '2026-09-08'
+    topics:
+    - agent-security
+    supports:
+    - CVE-2026-81357 is fixed in VS Code 1.136.2.
+    - With agent filtering enabled, an IPv4 deny entry and an empty allow list, an equivalent
+      mapped IPv6 address can bypass the denied destination.
+    reviewed_date: '2026-09-12'
+    status: active
+  - id: microsoft-ghsa-4gv7-q2x8-32p8
+    title: 'VS Code: Browser URL separator network bypass'
+    publisher: Microsoft
+    url: https://github.com/microsoft/vscode/security/advisories/GHSA-4gv7-q2x8-32p8
+    source_type: advisory
+    published_date: '2026-09-08'
+    topics:
+    - agent-security
+    supports:
+    - CVE-2026-81378 is fixed in VS Code 1.136.2.
+    - With agent filtering and browser chat tools enabled, URL separator interpretation differs
+      between policy validation and browser navigation, permitting requests to restricted hosts.
+    reviewed_date: '2026-09-12'
+    status: active
+  - id: microsoft-ghsa-2cmq-rv52-5rf6
+    title: 'VS Code: Workspace remote agent host permissions'
+    publisher: Microsoft
+    url: https://github.com/microsoft/vscode/security/advisories/GHSA-2cmq-rv52-5rf6
+    source_type: advisory
+    published_date: '2026-09-08'
+    topics:
+    - agent-security
+    supports:
+    - CVE-2026-78462 is fixed in VS Code 1.136.2.
+    - Workspace settings can choose a remote agent host and grant it local-file access, enabling
+      data access or code execution when the crafted repository is opened.
+    reviewed_date: '2026-09-12'
+    status: active
+  - id: microsoft-ghsa-r2gr-w3c8-wvqv
+    title: 'VS Code: Workspace Trust service bypass'
+    publisher: Microsoft
+    url: https://github.com/microsoft/vscode/security/advisories/GHSA-r2gr-w3c8-wvqv
+    source_type: advisory
+    published_date: '2026-09-08'
+    topics:
+    - agent-security
+    supports:
+    - CVE-2026-81376 is fixed in VS Code 1.136.2.
+    - An untrusted workspace can connect to attacker-controlled services and bypass restrictions
+      without the user granting workspace trust.
+    reviewed_date: '2026-09-12'
+    status: active
+  - id: goose-ghsa-r5pp-p5r8-466r
+    title: Goose review Git configuration execution
+    publisher: Goose maintainers
+    url: https://github.com/aaif-goose/goose/security/advisories/GHSA-r5pp-p5r8-466r
+    source_type: advisory
+    published_date: '2026-07-24'
+    topics:
+    - agent-security
+    supports:
+    - CVE-2026-72718 affects goose review before 1.44.0 and executes repository fsmonitor configuration
+      before model interaction.
+    reviewed_date: '2026-09-12'
+    status: active
+  - id: frontmcp-ghsa-65h7-9wrw-629c
+    title: FrontMCP external reference SSRF fix bypass
+    publisher: FrontMCP maintainers
+    url: https://github.com/agentfront/frontmcp/security/advisories/GHSA-65h7-9wrw-629c
+    source_type: advisory
+    published_date: '2026-06-22'
+    topics:
+    - agent-security
+    supports:
+    - Untrusted OpenAPI references bypass hostname filtering via DNS resolution, redirects or
+      mapped IPv6.
+    - The advisory lists fixes in FrontMCP/adapters 1.5.0 and mcp-from-openapi 2.5.0.
+    reviewed_date: '2026-09-12'
+    status: active
+  - id: github-db-frontmcp-cve-2026-59973
+    title: FrontMCP CVE package ranges
+    publisher: GitHub Advisory Database
+    url: https://github.com/advisories/GHSA-65h7-9wrw-629c
+    source_type: database
+    published_date: '2026-09-11'
+    topics:
+    - agent-security
+    supports:
+    - Affected ranges are mcp-from-openapi >= 2.3.0, < 2.5.0 and frontmcp/@frontmcp/adapters >=
+      1.2.1, < 1.5.0.
+    - September database publication is distinct from the June maintainer disclosure.
+    reviewed_date: '2026-09-12'
+    status: active
+  - id: mysql-mcp-ghsa-rqfv-2mw9-78g2
+    title: MySQL MCP SSE origin validation
+    publisher: MySQL MCP Server maintainers
+    url: https://github.com/designcomputer/mysql_mcp_server/security/advisories/GHSA-rqfv-2mw9-78g2
+    source_type: advisory
+    published_date: '2026-06-21'
+    topics:
+    - agent-security
+    supports:
+    - SSE mode before 0.4.2 permits unauthenticated SQL requests; default stdio is unaffected.
+    reviewed_date: '2026-09-12'
+    status: active
+  - id: github-db-mysql-cve-2026-59971
+    title: MySQL MCP CVE publication
+    publisher: GitHub Advisory Database
+    url: https://github.com/advisories/GHSA-rqfv-2mw9-78g2
+    source_type: database
+    published_date: '2026-09-11'
+    topics:
+    - agent-security
+    supports:
+    - CVE-2026-59971 was added to the GitHub database on September 11; the maintainer advisory
+      dates to June 21.
+    reviewed_date: '2026-09-12'
+    status: active
+  - id: aws-2026-097-dynamodb-cdk
+    title: DynamoDB MCP CDK template injection
+    publisher: Amazon Web Services
+    url: https://aws.amazon.com/security/security-bulletins/2026-097-aws/
+    source_type: advisory
+    published_date: '2026-09-04'
+    topics:
+    - agent-security
+    supports:
+    - CVE-2026-85654 affects 2.0.10 through 2.1.5; 2.1.6 fixes the generator.
+    - Crafted data-model names can execute code on the host deploying the generated application.
+    reviewed_date: '2026-09-12'
+    status: active
   - id: aikido-keyv-2026
     title: Keyv and Friends Compromised in npm Supply Chain Attack
     publisher: Aikido Security

@@ -103,7 +103,7 @@ def test_claude_code_webfetch_cve_is_sourced_and_explicitly_not_detected() -> No
     assert cast(dict[str, object], event["detector_coverage"])["status"] == (
         "not_detected"
     )
-    assert threat_document["version"] == "2.28.0"
+    assert threat_document["version"] == "2.30.0"
 
 
 def _write_documents(

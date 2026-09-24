@@ -6,6 +6,33 @@ while the data-licensing decision remains unresolved.
 
 ## [Unreleased]
 
+- Reviewed September 12 through September 24, 2026 (database 2.30.0): added
+  33 CVEs, four GHSA-only records and four research or release-note advisories.
+  The batch covers MCP Atlassian, GitLab, CKAN, NotebookLM, Obot, Process
+  Compose, ToolHive, Sentry Seer, Codex sandbox escapes, Plugin4Shell and
+  Claude Code fixes through 2.1.281. Earlier maintainer disclosures retain
+  their original dates when newly indexed by GitHub in September.
+- Added 40 evidence sources and 41 dated events. Totals are 172 CVE/advisory
+  records, 82 sources and 69 events. Overlapping Atlassian reports retain
+  distinct upstream identifiers; these totals do not count independent flaws.
+- Preserved documented-only coverage for all additions, separate Codex CLI
+  and Desktop floors, NotebookLM's required vault-root configuration, and
+  Sentry's unknown patched version. No executable detector or public release
+  authorization was added.
+
+- Refreshed threat intelligence through September 12, 2026 (database 2.29.0):
+  14 CVEs covering DynamoDB MCP, MySQL MCP, FrontMCP, Goose and ten VS Code
+  advisories, plus one Claude Code release-note advisory. Added 18 sources and
+  16 dated events, including a GitSpawn monitoring fiche. July/June disclosures
+  retain their original dates when added during this review.
+- Raised the reviewed Claude Code version floor to 2.1.269 and added seven
+  component floors. GitSpawn's unresolved September 1 variants remain under
+  review; the release-note advisory does not establish that they are fixed.
+- Kept all new intelligence explicitly outside executable detector coverage.
+  Totals are 131 CVE/advisory records, 42 intelligence sources and 28 events.
+  The license prose inventory now contains 449 fields; existing publication
+  restrictions remain unresolved.
+
 ### Added
 
 - Added a generated README neighborhood that connects AgentSec Triage to the guide security feed, ctxharness configuration checks, and the plugin security workflows.
