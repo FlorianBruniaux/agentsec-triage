@@ -1,0 +1,23 @@
+CHANGELOG.md
+  s_ec22837e58ecfe::t_60951c89beb571 9-11
+tests/unit/test_late_september_threat_update.py
+  s_ec22837e58ecfe::t_82ae09992c9484 139-141
+tests/unit/test_september_threat_update.py
+  s_ec22837e58ecfe::t_e12cc3b1a83b23 12-13,33-35,62-63
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "4041afcb088645aa71f7e5c00a0c981d50101063",
+  "prompts": {},
+  "sessions": {
+    "s_ec22837e58ecfe": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0f6a4-88a1-77b3-9270-14c46f3f921c",
+        "model": "gpt-6-sol"
+      },
+      "human_author": "Florian BRUNIAUX <florian@bruniaux.com>"
+    }
+  }
+}
