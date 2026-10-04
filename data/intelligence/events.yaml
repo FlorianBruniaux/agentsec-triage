@@ -1,7 +1,298 @@
 schema_version: "1"
 kind: events
-updated: "2026-09-24"
+updated: "2026-10-04"
 events:
+  - id: evt-2026-10-cve-2026-59723
+    event_type: vulnerability
+    title: Cline Hub dashboard cross-origin WebSocket hijack
+    summary: The local dashboard accepted browser WebSocket connections without Origin validation when
+      ROOM_SECRET was unset. Such clients could alter MCP or provider settings and trigger agent commands
+      when a provider and model were configured.
+    ecosystems:
+    - cline
+    - coding-agents
+    disclosed_date: '2026-06-23'
+    updated_date: '2026-10-04'
+    status: confirmed
+    confidence: confirmed
+    source_ids:
+    - review-2026-10-ghsa-3cj3-hqcr-g934
+    related:
+      campaign_ids: []
+      cve_ids:
+      - CVE-2026-59723
+      technique_ids: []
+    detector_coverage:
+      status: not_detected
+      detector_ids: []
+      notes: Reviewed advisory only. No AgentSec executable detector covers this vulnerability or its
+        deployment conditions.
+  - id: evt-2026-10-ghsa-6prh-2h8m-c8cw
+    event_type: vulnerability
+    title: MCP TypeScript cross-origin redirect credential disclosure
+    summary: HTTP transports and OAuth requests forwarded custom headers and session IDs across origins;
+      307/308 redirects also re-sent bodies containing OAuth credentials. Current fetch runtimes already
+      remove the Authorization header.
+    ecosystems:
+    - mcp
+    - npm
+    disclosed_date: '2026-10-02'
+    updated_date: '2026-10-04'
+    status: confirmed
+    confidence: confirmed
+    source_ids:
+    - review-2026-10-ghsa-6prh-2h8m-c8cw
+    related:
+      campaign_ids: []
+      cve_ids: []
+      technique_ids: []
+    detector_coverage:
+      status: not_detected
+      detector_ids: []
+      notes: Reviewed advisory only. No AgentSec executable detector covers this vulnerability or its
+        deployment conditions.
+  - id: evt-2026-10-ghsa-22jm-h49p-29qw
+    event_type: vulnerability
+    title: MCP TypeScript experimental task cross-session access
+    summary: HTTP clients sharing an InMemoryTaskStore could list, read or cancel tasks created by other
+      sessions. Exposure requires a configured taskStore; 2.x packages are excluded.
+    ecosystems:
+    - mcp
+    - npm
+    disclosed_date: '2026-10-02'
+    updated_date: '2026-10-04'
+    status: confirmed
+    confidence: confirmed
+    source_ids:
+    - review-2026-10-ghsa-22jm-h49p-29qw
+    related:
+      campaign_ids: []
+      cve_ids: []
+      technique_ids: []
+    detector_coverage:
+      status: not_detected
+      detector_ids: []
+      notes: Reviewed advisory only. No AgentSec executable detector covers this vulnerability or its
+        deployment conditions.
+  - id: evt-2026-10-cve-2026-104850
+    event_type: vulnerability
+    title: MCP TypeScript OAuth credential issuer confusion
+    summary: OAuth credentials were not bound to the authorization server that owned them. An untrusted
+      MCP server could redirect saved refresh tokens, client secrets or signed assertions to another
+      issuer.
+    ecosystems:
+    - mcp
+    - npm
+    disclosed_date: '2026-09-30'
+    updated_date: '2026-10-04'
+    status: confirmed
+    confidence: confirmed
+    source_ids:
+    - review-2026-10-ghsa-6qxp-vccf-f47h
+    related:
+      campaign_ids: []
+      cve_ids:
+      - CVE-2026-104850
+      technique_ids: []
+    detector_coverage:
+      status: not_detected
+      detector_ids: []
+      notes: Reviewed advisory only. No AgentSec executable detector covers this vulnerability or its
+        deployment conditions.
+  - id: evt-2026-10-cve-2026-97662
+    event_type: vulnerability
+    title: AWS Security Agent MCP diff reference argument injection
+    summary: A caller-influenced diff revision could be interpreted as a Git option, allowing writes
+      outside the workspace within server-process privileges. Repository-influenced output could lead
+      to execution; the operation could report no diff.
+    ecosystems:
+    - mcp
+    - python
+    - aws
+    disclosed_date: '2026-10-01'
+    updated_date: '2026-10-04'
+    status: confirmed
+    confidence: confirmed
+    source_ids:
+    - review-2026-10-ghsa-8g28-rj54-p5p2
+    related:
+      campaign_ids: []
+      cve_ids:
+      - CVE-2026-97662
+      technique_ids: []
+    detector_coverage:
+      status: not_detected
+      detector_ids: []
+      notes: Reviewed advisory only. No AgentSec executable detector covers this vulnerability or its
+        deployment conditions.
+  - id: evt-2026-10-ghsa-5h93-6whr-6q8j
+    event_type: vulnerability
+    title: MCP Python cross-origin redirect credential disclosure
+    summary: HTTP client transports and OAuth requests followed cross-origin redirects carrying custom
+      headers and, for 307/308, request bodies. The HTTP library dropped a lone Authorization header
+      across origins.
+    ecosystems:
+    - mcp
+    - python
+    disclosed_date: '2026-10-02'
+    updated_date: '2026-10-04'
+    status: confirmed
+    confidence: confirmed
+    source_ids:
+    - review-2026-10-ghsa-5h93-6whr-6q8j
+    related:
+      campaign_ids: []
+      cve_ids: []
+      technique_ids: []
+    detector_coverage:
+      status: not_detected
+      detector_ids: []
+      notes: Reviewed advisory only. No AgentSec executable detector covers this vulnerability or its
+        deployment conditions.
+  - id: evt-2026-10-ghsa-fmmv-w9g8-j3gc
+    event_type: vulnerability
+    title: MCP Python HTTP request body memory exhaustion
+    summary: HTTP transports and OAuth routes read request bodies without a shared size limit. Streamable
+      HTTP received an earlier partial limit; the later fix covered SSE message and OAuth routes.
+    ecosystems:
+    - mcp
+    - python
+    disclosed_date: '2026-09-30'
+    updated_date: '2026-10-04'
+    status: confirmed
+    confidence: confirmed
+    source_ids:
+    - review-2026-10-ghsa-fmmv-w9g8-j3gc
+    related:
+      campaign_ids: []
+      cve_ids: []
+      technique_ids: []
+    detector_coverage:
+      status: not_detected
+      detector_ids: []
+      notes: Reviewed advisory only. No AgentSec executable detector covers this vulnerability or its
+        deployment conditions.
+  - id: evt-2026-10-cve-2026-59951
+    event_type: vulnerability
+    title: MCP Python stateful HTTP session memory exhaustion
+    summary: Default stateful Streamable HTTP sessions retained initialize payloads without bounded
+      session counts or reclamation, including ended or refused sessions. Reachable clients could exhaust
+      server memory.
+    ecosystems:
+    - mcp
+    - python
+    disclosed_date: '2026-09-30'
+    updated_date: '2026-10-04'
+    status: confirmed
+    confidence: confirmed
+    source_ids:
+    - review-2026-10-ghsa-84m7-p3x7-pcfv
+    related:
+      campaign_ids: []
+      cve_ids:
+      - CVE-2026-59951
+      technique_ids: []
+    detector_coverage:
+      status: not_detected
+      detector_ids: []
+      notes: Reviewed advisory only. No AgentSec executable detector covers this vulnerability or its
+        deployment conditions.
+  - id: evt-2026-10-ghsa-qx49-fqc8-xw99
+    event_type: vulnerability
+    title: MCP Python OAuth authorization-server credential confusion
+    summary: An untrusted MCP server could select where an OAuth client sent credentials because issuer
+      validation and credential binding were incomplete. stdio clients, clients attaching their own
+      headers and SDK servers are excluded.
+    ecosystems:
+    - mcp
+    - python
+    disclosed_date: '2026-09-28'
+    updated_date: '2026-10-04'
+    status: confirmed
+    confidence: confirmed
+    source_ids:
+    - review-2026-10-ghsa-qx49-fqc8-xw99
+    related:
+      campaign_ids: []
+      cve_ids: []
+      technique_ids: []
+    detector_coverage:
+      status: not_detected
+      detector_ids: []
+      notes: Reviewed advisory only. No AgentSec executable detector covers this vulnerability or its
+        deployment conditions.
+  - id: evt-2026-10-ghsa-rwrf-2pqf-9j8j
+    event_type: vulnerability
+    title: MCP Python client external schema reference fetch
+    summary: Tool output-schema validation resolved server-chosen external references through synchronous
+      URL or local-file reads without a timeout. Retrieved content was used as a schema and was not
+      returned to the server; a stalled fetch could block the event loop.
+    ecosystems:
+    - mcp
+    - python
+    disclosed_date: '2026-09-28'
+    updated_date: '2026-10-04'
+    status: confirmed
+    confidence: confirmed
+    source_ids:
+    - review-2026-10-ghsa-rwrf-2pqf-9j8j
+    related:
+      campaign_ids: []
+      cve_ids: []
+      technique_ids: []
+    detector_coverage:
+      status: not_detected
+      detector_ids: []
+      notes: Reviewed advisory only. No AgentSec executable detector covers this vulnerability or its
+        deployment conditions.
+  - id: evt-2026-10-cve-2026-103012
+    event_type: vulnerability
+    title: Stored API key prevents server-managed policy refresh
+    summary: A stored API key was preferred when fetching server-managed settings despite Enterprise
+      or Team session sign-in. Rejection could leave no server policy or an older cached copy; endpoint-managed
+      settings were unaffected.
+    ecosystems:
+    - claude-code
+    disclosed_date: '2026-09-29'
+    updated_date: '2026-10-04'
+    status: confirmed
+    confidence: confirmed
+    source_ids:
+    - review-2026-10-ghsa-gfvf-j8jh-jxxw
+    related:
+      campaign_ids: []
+      cve_ids:
+      - CVE-2026-103012
+      technique_ids: []
+    detector_coverage:
+      status: not_detected
+      detector_ids: []
+      notes: Reviewed advisory only. No AgentSec executable detector covers this vulnerability or its
+        deployment conditions.
+  - id: evt-2026-10-ghsa-v234-4jrq-mgg6
+    event_type: vulnerability
+    title: Cowork macOS file-open host execution
+    summary: An omitted executable file type allowed content from a Cowork shared folder to run commands
+      on macOS when opened from Claude Desktop. A separate guest-kernel flaw could remove the user-interaction
+      requirement on older VM images.
+    ecosystems:
+    - cowork
+    - macos
+    disclosed_date: '2026-09-25'
+    updated_date: '2026-10-04'
+    status: confirmed
+    confidence: confirmed
+    source_ids:
+    - review-2026-10-ghsa-v234-4jrq-mgg6
+    related:
+      campaign_ids: []
+      cve_ids: []
+      technique_ids: []
+    detector_coverage:
+      status: not_detected
+      detector_ids: []
+      notes: Reviewed advisory only. No AgentSec executable detector covers this vulnerability or its
+        deployment conditions.
   - id: evt-2026-09-cve-2026-90999
     event_type: vulnerability
     title: Sentry Seer fabricated-event code execution

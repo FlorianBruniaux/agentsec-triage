@@ -1,7 +1,198 @@
 schema_version: "1"
 kind: sources
-updated: "2026-09-24"
+updated: "2026-10-04"
 sources:
+  - id: review-2026-10-ghsa-3cj3-hqcr-g934
+    title: Cline Hub dashboard cross-origin WebSocket hijack
+    publisher: Cline maintainers
+    url: https://github.com/cline/cline/security/advisories/GHSA-3cj3-hqcr-g934
+    source_type: advisory
+    published_date: '2026-06-23'
+    topics:
+    - cline
+    - coding-agents
+    supports:
+    - The local dashboard accepted browser WebSocket connections without Origin validation when ROOM_SECRET
+      was unset. Such clients could alter MCP or provider settings and trigger agent commands when a
+      provider and model were configured.
+    - 'Affected: cline <= 3.0.24. Patched: not listed by the reviewed upstream advisory.'
+    reviewed_date: '2026-10-04'
+    status: active
+  - id: review-2026-10-ghsa-6prh-2h8m-c8cw
+    title: MCP TypeScript cross-origin redirect credential disclosure
+    publisher: Model Context Protocol maintainers
+    url: https://github.com/modelcontextprotocol/typescript-sdk/security/advisories/GHSA-6prh-2h8m-c8cw
+    source_type: advisory
+    published_date: '2026-10-02'
+    topics:
+    - mcp
+    - npm
+    supports:
+    - HTTP transports and OAuth requests forwarded custom headers and session IDs across origins; 307/308
+      redirects also re-sent bodies containing OAuth credentials. Current fetch runtimes already remove
+      the Authorization header.
+    - 'Affected: @modelcontextprotocol/sdk < 1.32.0; @modelcontextprotocol/client >= 2.0.0, < 2.3.0.
+      Patched: sdk 1.x: 1.32.0; client 2.x: 2.3.0.'
+    reviewed_date: '2026-10-04'
+    status: active
+  - id: review-2026-10-ghsa-22jm-h49p-29qw
+    title: MCP TypeScript experimental task cross-session access
+    publisher: Model Context Protocol maintainers
+    url: https://github.com/modelcontextprotocol/typescript-sdk/security/advisories/GHSA-22jm-h49p-29qw
+    source_type: advisory
+    published_date: '2026-10-02'
+    topics:
+    - mcp
+    - npm
+    supports:
+    - HTTP clients sharing an InMemoryTaskStore could list, read or cancel tasks created by other sessions.
+      Exposure requires a configured taskStore; 2.x packages are excluded.
+    - 'Affected: @modelcontextprotocol/sdk >= 1.24.0, < 1.32.0. Patched: 1.32.0.'
+    reviewed_date: '2026-10-04'
+    status: active
+  - id: review-2026-10-ghsa-6qxp-vccf-f47h
+    title: MCP TypeScript OAuth credential issuer confusion
+    publisher: Model Context Protocol maintainers
+    url: https://github.com/modelcontextprotocol/typescript-sdk/security/advisories/GHSA-6qxp-vccf-f47h
+    source_type: advisory
+    published_date: '2026-09-30'
+    topics:
+    - mcp
+    - npm
+    supports:
+    - OAuth credentials were not bound to the authorization server that owned them. An untrusted MCP
+      server could redirect saved refresh tokens, client secrets or signed assertions to another issuer.
+    - 'Affected: @modelcontextprotocol/sdk >= 1.12.0, < 1.31.0; @modelcontextprotocol/client >= 2.0.0,
+      < 2.2.0. Patched: sdk 1.x: 1.31.0; client 2.x: 2.2.0.'
+    reviewed_date: '2026-10-04'
+    status: active
+  - id: review-2026-10-ghsa-8g28-rj54-p5p2
+    title: AWS Security Agent MCP diff reference argument injection
+    publisher: Amazon Web Services
+    url: https://github.com/awslabs/mcp/security/advisories/GHSA-8g28-rj54-p5p2
+    source_type: advisory
+    published_date: '2026-10-01'
+    topics:
+    - mcp
+    - python
+    - aws
+    supports:
+    - A caller-influenced diff revision could be interpreted as a Git option, allowing writes outside
+      the workspace within server-process privileges. Repository-influenced output could lead to execution;
+      the operation could report no diff.
+    - 'Affected: awslabs.security-agent-mcp-server >= 0.1.1, < 0.2.0. Patched: 0.2.0.'
+    reviewed_date: '2026-10-04'
+    status: active
+  - id: review-2026-10-ghsa-5h93-6whr-6q8j
+    title: MCP Python cross-origin redirect credential disclosure
+    publisher: Model Context Protocol maintainers
+    url: https://github.com/modelcontextprotocol/python-sdk/security/advisories/GHSA-5h93-6whr-6q8j
+    source_type: advisory
+    published_date: '2026-10-02'
+    topics:
+    - mcp
+    - python
+    supports:
+    - HTTP client transports and OAuth requests followed cross-origin redirects carrying custom headers
+      and, for 307/308, request bodies. The HTTP library dropped a lone Authorization header across
+      origins.
+    - 'Affected: mcp >= 1.8.0, < 1.30.0; >= 2.0.0, < 2.2.0. Patched: 1.x: 1.30.0; 2.x: 2.2.0.'
+    reviewed_date: '2026-10-04'
+    status: active
+  - id: review-2026-10-ghsa-fmmv-w9g8-j3gc
+    title: MCP Python HTTP request body memory exhaustion
+    publisher: Model Context Protocol maintainers
+    url: https://github.com/modelcontextprotocol/python-sdk/security/advisories/GHSA-fmmv-w9g8-j3gc
+    source_type: advisory
+    published_date: '2026-09-30'
+    topics:
+    - mcp
+    - python
+    supports:
+    - HTTP transports and OAuth routes read request bodies without a shared size limit. Streamable HTTP
+      received an earlier partial limit; the later fix covered SSE message and OAuth routes.
+    - 'Affected: mcp < 1.29.1; >= 2.0.0, < 2.1.0. Patched: 1.x: 1.29.1; 2.x: 2.1.0.'
+    reviewed_date: '2026-10-04'
+    status: active
+  - id: review-2026-10-ghsa-84m7-p3x7-pcfv
+    title: MCP Python stateful HTTP session memory exhaustion
+    publisher: Model Context Protocol maintainers
+    url: https://github.com/modelcontextprotocol/python-sdk/security/advisories/GHSA-84m7-p3x7-pcfv
+    source_type: advisory
+    published_date: '2026-09-30'
+    topics:
+    - mcp
+    - python
+    supports:
+    - Default stateful Streamable HTTP sessions retained initialize payloads without bounded session
+      counts or reclamation, including ended or refused sessions. Reachable clients could exhaust server
+      memory.
+    - 'Affected: mcp >= 1.8.0, < 1.30.0; >= 2.0.0, < 2.2.0. Patched: 1.x: 1.30.0; 2.x: 2.2.0.'
+    reviewed_date: '2026-10-04'
+    status: active
+  - id: review-2026-10-ghsa-qx49-fqc8-xw99
+    title: MCP Python OAuth authorization-server credential confusion
+    publisher: Model Context Protocol maintainers
+    url: https://github.com/modelcontextprotocol/python-sdk/security/advisories/GHSA-qx49-fqc8-xw99
+    source_type: advisory
+    published_date: '2026-09-28'
+    topics:
+    - mcp
+    - python
+    supports:
+    - An untrusted MCP server could select where an OAuth client sent credentials because issuer validation
+      and credential binding were incomplete. stdio clients, clients attaching their own headers and
+      SDK servers are excluded.
+    - 'Affected: mcp >= 1.9.1, < 1.30.0; >= 2.0.0a1, < 2.2.0. Patched: 1.x: 1.30.0; 2.x: 2.2.0.'
+    reviewed_date: '2026-10-04'
+    status: active
+  - id: review-2026-10-ghsa-rwrf-2pqf-9j8j
+    title: MCP Python client external schema reference fetch
+    publisher: Model Context Protocol maintainers
+    url: https://github.com/modelcontextprotocol/python-sdk/security/advisories/GHSA-rwrf-2pqf-9j8j
+    source_type: advisory
+    published_date: '2026-09-28'
+    topics:
+    - mcp
+    - python
+    supports:
+    - Tool output-schema validation resolved server-chosen external references through synchronous URL
+      or local-file reads without a timeout. Retrieved content was used as a schema and was not returned
+      to the server; a stalled fetch could block the event loop.
+    - 'Affected: mcp >= 1.10.0, < 1.30.0; >= 2.0.0, < 2.2.0. Patched: 1.x: 1.30.0; 2.x: 2.2.0.'
+    reviewed_date: '2026-10-04'
+    status: active
+  - id: review-2026-10-ghsa-gfvf-j8jh-jxxw
+    title: Stored API key prevents server-managed policy refresh
+    publisher: Anthropic
+    url: https://github.com/anthropics/claude-code/security/advisories/GHSA-gfvf-j8jh-jxxw
+    source_type: advisory
+    published_date: '2026-09-29'
+    topics:
+    - claude-code
+    supports:
+    - A stored API key was preferred when fetching server-managed settings despite Enterprise or Team
+      session sign-in. Rejection could leave no server policy or an older cached copy; endpoint-managed
+      settings were unaffected.
+    - 'Affected: Enterprise >= 2.0.68, < 2.1.260; Team >= 2.1.38, < 2.1.260. Patched: 2.1.260.'
+    reviewed_date: '2026-10-04'
+    status: active
+  - id: review-2026-10-ghsa-v234-4jrq-mgg6
+    title: Cowork macOS file-open host execution
+    publisher: Anthropic
+    url: https://github.com/anthropics/claude-code/security/advisories/GHSA-v234-4jrq-mgg6
+    source_type: advisory
+    published_date: '2026-09-25'
+    topics:
+    - cowork
+    - macos
+    supports:
+    - An omitted executable file type allowed content from a Cowork shared folder to run commands on
+      macOS when opened from Claude Desktop. A separate guest-kernel flaw could remove the user-interaction
+      requirement on older VM images.
+    - 'Affected: Claude Desktop >= 1.1.3918, < 1.15962.0. Patched: 1.15962.0.'
+    reviewed_date: '2026-10-04'
+    status: active
   - id: review-2026-09-cve-2026-90999
     title: Sentry Seer fabricated-event code execution
     publisher: CERT/CC

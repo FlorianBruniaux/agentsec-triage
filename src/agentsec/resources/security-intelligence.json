@@ -4,6 +4,340 @@
       "confidence": "confirmed",
       "detector_coverage": {
         "detector_ids": [],
+        "notes": "Reviewed advisory only. No AgentSec executable detector covers this vulnerability or its deployment conditions.",
+        "status": "not_detected"
+      },
+      "disclosed_date": "2026-09-29",
+      "ecosystems": [
+        "claude-code"
+      ],
+      "event_type": "vulnerability",
+      "id": "evt-2026-10-cve-2026-103012",
+      "related": {
+        "campaign_ids": [],
+        "cve_ids": [
+          "CVE-2026-103012"
+        ],
+        "technique_ids": []
+      },
+      "source_ids": [
+        "review-2026-10-ghsa-gfvf-j8jh-jxxw"
+      ],
+      "status": "confirmed",
+      "summary": "A stored API key was preferred when fetching server-managed settings despite Enterprise or Team session sign-in. Rejection could leave no server policy or an older cached copy; endpoint-managed settings were unaffected.",
+      "title": "Stored API key prevents server-managed policy refresh",
+      "updated_date": "2026-10-04"
+    },
+    {
+      "confidence": "confirmed",
+      "detector_coverage": {
+        "detector_ids": [],
+        "notes": "Reviewed advisory only. No AgentSec executable detector covers this vulnerability or its deployment conditions.",
+        "status": "not_detected"
+      },
+      "disclosed_date": "2026-09-30",
+      "ecosystems": [
+        "mcp",
+        "npm"
+      ],
+      "event_type": "vulnerability",
+      "id": "evt-2026-10-cve-2026-104850",
+      "related": {
+        "campaign_ids": [],
+        "cve_ids": [
+          "CVE-2026-104850"
+        ],
+        "technique_ids": []
+      },
+      "source_ids": [
+        "review-2026-10-ghsa-6qxp-vccf-f47h"
+      ],
+      "status": "confirmed",
+      "summary": "OAuth credentials were not bound to the authorization server that owned them. An untrusted MCP server could redirect saved refresh tokens, client secrets or signed assertions to another issuer.",
+      "title": "MCP TypeScript OAuth credential issuer confusion",
+      "updated_date": "2026-10-04"
+    },
+    {
+      "confidence": "confirmed",
+      "detector_coverage": {
+        "detector_ids": [],
+        "notes": "Reviewed advisory only. No AgentSec executable detector covers this vulnerability or its deployment conditions.",
+        "status": "not_detected"
+      },
+      "disclosed_date": "2026-06-23",
+      "ecosystems": [
+        "cline",
+        "coding-agents"
+      ],
+      "event_type": "vulnerability",
+      "id": "evt-2026-10-cve-2026-59723",
+      "related": {
+        "campaign_ids": [],
+        "cve_ids": [
+          "CVE-2026-59723"
+        ],
+        "technique_ids": []
+      },
+      "source_ids": [
+        "review-2026-10-ghsa-3cj3-hqcr-g934"
+      ],
+      "status": "confirmed",
+      "summary": "The local dashboard accepted browser WebSocket connections without Origin validation when ROOM_SECRET was unset. Such clients could alter MCP or provider settings and trigger agent commands when a provider and model were configured.",
+      "title": "Cline Hub dashboard cross-origin WebSocket hijack",
+      "updated_date": "2026-10-04"
+    },
+    {
+      "confidence": "confirmed",
+      "detector_coverage": {
+        "detector_ids": [],
+        "notes": "Reviewed advisory only. No AgentSec executable detector covers this vulnerability or its deployment conditions.",
+        "status": "not_detected"
+      },
+      "disclosed_date": "2026-09-30",
+      "ecosystems": [
+        "mcp",
+        "python"
+      ],
+      "event_type": "vulnerability",
+      "id": "evt-2026-10-cve-2026-59951",
+      "related": {
+        "campaign_ids": [],
+        "cve_ids": [
+          "CVE-2026-59951"
+        ],
+        "technique_ids": []
+      },
+      "source_ids": [
+        "review-2026-10-ghsa-84m7-p3x7-pcfv"
+      ],
+      "status": "confirmed",
+      "summary": "Default stateful Streamable HTTP sessions retained initialize payloads without bounded session counts or reclamation, including ended or refused sessions. Reachable clients could exhaust server memory.",
+      "title": "MCP Python stateful HTTP session memory exhaustion",
+      "updated_date": "2026-10-04"
+    },
+    {
+      "confidence": "confirmed",
+      "detector_coverage": {
+        "detector_ids": [],
+        "notes": "Reviewed advisory only. No AgentSec executable detector covers this vulnerability or its deployment conditions.",
+        "status": "not_detected"
+      },
+      "disclosed_date": "2026-10-01",
+      "ecosystems": [
+        "mcp",
+        "python",
+        "aws"
+      ],
+      "event_type": "vulnerability",
+      "id": "evt-2026-10-cve-2026-97662",
+      "related": {
+        "campaign_ids": [],
+        "cve_ids": [
+          "CVE-2026-97662"
+        ],
+        "technique_ids": []
+      },
+      "source_ids": [
+        "review-2026-10-ghsa-8g28-rj54-p5p2"
+      ],
+      "status": "confirmed",
+      "summary": "A caller-influenced diff revision could be interpreted as a Git option, allowing writes outside the workspace within server-process privileges. Repository-influenced output could lead to execution; the operation could report no diff.",
+      "title": "AWS Security Agent MCP diff reference argument injection",
+      "updated_date": "2026-10-04"
+    },
+    {
+      "confidence": "confirmed",
+      "detector_coverage": {
+        "detector_ids": [],
+        "notes": "Reviewed advisory only. No AgentSec executable detector covers this vulnerability or its deployment conditions.",
+        "status": "not_detected"
+      },
+      "disclosed_date": "2026-10-02",
+      "ecosystems": [
+        "mcp",
+        "npm"
+      ],
+      "event_type": "vulnerability",
+      "id": "evt-2026-10-ghsa-22jm-h49p-29qw",
+      "related": {
+        "campaign_ids": [],
+        "cve_ids": [],
+        "technique_ids": []
+      },
+      "source_ids": [
+        "review-2026-10-ghsa-22jm-h49p-29qw"
+      ],
+      "status": "confirmed",
+      "summary": "HTTP clients sharing an InMemoryTaskStore could list, read or cancel tasks created by other sessions. Exposure requires a configured taskStore; 2.x packages are excluded.",
+      "title": "MCP TypeScript experimental task cross-session access",
+      "updated_date": "2026-10-04"
+    },
+    {
+      "confidence": "confirmed",
+      "detector_coverage": {
+        "detector_ids": [],
+        "notes": "Reviewed advisory only. No AgentSec executable detector covers this vulnerability or its deployment conditions.",
+        "status": "not_detected"
+      },
+      "disclosed_date": "2026-10-02",
+      "ecosystems": [
+        "mcp",
+        "python"
+      ],
+      "event_type": "vulnerability",
+      "id": "evt-2026-10-ghsa-5h93-6whr-6q8j",
+      "related": {
+        "campaign_ids": [],
+        "cve_ids": [],
+        "technique_ids": []
+      },
+      "source_ids": [
+        "review-2026-10-ghsa-5h93-6whr-6q8j"
+      ],
+      "status": "confirmed",
+      "summary": "HTTP client transports and OAuth requests followed cross-origin redirects carrying custom headers and, for 307/308, request bodies. The HTTP library dropped a lone Authorization header across origins.",
+      "title": "MCP Python cross-origin redirect credential disclosure",
+      "updated_date": "2026-10-04"
+    },
+    {
+      "confidence": "confirmed",
+      "detector_coverage": {
+        "detector_ids": [],
+        "notes": "Reviewed advisory only. No AgentSec executable detector covers this vulnerability or its deployment conditions.",
+        "status": "not_detected"
+      },
+      "disclosed_date": "2026-10-02",
+      "ecosystems": [
+        "mcp",
+        "npm"
+      ],
+      "event_type": "vulnerability",
+      "id": "evt-2026-10-ghsa-6prh-2h8m-c8cw",
+      "related": {
+        "campaign_ids": [],
+        "cve_ids": [],
+        "technique_ids": []
+      },
+      "source_ids": [
+        "review-2026-10-ghsa-6prh-2h8m-c8cw"
+      ],
+      "status": "confirmed",
+      "summary": "HTTP transports and OAuth requests forwarded custom headers and session IDs across origins; 307/308 redirects also re-sent bodies containing OAuth credentials. Current fetch runtimes already remove the Authorization header.",
+      "title": "MCP TypeScript cross-origin redirect credential disclosure",
+      "updated_date": "2026-10-04"
+    },
+    {
+      "confidence": "confirmed",
+      "detector_coverage": {
+        "detector_ids": [],
+        "notes": "Reviewed advisory only. No AgentSec executable detector covers this vulnerability or its deployment conditions.",
+        "status": "not_detected"
+      },
+      "disclosed_date": "2026-09-30",
+      "ecosystems": [
+        "mcp",
+        "python"
+      ],
+      "event_type": "vulnerability",
+      "id": "evt-2026-10-ghsa-fmmv-w9g8-j3gc",
+      "related": {
+        "campaign_ids": [],
+        "cve_ids": [],
+        "technique_ids": []
+      },
+      "source_ids": [
+        "review-2026-10-ghsa-fmmv-w9g8-j3gc"
+      ],
+      "status": "confirmed",
+      "summary": "HTTP transports and OAuth routes read request bodies without a shared size limit. Streamable HTTP received an earlier partial limit; the later fix covered SSE message and OAuth routes.",
+      "title": "MCP Python HTTP request body memory exhaustion",
+      "updated_date": "2026-10-04"
+    },
+    {
+      "confidence": "confirmed",
+      "detector_coverage": {
+        "detector_ids": [],
+        "notes": "Reviewed advisory only. No AgentSec executable detector covers this vulnerability or its deployment conditions.",
+        "status": "not_detected"
+      },
+      "disclosed_date": "2026-09-28",
+      "ecosystems": [
+        "mcp",
+        "python"
+      ],
+      "event_type": "vulnerability",
+      "id": "evt-2026-10-ghsa-qx49-fqc8-xw99",
+      "related": {
+        "campaign_ids": [],
+        "cve_ids": [],
+        "technique_ids": []
+      },
+      "source_ids": [
+        "review-2026-10-ghsa-qx49-fqc8-xw99"
+      ],
+      "status": "confirmed",
+      "summary": "An untrusted MCP server could select where an OAuth client sent credentials because issuer validation and credential binding were incomplete. stdio clients, clients attaching their own headers and SDK servers are excluded.",
+      "title": "MCP Python OAuth authorization-server credential confusion",
+      "updated_date": "2026-10-04"
+    },
+    {
+      "confidence": "confirmed",
+      "detector_coverage": {
+        "detector_ids": [],
+        "notes": "Reviewed advisory only. No AgentSec executable detector covers this vulnerability or its deployment conditions.",
+        "status": "not_detected"
+      },
+      "disclosed_date": "2026-09-28",
+      "ecosystems": [
+        "mcp",
+        "python"
+      ],
+      "event_type": "vulnerability",
+      "id": "evt-2026-10-ghsa-rwrf-2pqf-9j8j",
+      "related": {
+        "campaign_ids": [],
+        "cve_ids": [],
+        "technique_ids": []
+      },
+      "source_ids": [
+        "review-2026-10-ghsa-rwrf-2pqf-9j8j"
+      ],
+      "status": "confirmed",
+      "summary": "Tool output-schema validation resolved server-chosen external references through synchronous URL or local-file reads without a timeout. Retrieved content was used as a schema and was not returned to the server; a stalled fetch could block the event loop.",
+      "title": "MCP Python client external schema reference fetch",
+      "updated_date": "2026-10-04"
+    },
+    {
+      "confidence": "confirmed",
+      "detector_coverage": {
+        "detector_ids": [],
+        "notes": "Reviewed advisory only. No AgentSec executable detector covers this vulnerability or its deployment conditions.",
+        "status": "not_detected"
+      },
+      "disclosed_date": "2026-09-25",
+      "ecosystems": [
+        "cowork",
+        "macos"
+      ],
+      "event_type": "vulnerability",
+      "id": "evt-2026-10-ghsa-v234-4jrq-mgg6",
+      "related": {
+        "campaign_ids": [],
+        "cve_ids": [],
+        "technique_ids": []
+      },
+      "source_ids": [
+        "review-2026-10-ghsa-v234-4jrq-mgg6"
+      ],
+      "status": "confirmed",
+      "summary": "An omitted executable file type allowed content from a Cowork shared folder to run commands on macOS when opened from Claude Desktop. A separate guest-kernel flaw could remove the user-interaction requirement on older VM images.",
+      "title": "Cowork macOS file-open host execution",
+      "updated_date": "2026-10-04"
+    },
+    {
+      "confidence": "confirmed",
+      "detector_coverage": {
+        "detector_ids": [],
         "notes": "Documented evidence only; no AgentSec detector covers the described execution boundary.",
         "status": "not_detected"
       },
@@ -2098,6 +2432,25 @@
       "url": "https://www.linkedin.com/posts/alex-turnbull-1ab9992_warning-the-shai-hulud-npm-exploit-has-nfected-share-7490508767600627714-LkNb"
     },
     {
+      "id": "review-2026-10-ghsa-8g28-rj54-p5p2",
+      "published_date": "2026-10-01",
+      "publisher": "Amazon Web Services",
+      "reviewed_date": "2026-10-04",
+      "source_type": "advisory",
+      "status": "active",
+      "supports": [
+        "A caller-influenced diff revision could be interpreted as a Git option, allowing writes outside the workspace within server-process privileges. Repository-influenced output could lead to execution; the operation could report no diff.",
+        "Affected: awslabs.security-agent-mcp-server >= 0.1.1, < 0.2.0. Patched: 0.2.0."
+      ],
+      "title": "AWS Security Agent MCP diff reference argument injection",
+      "topics": [
+        "mcp",
+        "python",
+        "aws"
+      ],
+      "url": "https://github.com/awslabs/mcp/security/advisories/GHSA-8g28-rj54-p5p2"
+    },
+    {
       "id": "aws-2026-097-dynamodb-cdk",
       "published_date": "2026-09-04",
       "publisher": "Amazon Web Services",
@@ -2149,6 +2502,24 @@
       "url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md"
     },
     {
+      "id": "review-2026-10-ghsa-v234-4jrq-mgg6",
+      "published_date": "2026-09-25",
+      "publisher": "Anthropic",
+      "reviewed_date": "2026-10-04",
+      "source_type": "advisory",
+      "status": "active",
+      "supports": [
+        "An omitted executable file type allowed content from a Cowork shared folder to run commands on macOS when opened from Claude Desktop. A separate guest-kernel flaw could remove the user-interaction requirement on older VM images.",
+        "Affected: Claude Desktop >= 1.1.3918, < 1.15962.0. Patched: 1.15962.0."
+      ],
+      "title": "Cowork macOS file-open host execution",
+      "topics": [
+        "cowork",
+        "macos"
+      ],
+      "url": "https://github.com/anthropics/claude-code/security/advisories/GHSA-v234-4jrq-mgg6"
+    },
+    {
       "id": "anthropic-ghsa-fg94-h982-f3mm",
       "published_date": "2026-06-13",
       "publisher": "Anthropic",
@@ -2168,6 +2539,23 @@
       "url": "https://github.com/anthropics/claude-code/security/advisories/GHSA-fg94-h982-f3mm"
     },
     {
+      "id": "review-2026-10-ghsa-gfvf-j8jh-jxxw",
+      "published_date": "2026-09-29",
+      "publisher": "Anthropic",
+      "reviewed_date": "2026-10-04",
+      "source_type": "advisory",
+      "status": "active",
+      "supports": [
+        "A stored API key was preferred when fetching server-managed settings despite Enterprise or Team session sign-in. Rejection could leave no server policy or an older cached copy; endpoint-managed settings were unaffected.",
+        "Affected: Enterprise >= 2.0.68, < 2.1.260; Team >= 2.1.38, < 2.1.260. Patched: 2.1.260."
+      ],
+      "title": "Stored API key prevents server-managed policy refresh",
+      "topics": [
+        "claude-code"
+      ],
+      "url": "https://github.com/anthropics/claude-code/security/advisories/GHSA-gfvf-j8jh-jxxw"
+    },
+    {
       "id": "review-2026-09-cve-2026-90999",
       "published_date": "2026-09-16",
       "publisher": "CERT/CC",
@@ -2183,6 +2571,24 @@
         "agent-security"
       ],
       "url": "https://www.kb.cert.org/vuls/id/212479"
+    },
+    {
+      "id": "review-2026-10-ghsa-3cj3-hqcr-g934",
+      "published_date": "2026-06-23",
+      "publisher": "Cline maintainers",
+      "reviewed_date": "2026-10-04",
+      "source_type": "advisory",
+      "status": "active",
+      "supports": [
+        "The local dashboard accepted browser WebSocket connections without Origin validation when ROOM_SECRET was unset. Such clients could alter MCP or provider settings and trigger agent commands when a provider and model were configured.",
+        "Affected: cline <= 3.0.24. Patched: not listed by the reviewed upstream advisory."
+      ],
+      "title": "Cline Hub dashboard cross-origin WebSocket hijack",
+      "topics": [
+        "cline",
+        "coding-agents"
+      ],
+      "url": "https://github.com/cline/cline/security/advisories/GHSA-3cj3-hqcr-g934"
     },
     {
       "id": "frontmcp-ghsa-65h7-9wrw-629c",
@@ -3196,6 +3602,150 @@
       "url": "https://github.com/microsoft/vscode/security/advisories/GHSA-r2gr-w3c8-wvqv"
     },
     {
+      "id": "review-2026-10-ghsa-rwrf-2pqf-9j8j",
+      "published_date": "2026-09-28",
+      "publisher": "Model Context Protocol maintainers",
+      "reviewed_date": "2026-10-04",
+      "source_type": "advisory",
+      "status": "active",
+      "supports": [
+        "Tool output-schema validation resolved server-chosen external references through synchronous URL or local-file reads without a timeout. Retrieved content was used as a schema and was not returned to the server; a stalled fetch could block the event loop.",
+        "Affected: mcp >= 1.10.0, < 1.30.0; >= 2.0.0, < 2.2.0. Patched: 1.x: 1.30.0; 2.x: 2.2.0."
+      ],
+      "title": "MCP Python client external schema reference fetch",
+      "topics": [
+        "mcp",
+        "python"
+      ],
+      "url": "https://github.com/modelcontextprotocol/python-sdk/security/advisories/GHSA-rwrf-2pqf-9j8j"
+    },
+    {
+      "id": "review-2026-10-ghsa-5h93-6whr-6q8j",
+      "published_date": "2026-10-02",
+      "publisher": "Model Context Protocol maintainers",
+      "reviewed_date": "2026-10-04",
+      "source_type": "advisory",
+      "status": "active",
+      "supports": [
+        "HTTP client transports and OAuth requests followed cross-origin redirects carrying custom headers and, for 307/308, request bodies. The HTTP library dropped a lone Authorization header across origins.",
+        "Affected: mcp >= 1.8.0, < 1.30.0; >= 2.0.0, < 2.2.0. Patched: 1.x: 1.30.0; 2.x: 2.2.0."
+      ],
+      "title": "MCP Python cross-origin redirect credential disclosure",
+      "topics": [
+        "mcp",
+        "python"
+      ],
+      "url": "https://github.com/modelcontextprotocol/python-sdk/security/advisories/GHSA-5h93-6whr-6q8j"
+    },
+    {
+      "id": "review-2026-10-ghsa-fmmv-w9g8-j3gc",
+      "published_date": "2026-09-30",
+      "publisher": "Model Context Protocol maintainers",
+      "reviewed_date": "2026-10-04",
+      "source_type": "advisory",
+      "status": "active",
+      "supports": [
+        "HTTP transports and OAuth routes read request bodies without a shared size limit. Streamable HTTP received an earlier partial limit; the later fix covered SSE message and OAuth routes.",
+        "Affected: mcp < 1.29.1; >= 2.0.0, < 2.1.0. Patched: 1.x: 1.29.1; 2.x: 2.1.0."
+      ],
+      "title": "MCP Python HTTP request body memory exhaustion",
+      "topics": [
+        "mcp",
+        "python"
+      ],
+      "url": "https://github.com/modelcontextprotocol/python-sdk/security/advisories/GHSA-fmmv-w9g8-j3gc"
+    },
+    {
+      "id": "review-2026-10-ghsa-qx49-fqc8-xw99",
+      "published_date": "2026-09-28",
+      "publisher": "Model Context Protocol maintainers",
+      "reviewed_date": "2026-10-04",
+      "source_type": "advisory",
+      "status": "active",
+      "supports": [
+        "An untrusted MCP server could select where an OAuth client sent credentials because issuer validation and credential binding were incomplete. stdio clients, clients attaching their own headers and SDK servers are excluded.",
+        "Affected: mcp >= 1.9.1, < 1.30.0; >= 2.0.0a1, < 2.2.0. Patched: 1.x: 1.30.0; 2.x: 2.2.0."
+      ],
+      "title": "MCP Python OAuth authorization-server credential confusion",
+      "topics": [
+        "mcp",
+        "python"
+      ],
+      "url": "https://github.com/modelcontextprotocol/python-sdk/security/advisories/GHSA-qx49-fqc8-xw99"
+    },
+    {
+      "id": "review-2026-10-ghsa-84m7-p3x7-pcfv",
+      "published_date": "2026-09-30",
+      "publisher": "Model Context Protocol maintainers",
+      "reviewed_date": "2026-10-04",
+      "source_type": "advisory",
+      "status": "active",
+      "supports": [
+        "Default stateful Streamable HTTP sessions retained initialize payloads without bounded session counts or reclamation, including ended or refused sessions. Reachable clients could exhaust server memory.",
+        "Affected: mcp >= 1.8.0, < 1.30.0; >= 2.0.0, < 2.2.0. Patched: 1.x: 1.30.0; 2.x: 2.2.0."
+      ],
+      "title": "MCP Python stateful HTTP session memory exhaustion",
+      "topics": [
+        "mcp",
+        "python"
+      ],
+      "url": "https://github.com/modelcontextprotocol/python-sdk/security/advisories/GHSA-84m7-p3x7-pcfv"
+    },
+    {
+      "id": "review-2026-10-ghsa-6prh-2h8m-c8cw",
+      "published_date": "2026-10-02",
+      "publisher": "Model Context Protocol maintainers",
+      "reviewed_date": "2026-10-04",
+      "source_type": "advisory",
+      "status": "active",
+      "supports": [
+        "HTTP transports and OAuth requests forwarded custom headers and session IDs across origins; 307/308 redirects also re-sent bodies containing OAuth credentials. Current fetch runtimes already remove the Authorization header.",
+        "Affected: @modelcontextprotocol/sdk < 1.32.0; @modelcontextprotocol/client >= 2.0.0, < 2.3.0. Patched: sdk 1.x: 1.32.0; client 2.x: 2.3.0."
+      ],
+      "title": "MCP TypeScript cross-origin redirect credential disclosure",
+      "topics": [
+        "mcp",
+        "npm"
+      ],
+      "url": "https://github.com/modelcontextprotocol/typescript-sdk/security/advisories/GHSA-6prh-2h8m-c8cw"
+    },
+    {
+      "id": "review-2026-10-ghsa-22jm-h49p-29qw",
+      "published_date": "2026-10-02",
+      "publisher": "Model Context Protocol maintainers",
+      "reviewed_date": "2026-10-04",
+      "source_type": "advisory",
+      "status": "active",
+      "supports": [
+        "HTTP clients sharing an InMemoryTaskStore could list, read or cancel tasks created by other sessions. Exposure requires a configured taskStore; 2.x packages are excluded.",
+        "Affected: @modelcontextprotocol/sdk >= 1.24.0, < 1.32.0. Patched: 1.32.0."
+      ],
+      "title": "MCP TypeScript experimental task cross-session access",
+      "topics": [
+        "mcp",
+        "npm"
+      ],
+      "url": "https://github.com/modelcontextprotocol/typescript-sdk/security/advisories/GHSA-22jm-h49p-29qw"
+    },
+    {
+      "id": "review-2026-10-ghsa-6qxp-vccf-f47h",
+      "published_date": "2026-09-30",
+      "publisher": "Model Context Protocol maintainers",
+      "reviewed_date": "2026-10-04",
+      "source_type": "advisory",
+      "status": "active",
+      "supports": [
+        "OAuth credentials were not bound to the authorization server that owned them. An untrusted MCP server could redirect saved refresh tokens, client secrets or signed assertions to another issuer.",
+        "Affected: @modelcontextprotocol/sdk >= 1.12.0, < 1.31.0; @modelcontextprotocol/client >= 2.0.0, < 2.2.0. Patched: sdk 1.x: 1.31.0; client 2.x: 2.2.0."
+      ],
+      "title": "MCP TypeScript OAuth credential issuer confusion",
+      "topics": [
+        "mcp",
+        "npm"
+      ],
+      "url": "https://github.com/modelcontextprotocol/typescript-sdk/security/advisories/GHSA-6qxp-vccf-f47h"
+    },
+    {
       "id": "github-ghsa-mcp-php-sdk-sse-2026",
       "publisher": "modelcontextprotocol/php-sdk (GitHub Security Advisory)",
       "reviewed_date": "2026-09-01",
@@ -3494,5 +4044,5 @@
       "url": "https://labs.zenity.io/post/attackers-target-agents-via-the-skill-supply-chain"
     }
   ],
-  "updated": "2026-09-24"
+  "updated": "2026-10-04"
 }

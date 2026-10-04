@@ -6,6 +6,21 @@ while the data-licensing decision remains unresolved.
 
 ## [Unreleased]
 
+- Reviewed September 24 through October 4, 2026 (database 2.31.0): added
+  five CVE and seven GHSA-only records, 12 primary sources and 12 dated events
+  for Anthropic, MCP Python and TypeScript SDKs, AWS Security Agent MCP and
+  Cline Hub. Cline retains its June 23 maintainer disclosure and unknown
+  patched version rather than adopting its September indexing date.
+- Recorded branch-specific SDK floors, OAuth issuer and stored-credential
+  migration requirements, redirect-header limits and Cowork's separate host
+  file-opening and guest-kernel fixes. All additions remain `not_detected`;
+  executable detector coverage is unchanged. Totals: 184 CVE/advisory records,
+  94 sources and 81 events. The license prose inventory grows from 531 to
+  555 fields, with new fields pending the existing rights review. No public
+  release authorization was added.
+- The owner authorized commit and push of this source-repository update on
+  October 4, 2026. Package, tag, archive and GitHub release gates remain blocked.
+
 - Reviewed September 12 through September 24, 2026 (database 2.30.0): added
   33 CVEs, four GHSA-only records and four research or release-note advisories.
   The batch covers MCP Atlassian, GitLab, CKAN, NotebookLM, Obot, Process
