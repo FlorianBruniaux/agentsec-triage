@@ -136,9 +136,9 @@ ROOT = Path(__file__).parents[2]
     ],
 )
 def test_reviewed_record(identifier: str, affected: str, fixed: str | None, disclosed: str) -> None:
-    database = yaml.safe_load((ROOT / "data/threat-db.yaml").read_text())
-    evidence = yaml.safe_load((ROOT / "data/intelligence/sources.yaml").read_text())
-    ledger = yaml.safe_load((ROOT / "data/intelligence/events.yaml").read_text())
+    database = yaml.safe_load((ROOT / "data/threat-db.yaml").read_text(encoding="utf-8"))
+    evidence = yaml.safe_load((ROOT / "data/intelligence/sources.yaml").read_text(encoding="utf-8"))
+    ledger = yaml.safe_load((ROOT / "data/intelligence/events.yaml").read_text(encoding="utf-8"))
     records = [r for r in database["cve_database"] if r["id"] == identifier]
     assert len(records) == 1, f"missing or duplicate reviewed record: {identifier}"
     record = records[0]

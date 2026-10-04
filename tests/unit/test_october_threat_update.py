@@ -99,9 +99,13 @@ ROOT = Path(__file__).parents[2]
     ],
 )
 def test_reviewed_october_record(identifier, affected, fixed, disclosed, url):
-    database = yaml.safe_load((ROOT / "data/threat-db.yaml").read_text())
-    sources = yaml.safe_load((ROOT / "data/intelligence/sources.yaml").read_text())["sources"]
-    events = yaml.safe_load((ROOT / "data/intelligence/events.yaml").read_text())["events"]
+    database = yaml.safe_load((ROOT / "data/threat-db.yaml").read_text(encoding="utf-8"))
+    sources = yaml.safe_load(
+        (ROOT / "data/intelligence/sources.yaml").read_text(encoding="utf-8")
+    )["sources"]
+    events = yaml.safe_load(
+        (ROOT / "data/intelligence/events.yaml").read_text(encoding="utf-8")
+    )["events"]
     records = [item for item in database["cve_database"] if item["id"] == identifier]
     assert len(records) == 1, f"missing or duplicate reviewed record: {identifier}"
     record = records[0]
@@ -138,7 +142,7 @@ def test_reviewed_october_record(identifier, affected, fixed, disclosed, url):
 
 
 def test_october_version_floors_keep_branches_and_do_not_downgrade_claude():
-    database = yaml.safe_load((ROOT / "data/threat-db.yaml").read_text())
+    database = yaml.safe_load((ROOT / "data/threat-db.yaml").read_text(encoding="utf-8"))
     floors = database["minimum_safe_versions"]
     assert floors["mcp-python-sdk"] == "1.30.0"
     assert floors["mcp-python-sdk-2"] == "2.2.0"

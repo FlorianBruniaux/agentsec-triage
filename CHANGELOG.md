@@ -6,6 +6,9 @@ while the data-licensing decision remains unresolved.
 
 ## [Unreleased]
 
+- Read reviewed threat YAML explicitly as UTF-8 in September and October
+  regression tests, so Windows does not decode the corpus as CP1252.
+
 - Reviewed September 24 through October 4, 2026 (database 2.31.0): added
   five CVE and seven GHSA-only records, 12 primary sources and 12 dated events
   for Anthropic, MCP Python and TypeScript SDKs, AWS Security Agent MCP and

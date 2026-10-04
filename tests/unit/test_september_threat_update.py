@@ -9,8 +9,8 @@ ROOT = Path(__file__).parents[2]
 
 
 def test_dynamodb_cdk_advisory_keeps_deployment_condition_and_no_detection() -> None:
-    database = yaml.safe_load((ROOT / "data/threat-db.yaml").read_text())
-    events = yaml.safe_load((ROOT / "data/intelligence/events.yaml").read_text())
+    database = yaml.safe_load((ROOT / "data/threat-db.yaml").read_text(encoding="utf-8"))
+    events = yaml.safe_load((ROOT / "data/intelligence/events.yaml").read_text(encoding="utf-8"))
     cve = next(c for c in database["cve_database"] if c["id"] == "CVE-2026-85654")
     assert cve["affected"] == "awslabs.dynamodb-mcp-server >= 2.0.10, <= 2.1.5"
     assert cve["fixed_in"] == "2.1.6"
@@ -30,9 +30,9 @@ def test_dynamodb_cdk_advisory_keeps_deployment_condition_and_no_detection() -> 
 def test_reviewed_advisories_resolve_primary_evidence_without_claiming_detection(
     identifier: str,
 ) -> None:
-    database = yaml.safe_load((ROOT / "data/threat-db.yaml").read_text())
-    sources = yaml.safe_load((ROOT / "data/intelligence/sources.yaml").read_text())
-    events = yaml.safe_load((ROOT / "data/intelligence/events.yaml").read_text())
+    database = yaml.safe_load((ROOT / "data/threat-db.yaml").read_text(encoding="utf-8"))
+    sources = yaml.safe_load((ROOT / "data/intelligence/sources.yaml").read_text(encoding="utf-8"))
+    events = yaml.safe_load((ROOT / "data/intelligence/events.yaml").read_text(encoding="utf-8"))
     cve = next(c for c in database["cve_database"] if c["id"] == identifier)
     source_ids = {s["id"] for s in sources["sources"] if s["url"] == cve["source"]}
     if identifier == "ADVISORY-CC-2026-003":
@@ -59,8 +59,8 @@ def test_reviewed_advisories_resolve_primary_evidence_without_claiming_detection
 
 
 def test_gitspawn_monitoring_preserves_delivery_and_patch_status_limits() -> None:
-    sources = yaml.safe_load((ROOT / "data/intelligence/sources.yaml").read_text())
-    events = yaml.safe_load((ROOT / "data/intelligence/events.yaml").read_text())
+    sources = yaml.safe_load((ROOT / "data/intelligence/sources.yaml").read_text(encoding="utf-8"))
+    events = yaml.safe_load((ROOT / "data/intelligence/events.yaml").read_text(encoding="utf-8"))
     source = next(s for s in sources["sources"] if s["id"] == "manifold-gitspawn-2026-09")
     fiche = next(e for e in events["events"] if e["id"] == "evt-2026-09-gitspawn-monitoring")
     assert "ordinary clone, fetch and pull do not copy" in " ".join(source["supports"])
