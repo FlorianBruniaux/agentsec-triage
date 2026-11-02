@@ -5,7 +5,7 @@
     "campaigns_total": 17,
     "commit_indicators_projected": 1,
     "cves_projected": 0,
-    "cves_total": 184,
+    "cves_total": 219,
     "domains_projected": 7,
     "domains_total": 7,
     "ignored_missing_platform": 64,
@@ -196,7 +196,7 @@
       "2.11.6"
     ]
   },
-  "updated": "2026-10-04",
-  "version": "2.31.0",
+  "updated": "2026-11-02",
+  "version": "2.32.0",
   "wildcard_package_versions": {}
 }

@@ -6,6 +6,31 @@ while the data-licensing decision remains unresolved.
 
 ## [Unreleased]
 
+- Reviewed October 4 through November 2, 2026 (database 2.32.0): added 31
+  advisory records (25 CVE, six GHSA-only) with 31 primary sources and dated
+  events for Claude Code, Claude Desktop, the Claude Agent SDK for Python, the
+  MCP Python and TypeScript SDKs, FastMCP, chrome-devtools-mcp, JetBrains Junie
+  CLI, Langflow, nginx-ui and 10 other MCP servers or integrations. Events keep
+  the maintainer disclosure date when GitHub indexed an advisory later.
+- Recorded four reports without a maintainer advisory (ZCode, MCP Kotlin SDK,
+  mcp-go, mcp-remote) as `monitoring` with `review` confidence. Each also has a
+  documented-only catalogue record without a version floor, because the landing
+  requires every event CVE to resolve to a catalogue record. Added the CVE
+  identifiers now assigned to four October GHSA-only MCP SDK records to their
+  record notes and to the summary of an `intelligence_update` event, without
+  rewriting the October events.
+- Added two campaign events: the tampered Claude Code extension served by the
+  Cursor marketplace on October 29 (`not_detected`) and the testmetest
+  repositories carrying coding-agent startup hooks (`partial`: the existing
+  `shai-hulud-keyv` detector reports the Claude Code SessionStart hook and the
+  VS Code folder-open task as review findings; Gemini and Cursor files are not
+  read). Every new vulnerability record remains `not_detected`. Totals: 219
+  CVE/advisory records, 132 sources and 119 events. The license prose
+  inventory grows from 555 to 625 fields, pending the existing rights review.
+  No public release authorization was added.
+- The owner authorized commit and push of this source-repository update on
+  November 2, 2026. Package, tag, archive and GitHub release gates remain blocked.
+
 - Read reviewed threat YAML explicitly as UTF-8 in September and October
   regression tests, so Windows does not decode the corpus as CP1252.
 
