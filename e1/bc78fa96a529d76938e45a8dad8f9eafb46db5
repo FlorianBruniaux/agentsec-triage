@@ -1,0 +1,53 @@
+CHANGELOG.md
+  s_cae630130d25b9::t_04725ea28e166c 9-27
+data/intelligence/events.yaml
+  s_cae630130d25b9::t_6aa1a442e13da5 3,5-607
+data/intelligence/sources.yaml
+  s_cae630130d25b9::t_5b377d6917c41a 3,5-390
+data/threat-db.yaml
+  s_cae630130d25b9::t_0f76d66c049427 5-6,8-80,1730-2029,4586-4588,4629,4640
+docs/LICENSE-PROSE-INVENTORY.json
+  s_cae630130d25b9::t_9a56bf04a5df6d 719-738,803-842,899-918,943-1122,1131-1150,1183-1202,1235-1274,1703-1722,2027-2046,2063-2082,2259-2278,2551-2610,6038,6040
+docs/SECURITY-INTELLIGENCE.md
+  s_cae630130d25b9::t_1cc6a55d1e6fde 5,22,36-40,44-47,50-51,58,60-62,119-121,127-128,130,136,167,246-254,372-416,444-479,498-515,565-573,582-606,1109-1135,1181-1198,1208-1216,1262-1270,1530-1538
+docs/SECURITY-TIMELINE.md
+  s_cae630130d25b9::t_ae0c5b4d0bdfc2 5,14-37,160-543
+exports/security-feed.v1.json
+  s_cae630130d25b9::t_6da9e88417c0bc 16,19-20,100-101,105-818,5172-5181,5222-5231,5262-5281,5302-5311,5332-5341,5382-5391,5432-5441,5472-5481,5492-5511,5532-5551,5562-5581,5612-5621,5632-5641,5672-5681,5692-5701,5712-5761,5841
+src/agentsec/resources/security-intelligence.json
+  s_cae630130d25b9::t_5a62ae34980e7c 3-716,4313-4332,4565-4659,4715-4790,4826-4862,4971-4989,5006-5061,6060-6113,6204-6239,6258-6275,6366-6384,6929-6947,6987
+src/agentsec/resources/threat-db.json
+  s_cae630130d25b9::t_fcbf7a8b5b70e3 8,199-200
+tests/golden/clean.txt
+  s_cae630130d25b9::t_ece52f5ddf58af 1
+tests/golden/finding.json
+  s_cae630130d25b9::t_3319b6a0c69531 3
+tests/integration/test_cli.py
+  s_cae630130d25b9::t_b824a23977e87e 133-134,552,582-583,627,640,736
+tests/unit/test_coverage_gap_threat_update.py
+  s_cae630130d25b9::t_44f4c5bcf87632 1-280
+tests/unit/test_intelligence_docs.py
+  s_cae630130d25b9::t_696ac786ed5068 106
+tests/unit/test_license_prose_inventory.py
+  s_cae630130d25b9::t_f113dab6951cd1 267,275
+tests/unit/test_security_feed.py
+  s_cae630130d25b9::t_ab4120c3a12790 54-55,59,70-72
+tests/unit/test_threat_db.py
+  s_cae630130d25b9::t_7966a7170c6429 21,44,315,533-534
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "e1bc78fa96a529d76938e45a8dad8f9eafb46db5",
+  "prompts": {},
+  "sessions": {
+    "s_cae630130d25b9": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "bd0308eb-fb52-4899-bde8-5c46ebd61524",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Florian BRUNIAUX <florian@bruniaux.com>"
+    }
+  }
+}
