@@ -1,7 +1,610 @@
 schema_version: "1"
 kind: events
-updated: "2026-11-02"
+updated: "2026-11-03"
 events:
+  - id: evt-2026-11-cve-2025-6514
+    event_type: vulnerability
+    title: mcp-remote OS command injection from an untrusted authorization endpoint
+    summary: mcp-remote was exposed to OS command injection when connecting to untrusted MCP servers, through
+      crafted input in the authorization_endpoint response URL.
+    ecosystems:
+    - mcp
+    - npm
+    - oauth
+    disclosed_date: '2025-07-09'
+    updated_date: '2026-11-03'
+    status: confirmed
+    confidence: confirmed
+    source_ids:
+    - review-2026-11-ghsa-6xpm-ggf7-wc3p
+    related:
+      campaign_ids: []
+      cve_ids:
+      - CVE-2025-6514
+      technique_ids: []
+    detector_coverage:
+      status: not_detected
+      detector_ids: []
+      notes: Reviewed advisory only. No AgentSec executable detector covers this vulnerability or its deployment
+        conditions.
+  - id: evt-2026-11-cve-2026-47751
+    event_type: vulnerability
+    title: Claude Code Action runs MCP servers from a pull request .mcp.json
+    summary: The action checked out attacker-controlled PR head branches, read .mcp.json from the working
+      directory and enabled all project MCP servers. A pull request carrying a malicious .mcp.json could
+      run code on the Actions runner and expose workflow secrets when a privileged user triggered the action
+      on that PR.
+    ecosystems:
+    - claude-code
+    - github-actions
+    - mcp
+    disclosed_date: '2026-06-10'
+    updated_date: '2026-11-03'
+    status: confirmed
+    confidence: confirmed
+    source_ids:
+    - review-2026-11-ghsa-8q5r-mmjf-575q
+    related:
+      campaign_ids: []
+      cve_ids:
+      - CVE-2026-47751
+      technique_ids: []
+    detector_coverage:
+      status: not_detected
+      detector_ids: []
+      notes: Reviewed advisory only. No AgentSec executable detector covers this vulnerability or its deployment
+        conditions.
+  - id: evt-2026-11-cve-2025-61260
+    event_type: vulnerability
+    title: OpenAI Codex CLI auto-loads project MCP configuration
+    summary: Codex CLI 0.23.0 and earlier loaded project-local .env and .codex/config.toml files without
+      confirmation when run inside a repository, so a malicious repository could embed commands that executed
+      immediately through MCP configuration.
+    ecosystems:
+    - codex
+    - coding-agents
+    - mcp
+    disclosed_date: '2026-04-14'
+    updated_date: '2026-11-03'
+    status: confirmed
+    confidence: confirmed
+    source_ids:
+    - review-2026-11-ghsa-xrxf-jgv3-qmrm
+    related:
+      campaign_ids: []
+      cve_ids:
+      - CVE-2025-61260
+      technique_ids: []
+    detector_coverage:
+      status: not_detected
+      detector_ids: []
+      notes: Reviewed advisory only. No AgentSec executable detector covers this vulnerability or its deployment
+        conditions.
+  - id: evt-2026-11-cve-2026-29783
+    event_type: vulnerability
+    title: GitHub Copilot CLI hidden commands through bash parameter expansion
+    summary: The shell safety assessment classified commands using bash parameter transformation operators
+      as read-only. An attacker who could influence agent commands, for example through repository files
+      or MCP server responses, could execute hidden commands.
+    ecosystems:
+    - copilot
+    - coding-agents
+    disclosed_date: '2026-03-06'
+    updated_date: '2026-11-03'
+    status: confirmed
+    confidence: confirmed
+    source_ids:
+    - review-2026-11-ghsa-g8r9-g2v8-jv6f
+    related:
+      campaign_ids: []
+      cve_ids:
+      - CVE-2026-29783
+      technique_ids: []
+    detector_coverage:
+      status: not_detected
+      detector_ids: []
+      notes: Reviewed advisory only. No AgentSec executable detector covers this vulnerability or its deployment
+        conditions.
+  - id: evt-2026-11-cve-2025-59944
+    event_type: vulnerability
+    title: Cursor sensitive file protection bypass by case
+    summary: Case-sensitive checks protecting sensitive files such as .cursor/mcp.json let a prompt injection
+      modify them on case-insensitive filesystems and reach remote code execution.
+    ecosystems:
+    - cursor
+    - coding-agents
+    - mcp
+    disclosed_date: '2025-10-02'
+    updated_date: '2026-11-03'
+    status: confirmed
+    confidence: confirmed
+    source_ids:
+    - review-2026-11-ghsa-xcwh-rrwj-gxc7
+    related:
+      campaign_ids: []
+      cve_ids:
+      - CVE-2025-59944
+      technique_ids: []
+    detector_coverage:
+      status: not_detected
+      detector_ids: []
+      notes: Reviewed advisory only. No AgentSec executable detector covers this vulnerability or its deployment
+        conditions.
+  - id: evt-2026-11-cve-2025-61590
+    event_type: vulnerability
+    title: Cursor code execution through .code-workspace settings
+    summary: A prompt injection that hijacked chat context could write workspace settings into a .code-workspace
+      file and turn them into code execution.
+    ecosystems:
+    - cursor
+    - coding-agents
+    disclosed_date: '2025-10-02'
+    updated_date: '2026-11-03'
+    status: confirmed
+    confidence: confirmed
+    source_ids:
+    - review-2026-11-ghsa-xg6w-rmh5-r77r
+    related:
+      campaign_ids: []
+      cve_ids:
+      - CVE-2025-61590
+      technique_ids: []
+    detector_coverage:
+      status: not_detected
+      detector_ids: []
+      notes: Reviewed advisory only. No AgentSec executable detector covers this vulnerability or its deployment
+        conditions.
+  - id: evt-2026-11-cve-2025-61591
+    event_type: vulnerability
+    title: Cursor CLI command injection through MCP OAuth
+    summary: When MCP used OAuth with an untrusted server, the server could return crafted commands during
+      the exchange and reach command injection on the host with the user's privileges.
+    ecosystems:
+    - cursor
+    - coding-agents
+    - mcp
+    - oauth
+    disclosed_date: '2025-10-02'
+    updated_date: '2026-11-03'
+    status: confirmed
+    confidence: confirmed
+    source_ids:
+    - review-2026-11-ghsa-wj33-264c-j9cq
+    related:
+      campaign_ids: []
+      cve_ids:
+      - CVE-2025-61591
+      technique_ids: []
+    detector_coverage:
+      status: not_detected
+      detector_ids: []
+      notes: Reviewed advisory only. No AgentSec executable detector covers this vulnerability or its deployment
+        conditions.
+  - id: evt-2026-11-cve-2025-64106
+    event_type: vulnerability
+    title: Cursor MCP deep-link install hides the executed command
+    summary: A crafted MCP install deep-link bypassed the warning dialog and showed a trusted server name
+      while running arbitrary commands from the link if the user accepted.
+    ecosystems:
+    - cursor
+    - coding-agents
+    - mcp
+    disclosed_date: '2025-11-03'
+    updated_date: '2026-11-03'
+    status: confirmed
+    confidence: confirmed
+    source_ids:
+    - review-2026-11-ghsa-4575-fh42-7848
+    related:
+      campaign_ids: []
+      cve_ids:
+      - CVE-2025-64106
+      technique_ids: []
+    detector_coverage:
+      status: not_detected
+      detector_ids: []
+      notes: Reviewed advisory only. No AgentSec executable detector covers this vulnerability or its deployment
+        conditions.
+  - id: evt-2026-11-cve-2025-64109
+    event_type: vulnerability
+    title: Cursor CLI Beta runs repository MCP configuration without a prompt
+    summary: Opening a cloned repository with Cursor CLI ran the command of a malicious MCP server declared
+      in .cursor/mcp.json without any warning.
+    ecosystems:
+    - cursor
+    - coding-agents
+    - mcp
+    disclosed_date: '2025-11-03'
+    updated_date: '2026-11-03'
+    status: confirmed
+    confidence: confirmed
+    source_ids:
+    - review-2026-11-ghsa-4hwr-97q3-37w2
+    related:
+      campaign_ids: []
+      cve_ids:
+      - CVE-2025-64109
+      technique_ids: []
+    detector_coverage:
+      status: not_detected
+      detector_ids: []
+      notes: Reviewed advisory only. No AgentSec executable detector covers this vulnerability or its deployment
+        conditions.
+  - id: evt-2026-11-cve-2025-68433
+    event_type: vulnerability
+    title: Zed runs MCP servers from project settings on open
+    summary: Zed loaded MCP context server definitions from a project's .zed/settings.json, so opening a
+      crafted project ran arbitrary commands with the user's privileges without further interaction.
+    ecosystems:
+    - zed
+    - coding-agents
+    - mcp
+    disclosed_date: '2025-12-17'
+    updated_date: '2026-11-03'
+    status: confirmed
+    confidence: confirmed
+    source_ids:
+    - review-2026-11-ghsa-cv6g-cmxc-vw8j
+    related:
+      campaign_ids: []
+      cve_ids:
+      - CVE-2025-68433
+      technique_ids: []
+    detector_coverage:
+      status: not_detected
+      detector_ids: []
+      notes: Reviewed advisory only. No AgentSec executable detector covers this vulnerability or its deployment
+        conditions.
+  - id: evt-2026-11-cve-2025-53365
+    event_type: vulnerability
+    title: MCP Python SDK streamable HTTP crash on client exception
+    summary: A client that deliberately triggered an exception after opening a streamable HTTP session could
+      cause an uncaught ClosedResourceError and crash the server until restart.
+    ecosystems:
+    - mcp
+    - pypi
+    disclosed_date: '2025-07-04'
+    updated_date: '2026-11-03'
+    status: confirmed
+    confidence: confirmed
+    source_ids:
+    - review-2026-11-ghsa-j975-95f5-7wqh
+    related:
+      campaign_ids: []
+      cve_ids:
+      - CVE-2025-53365
+      technique_ids: []
+    detector_coverage:
+      status: not_detected
+      detector_ids: []
+      notes: Reviewed advisory only. No AgentSec executable detector covers this vulnerability or its deployment
+        conditions.
+  - id: evt-2026-11-cve-2025-53366
+    event_type: vulnerability
+    title: MCP Python SDK FastMCP validation error crash
+    summary: Malformed requests could trigger an unhandled validation exception and leave the server returning
+      500 errors until manually restarted.
+    ecosystems:
+    - mcp
+    - pypi
+    disclosed_date: '2025-07-04'
+    updated_date: '2026-11-03'
+    status: confirmed
+    confidence: confirmed
+    source_ids:
+    - review-2026-11-ghsa-3qhf-m339-9g5v
+    related:
+      campaign_ids: []
+      cve_ids:
+      - CVE-2025-53366
+      technique_ids: []
+    detector_coverage:
+      status: not_detected
+      detector_ids: []
+      notes: Reviewed advisory only. No AgentSec executable detector covers this vulnerability or its deployment
+        conditions.
+  - id: evt-2026-11-cve-2025-66414
+    event_type: vulnerability
+    title: MCP TypeScript SDK DNS rebinding protection disabled by default
+    summary: HTTP-based servers did not enable DNS rebinding protection by default. A localhost server without
+      authentication could receive requests from a malicious website and run tools or read resources on
+      the user's behalf.
+    ecosystems:
+    - mcp
+    - npm
+    - dns-rebinding
+    disclosed_date: '2025-12-02'
+    updated_date: '2026-11-03'
+    status: confirmed
+    confidence: confirmed
+    source_ids:
+    - review-2026-11-ghsa-w48q-cv73-mx4w
+    related:
+      campaign_ids: []
+      cve_ids:
+      - CVE-2025-66414
+      technique_ids: []
+    detector_coverage:
+      status: not_detected
+      detector_ids: []
+      notes: Reviewed advisory only. No AgentSec executable detector covers this vulnerability or its deployment
+        conditions.
+  - id: evt-2026-11-cve-2026-27896
+    event_type: vulnerability
+    title: MCP Go SDK case-insensitive JSON-RPC field matching
+    summary: The SDK parsed JSON-RPC with encoding/json, which matches keys case-insensitively and folds
+      some Unicode characters. A malicious peer could send protocol messages with non-standard field names
+      that the SDK still accepted, contrary to JSON-RPC 2.0.
+    ecosystems:
+    - mcp
+    - go
+    disclosed_date: '2026-02-26'
+    updated_date: '2026-11-03'
+    status: confirmed
+    confidence: confirmed
+    source_ids:
+    - review-2026-11-ghsa-wvj2-96wp-fq3f
+    related:
+      campaign_ids: []
+      cve_ids:
+      - CVE-2026-27896
+      technique_ids: []
+    detector_coverage:
+      status: not_detected
+      detector_ids: []
+      notes: Reviewed advisory only. No AgentSec executable detector covers this vulnerability or its deployment
+        conditions.
+  - id: evt-2026-11-cve-2026-34237
+    event_type: vulnerability
+    title: MCP Java SDK hardcoded wildcard CORS
+    summary: 'The servlet SSE and streamable HTTP transports sent Access-Control-Allow-Origin: *, so a page
+      in the victim''s browser could read responses from a reachable MCP server.'
+    ecosystems:
+    - mcp
+    - java
+    disclosed_date: '2026-03-30'
+    updated_date: '2026-11-03'
+    status: confirmed
+    confidence: confirmed
+    source_ids:
+    - review-2026-11-ghsa-hv2w-8mjj-jw22
+    related:
+      campaign_ids: []
+      cve_ids:
+      - CVE-2026-34237
+      technique_ids: []
+    detector_coverage:
+      status: not_detected
+      detector_ids: []
+      notes: Reviewed advisory only. No AgentSec executable detector covers this vulnerability or its deployment
+        conditions.
+  - id: evt-2026-11-cve-2025-58444
+    event_type: vulnerability
+    title: MCP Inspector XSS from an untrusted redirect URL
+    summary: The Inspector rendered a redirect URL returned by a remote MCP server. A crafted redirect could
+      inject script and, through the built-in proxy, run commands on the developer machine.
+    ecosystems:
+    - mcp
+    - npm
+    disclosed_date: '2025-09-08'
+    updated_date: '2026-11-03'
+    status: confirmed
+    confidence: confirmed
+    source_ids:
+    - review-2026-11-ghsa-g9hg-qhmf-q45m
+    related:
+      campaign_ids: []
+      cve_ids:
+      - CVE-2025-58444
+      technique_ids: []
+    detector_coverage:
+      status: not_detected
+      detector_ids: []
+      notes: Reviewed advisory only. No AgentSec executable detector covers this vulnerability or its deployment
+        conditions.
+  - id: evt-2026-11-cve-2025-62800
+    event_type: vulnerability
+    title: FastMCP OAuth client callback reflected XSS
+    summary: The callback page served during the client OAuth flow embedded request values such as the error
+      parameter without escaping, allowing reflected cross-site scripting.
+    ecosystems:
+    - mcp
+    - pypi
+    - oauth
+    disclosed_date: '2025-10-29'
+    updated_date: '2026-11-03'
+    status: confirmed
+    confidence: confirmed
+    source_ids:
+    - review-2026-11-ghsa-mxxr-jv3v-6pgc
+    related:
+      campaign_ids: []
+      cve_ids:
+      - CVE-2025-62800
+      technique_ids: []
+    detector_coverage:
+      status: not_detected
+      detector_ids: []
+      notes: Reviewed advisory only. No AgentSec executable detector covers this vulnerability or its deployment
+        conditions.
+  - id: evt-2026-11-cve-2025-62801
+    event_type: vulnerability
+    title: FastMCP install cursor command injection on Windows
+    summary: fastmcp install cursor placed the server name in a deep-link opened through cmd.exe on Windows,
+      so shell metacharacters in an influenced server name ran arbitrary commands.
+    ecosystems:
+    - mcp
+    - pypi
+    - windows
+    disclosed_date: '2025-10-29'
+    updated_date: '2026-11-03'
+    status: confirmed
+    confidence: confirmed
+    source_ids:
+    - review-2026-11-ghsa-rj5c-58rq-j5g5
+    related:
+      campaign_ids: []
+      cve_ids:
+      - CVE-2025-62801
+      technique_ids: []
+    detector_coverage:
+      status: not_detected
+      detector_ids: []
+      notes: Reviewed advisory only. No AgentSec executable detector covers this vulnerability or its deployment
+        conditions.
+  - id: evt-2026-11-cve-2025-69196
+    event_type: vulnerability
+    title: FastMCP OAuth Proxy token reuse across MCP servers
+    summary: The OAuth Proxy ignored the client's resource parameter and issued tokens for its base_url,
+      so a token obtained for one MCP server could be accepted by another behind the same proxy.
+    ecosystems:
+    - mcp
+    - pypi
+    - oauth
+    disclosed_date: '2026-03-16'
+    updated_date: '2026-11-03'
+    status: confirmed
+    confidence: confirmed
+    source_ids:
+    - review-2026-11-ghsa-5h2m-4q8j-pqpj
+    related:
+      campaign_ids: []
+      cve_ids:
+      - CVE-2025-69196
+      technique_ids: []
+    detector_coverage:
+      status: not_detected
+      detector_ids: []
+      notes: Reviewed advisory only. No AgentSec executable detector covers this vulnerability or its deployment
+        conditions.
+  - id: evt-2026-11-cve-2025-64340
+    event_type: vulnerability
+    title: FastMCP install claude-code and gemini-cli command injection on Windows
+    summary: On Windows the target CLIs often resolve to .cmd wrappers run through cmd.exe, so metacharacters
+      in a server name passed to fastmcp install claude-code or gemini-cli ran commands.
+    ecosystems:
+    - mcp
+    - pypi
+    - windows
+    disclosed_date: '2026-03-31'
+    updated_date: '2026-11-03'
+    status: confirmed
+    confidence: confirmed
+    source_ids:
+    - review-2026-11-ghsa-m8x7-r2rg-vh5g
+    related:
+      campaign_ids: []
+      cve_ids:
+      - CVE-2025-64340
+      technique_ids: []
+    detector_coverage:
+      status: not_detected
+      detector_ids: []
+      notes: Reviewed advisory only. No AgentSec executable detector covers this vulnerability or its deployment
+        conditions.
+  - id: evt-2026-11-cve-2026-47427
+    event_type: vulnerability
+    title: GitHub MCP Server unauthenticated crash on completion/complete
+    summary: A completion/complete request without a ref field dereferenced nil and crashed the server before
+      authentication, letting any client cause a denial of service.
+    ecosystems:
+    - mcp
+    - go
+    - denial-of-service
+    disclosed_date: '2026-07-28'
+    updated_date: '2026-11-03'
+    status: confirmed
+    confidence: confirmed
+    source_ids:
+    - review-2026-11-ghsa-w4q6-qw23-4rg7
+    related:
+      campaign_ids: []
+      cve_ids:
+      - CVE-2026-47427
+      technique_ids: []
+    detector_coverage:
+      status: not_detected
+      detector_ids: []
+      notes: Reviewed advisory only. No AgentSec executable detector covers this vulnerability or its deployment
+        conditions.
+  - id: evt-2026-11-cve-2026-44427
+    event_type: vulnerability
+    title: MCP Registry open redirect through a protocol-relative path
+    summary: The trailing-slash middleware redirected //evil.com/ to //evil.com, which browsers treat as
+      an external URL.
+    ecosystems:
+    - mcp
+    - go
+    disclosed_date: '2026-05-08'
+    updated_date: '2026-11-03'
+    status: confirmed
+    confidence: confirmed
+    source_ids:
+    - review-2026-11-ghsa-v8vw-gw5j-w7m6
+    related:
+      campaign_ids: []
+      cve_ids:
+      - CVE-2026-44427
+      technique_ids: []
+    detector_coverage:
+      status: not_detected
+      detector_ids: []
+      notes: Reviewed advisory only. No AgentSec executable detector covers this vulnerability or its deployment
+        conditions.
+  - id: evt-2026-11-cve-2025-34072
+    event_type: disclosure
+    title: Deprecated Slack MCP server leaks data through link unfurling
+    summary: The unreviewed advisory states that an agent using Anthropic's deprecated Slack MCP server
+      could be led by untrusted data to post links embedding private data, which Slack preview bots then
+      fetched from the attacker's URL without user interaction. No fixed version is listed.
+    ecosystems:
+    - mcp
+    - npm
+    - data-exfiltration
+    disclosed_date: '2025-07-02'
+    updated_date: '2026-11-03'
+    status: monitoring
+    confidence: review
+    source_ids:
+    - review-2026-11-cve-2025-34072
+    related:
+      campaign_ids: []
+      cve_ids:
+      - CVE-2025-34072
+      technique_ids: []
+    detector_coverage:
+      status: not_detected
+      detector_ids: []
+      notes: Monitoring only. No reviewed advisory or version floor was found, and no AgentSec detector
+        covers this report.
+  - id: evt-2026-11-cve-2026-19591
+    event_type: disclosure
+    title: Codex approval bypass through the PowerShell stop-parsing token
+    summary: The unreviewed advisory states that Codex treated some PowerShell commands using --% as safe,
+      so an attacker-prepared repository could get a file-writing Git command run without approval and alter
+      Codex configuration to launch an attacker MCP server. The default macOS and Linux filesystem sandbox
+      can block the write. The advisory links a fix pull request but no version.
+    ecosystems:
+    - codex
+    - coding-agents
+    - mcp
+    - windows
+    disclosed_date: '2026-09-01'
+    updated_date: '2026-11-03'
+    status: monitoring
+    confidence: review
+    source_ids:
+    - review-2026-11-cve-2026-19591
+    related:
+      campaign_ids: []
+      cve_ids:
+      - CVE-2026-19591
+      technique_ids: []
+    detector_coverage:
+      status: not_detected
+      detector_ids: []
+      notes: Monitoring only. No reviewed advisory or version floor was found, and no AgentSec detector
+        covers this report.
   - id: evt-2026-11-cve-2026-103435
     event_type: vulnerability
     title: Claude Code write-time symlink following outside the project

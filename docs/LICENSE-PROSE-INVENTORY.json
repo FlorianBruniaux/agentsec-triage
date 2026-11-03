@@ -718,6 +718,26 @@
     },
     {
       "classification": "UNKNOWN",
+      "field_path": "cve_database[id=CVE-2025-34072].description",
+      "required_action": "Compare the cited source, document independent authorship or permission, then rewrite independently or remove.",
+      "review_state": "UNREVIEWED",
+      "source_locators": [
+        "https://github.com/advisories/GHSA-gmx5-crwh-6vxg"
+      ],
+      "value_sha256": "8516d6cf1793f1ddf75e0ede50529aae75c60cdaf8fedd94041b47db19ddc35d"
+    },
+    {
+      "classification": "UNKNOWN",
+      "field_path": "cve_database[id=CVE-2025-34072].notes",
+      "required_action": "Compare the cited source, document independent authorship or permission, then rewrite independently or remove.",
+      "review_state": "UNREVIEWED",
+      "source_locators": [
+        "https://github.com/advisories/GHSA-gmx5-crwh-6vxg"
+      ],
+      "value_sha256": "312424881367781daeae5b312b797719973f261add4b9351ad52e74cc9273cdb"
+    },
+    {
+      "classification": "UNKNOWN",
       "field_path": "cve_database[id=CVE-2025-35028].description",
       "required_action": "No source locator is available. Record the source and rights evidence, then rewrite independently, obtain permission, or remove.",
       "review_state": "UNREVIEWED",
@@ -782,6 +802,46 @@
     },
     {
       "classification": "UNKNOWN",
+      "field_path": "cve_database[id=CVE-2025-53365].description",
+      "required_action": "Compare the cited source, document independent authorship or permission, then rewrite independently or remove.",
+      "review_state": "UNREVIEWED",
+      "source_locators": [
+        "https://github.com/modelcontextprotocol/python-sdk/security/advisories/GHSA-j975-95f5-7wqh"
+      ],
+      "value_sha256": "15fe07d11f83a553b28888b1a2b56f464a9a9691c4ecc18694a30fab3e2fa6c7"
+    },
+    {
+      "classification": "UNKNOWN",
+      "field_path": "cve_database[id=CVE-2025-53365].notes",
+      "required_action": "Compare the cited source, document independent authorship or permission, then rewrite independently or remove.",
+      "review_state": "UNREVIEWED",
+      "source_locators": [
+        "https://github.com/modelcontextprotocol/python-sdk/security/advisories/GHSA-j975-95f5-7wqh"
+      ],
+      "value_sha256": "7b67b15e0897b2af768c98a61af10e9d12238970990c1c0a22d0e0c52a39c90c"
+    },
+    {
+      "classification": "UNKNOWN",
+      "field_path": "cve_database[id=CVE-2025-53366].description",
+      "required_action": "Compare the cited source, document independent authorship or permission, then rewrite independently or remove.",
+      "review_state": "UNREVIEWED",
+      "source_locators": [
+        "https://github.com/modelcontextprotocol/python-sdk/security/advisories/GHSA-3qhf-m339-9g5v"
+      ],
+      "value_sha256": "941751c4f41efe87405d82ea209297a6c8d2ff9696568c7243b22fdd73ea3bf4"
+    },
+    {
+      "classification": "UNKNOWN",
+      "field_path": "cve_database[id=CVE-2025-53366].notes",
+      "required_action": "Compare the cited source, document independent authorship or permission, then rewrite independently or remove.",
+      "review_state": "UNREVIEWED",
+      "source_locators": [
+        "https://github.com/modelcontextprotocol/python-sdk/security/advisories/GHSA-3qhf-m339-9g5v"
+      ],
+      "value_sha256": "8e61f7ed63ad2bf8e2f3c4a0547edc99eb2fce5abad9812d6a3b184b3ee48a93"
+    },
+    {
+      "classification": "UNKNOWN",
       "field_path": "cve_database[id=CVE-2025-53967].description",
       "required_action": "No source locator is available. Record the source and rights evidence, then rewrite independently, obtain permission, or remove.",
       "review_state": "UNREVIEWED",
@@ -838,6 +898,26 @@
     },
     {
       "classification": "UNKNOWN",
+      "field_path": "cve_database[id=CVE-2025-58444].description",
+      "required_action": "Compare the cited source, document independent authorship or permission, then rewrite independently or remove.",
+      "review_state": "UNREVIEWED",
+      "source_locators": [
+        "https://github.com/modelcontextprotocol/inspector/security/advisories/GHSA-g9hg-qhmf-q45m"
+      ],
+      "value_sha256": "0e7e7f4940c146eea62c0c8025e8bae786489b7090816bca7fa7d17094c108ca"
+    },
+    {
+      "classification": "UNKNOWN",
+      "field_path": "cve_database[id=CVE-2025-58444].notes",
+      "required_action": "Compare the cited source, document independent authorship or permission, then rewrite independently or remove.",
+      "review_state": "UNREVIEWED",
+      "source_locators": [
+        "https://github.com/modelcontextprotocol/inspector/security/advisories/GHSA-g9hg-qhmf-q45m"
+      ],
+      "value_sha256": "0d10d50dc1db7635f409e5a072d8dfef6f9ea93064bb25ac563367e0af45c21d"
+    },
+    {
+      "classification": "UNKNOWN",
       "field_path": "cve_database[id=CVE-2025-59536].description",
       "required_action": "No source locator is available. Record the source and rights evidence, then rewrite independently, obtain permission, or remove.",
       "review_state": "UNREVIEWED",
@@ -862,11 +942,211 @@
     },
     {
       "classification": "UNKNOWN",
+      "field_path": "cve_database[id=CVE-2025-59944].description",
+      "required_action": "Compare the cited source, document independent authorship or permission, then rewrite independently or remove.",
+      "review_state": "UNREVIEWED",
+      "source_locators": [
+        "https://github.com/cursor/cursor/security/advisories/GHSA-xcwh-rrwj-gxc7"
+      ],
+      "value_sha256": "58cafeea10fde4758c109280922f93fa76a2faea718ea18d50730370b8a64fb1"
+    },
+    {
+      "classification": "UNKNOWN",
+      "field_path": "cve_database[id=CVE-2025-59944].notes",
+      "required_action": "Compare the cited source, document independent authorship or permission, then rewrite independently or remove.",
+      "review_state": "UNREVIEWED",
+      "source_locators": [
+        "https://github.com/cursor/cursor/security/advisories/GHSA-xcwh-rrwj-gxc7"
+      ],
+      "value_sha256": "8f96c995caf1619dc727c3d623fa4a4e78931eb2d794015452d4fd9baa6e24e8"
+    },
+    {
+      "classification": "UNKNOWN",
+      "field_path": "cve_database[id=CVE-2025-61260].description",
+      "required_action": "Compare the cited source, document independent authorship or permission, then rewrite independently or remove.",
+      "review_state": "UNREVIEWED",
+      "source_locators": [
+        "https://github.com/advisories/GHSA-xrxf-jgv3-qmrm"
+      ],
+      "value_sha256": "e784f73d62484198c04557d4c4201e4d0d1f7a4cd03bdd1817316cd0bcfffcc6"
+    },
+    {
+      "classification": "UNKNOWN",
+      "field_path": "cve_database[id=CVE-2025-61260].notes",
+      "required_action": "Compare the cited source, document independent authorship or permission, then rewrite independently or remove.",
+      "review_state": "UNREVIEWED",
+      "source_locators": [
+        "https://github.com/advisories/GHSA-xrxf-jgv3-qmrm"
+      ],
+      "value_sha256": "4ad719b14670523620f1d11d7854799623cb2c1e6c4254d069a70db02cfadc43"
+    },
+    {
+      "classification": "UNKNOWN",
+      "field_path": "cve_database[id=CVE-2025-61590].description",
+      "required_action": "Compare the cited source, document independent authorship or permission, then rewrite independently or remove.",
+      "review_state": "UNREVIEWED",
+      "source_locators": [
+        "https://github.com/cursor/cursor/security/advisories/GHSA-xg6w-rmh5-r77r"
+      ],
+      "value_sha256": "e6ac56fc6edeed8bfb6001605b465bf7b86169d6964df331ce68de5739d43791"
+    },
+    {
+      "classification": "UNKNOWN",
+      "field_path": "cve_database[id=CVE-2025-61590].notes",
+      "required_action": "Compare the cited source, document independent authorship or permission, then rewrite independently or remove.",
+      "review_state": "UNREVIEWED",
+      "source_locators": [
+        "https://github.com/cursor/cursor/security/advisories/GHSA-xg6w-rmh5-r77r"
+      ],
+      "value_sha256": "35043098d4f20ad71d57eed9cd77d2cb73d8094140406a874699ed518f90cd6b"
+    },
+    {
+      "classification": "UNKNOWN",
+      "field_path": "cve_database[id=CVE-2025-61591].description",
+      "required_action": "Compare the cited source, document independent authorship or permission, then rewrite independently or remove.",
+      "review_state": "UNREVIEWED",
+      "source_locators": [
+        "https://github.com/cursor/cursor/security/advisories/GHSA-wj33-264c-j9cq"
+      ],
+      "value_sha256": "42ea00eee79236345fe5ea26475a2e2b766a1c277542c5e939e82f186b92618b"
+    },
+    {
+      "classification": "UNKNOWN",
+      "field_path": "cve_database[id=CVE-2025-61591].notes",
+      "required_action": "Compare the cited source, document independent authorship or permission, then rewrite independently or remove.",
+      "review_state": "UNREVIEWED",
+      "source_locators": [
+        "https://github.com/cursor/cursor/security/advisories/GHSA-wj33-264c-j9cq"
+      ],
+      "value_sha256": "262f3d774c8ef6b9550a8b7f01d9c86771bb9982b9c4b0d96621ade2d30cb712"
+    },
+    {
+      "classification": "UNKNOWN",
+      "field_path": "cve_database[id=CVE-2025-62800].description",
+      "required_action": "Compare the cited source, document independent authorship or permission, then rewrite independently or remove.",
+      "review_state": "UNREVIEWED",
+      "source_locators": [
+        "https://github.com/PrefectHQ/fastmcp/security/advisories/GHSA-mxxr-jv3v-6pgc"
+      ],
+      "value_sha256": "02b8fad0f8aac6534a569557b55e0fc29b22137f5b5ae632e5eb21acd6a86e51"
+    },
+    {
+      "classification": "UNKNOWN",
+      "field_path": "cve_database[id=CVE-2025-62800].notes",
+      "required_action": "Compare the cited source, document independent authorship or permission, then rewrite independently or remove.",
+      "review_state": "UNREVIEWED",
+      "source_locators": [
+        "https://github.com/PrefectHQ/fastmcp/security/advisories/GHSA-mxxr-jv3v-6pgc"
+      ],
+      "value_sha256": "4aab32690f762df2bd17dc03638b8b8e716c63aef21feb04936ce63609c328c8"
+    },
+    {
+      "classification": "UNKNOWN",
+      "field_path": "cve_database[id=CVE-2025-62801].description",
+      "required_action": "Compare the cited source, document independent authorship or permission, then rewrite independently or remove.",
+      "review_state": "UNREVIEWED",
+      "source_locators": [
+        "https://github.com/PrefectHQ/fastmcp/security/advisories/GHSA-rj5c-58rq-j5g5"
+      ],
+      "value_sha256": "9f649957af7d04c4c5c449cef4681067c4c4d11efb34e17b777d980d149706fa"
+    },
+    {
+      "classification": "UNKNOWN",
+      "field_path": "cve_database[id=CVE-2025-62801].notes",
+      "required_action": "Compare the cited source, document independent authorship or permission, then rewrite independently or remove.",
+      "review_state": "UNREVIEWED",
+      "source_locators": [
+        "https://github.com/PrefectHQ/fastmcp/security/advisories/GHSA-rj5c-58rq-j5g5"
+      ],
+      "value_sha256": "c98cb79d875a7ecf7f3173d8ce522373aa5fa6381f78da0c2c17be94aaf0b976"
+    },
+    {
+      "classification": "UNKNOWN",
+      "field_path": "cve_database[id=CVE-2025-64106].description",
+      "required_action": "Compare the cited source, document independent authorship or permission, then rewrite independently or remove.",
+      "review_state": "UNREVIEWED",
+      "source_locators": [
+        "https://github.com/cursor/cursor/security/advisories/GHSA-4575-fh42-7848"
+      ],
+      "value_sha256": "a7a20dc3177545b8a0de0a2e14c5310dbc27de0a660961b77706d56d043af8fe"
+    },
+    {
+      "classification": "UNKNOWN",
+      "field_path": "cve_database[id=CVE-2025-64106].notes",
+      "required_action": "Compare the cited source, document independent authorship or permission, then rewrite independently or remove.",
+      "review_state": "UNREVIEWED",
+      "source_locators": [
+        "https://github.com/cursor/cursor/security/advisories/GHSA-4575-fh42-7848"
+      ],
+      "value_sha256": "3d59bb2793c09ef59d0b3adfcbcc3f3ac78c2a156ba590add1d1381d07d9d91d"
+    },
+    {
+      "classification": "UNKNOWN",
+      "field_path": "cve_database[id=CVE-2025-64109].description",
+      "required_action": "Compare the cited source, document independent authorship or permission, then rewrite independently or remove.",
+      "review_state": "UNREVIEWED",
+      "source_locators": [
+        "https://github.com/cursor/cursor/security/advisories/GHSA-4hwr-97q3-37w2"
+      ],
+      "value_sha256": "8e178b99ba3b25f25ba3cb813a2a56240e0e8074b0064a49f412e1b6936c49b7"
+    },
+    {
+      "classification": "UNKNOWN",
+      "field_path": "cve_database[id=CVE-2025-64109].notes",
+      "required_action": "Compare the cited source, document independent authorship or permission, then rewrite independently or remove.",
+      "review_state": "UNREVIEWED",
+      "source_locators": [
+        "https://github.com/cursor/cursor/security/advisories/GHSA-4hwr-97q3-37w2"
+      ],
+      "value_sha256": "638e31617b72a620194ae822c528415507588cad5e7112f6690dbcc1b3b2fc30"
+    },
+    {
+      "classification": "UNKNOWN",
+      "field_path": "cve_database[id=CVE-2025-64340].description",
+      "required_action": "Compare the cited source, document independent authorship or permission, then rewrite independently or remove.",
+      "review_state": "UNREVIEWED",
+      "source_locators": [
+        "https://github.com/PrefectHQ/fastmcp/security/advisories/GHSA-m8x7-r2rg-vh5g"
+      ],
+      "value_sha256": "d9e7979ed2c6528433e258a0af2e7f038af03d9b3ec0737d793e6fa4e827cefb"
+    },
+    {
+      "classification": "UNKNOWN",
+      "field_path": "cve_database[id=CVE-2025-64340].notes",
+      "required_action": "Compare the cited source, document independent authorship or permission, then rewrite independently or remove.",
+      "review_state": "UNREVIEWED",
+      "source_locators": [
+        "https://github.com/PrefectHQ/fastmcp/security/advisories/GHSA-m8x7-r2rg-vh5g"
+      ],
+      "value_sha256": "ce0abce9b0d23dd98e483e5b88cf6a4f3f365ed9934178db325b0f9ecfcabd7b"
+    },
+    {
+      "classification": "UNKNOWN",
       "field_path": "cve_database[id=CVE-2025-64443].description",
       "required_action": "No source locator is available. Record the source and rights evidence, then rewrite independently, obtain permission, or remove.",
       "review_state": "UNREVIEWED",
       "source_locators": [],
       "value_sha256": "4dcd26fa33539699c8f8b72b2eede5bca23c1a67172c81ac0a43a67afa22b8aa"
+    },
+    {
+      "classification": "UNKNOWN",
+      "field_path": "cve_database[id=CVE-2025-6514].description",
+      "required_action": "Compare the cited source, document independent authorship or permission, then rewrite independently or remove.",
+      "review_state": "UNREVIEWED",
+      "source_locators": [
+        "https://github.com/advisories/GHSA-6xpm-ggf7-wc3p"
+      ],
+      "value_sha256": "09f142d0b3b62c41a66ae306ff5b0e33bf53c8a900ba3dc61297b95520ba3739"
+    },
+    {
+      "classification": "UNKNOWN",
+      "field_path": "cve_database[id=CVE-2025-6514].notes",
+      "required_action": "Compare the cited source, document independent authorship or permission, then rewrite independently or remove.",
+      "review_state": "UNREVIEWED",
+      "source_locators": [
+        "https://github.com/advisories/GHSA-6xpm-ggf7-wc3p"
+      ],
+      "value_sha256": "23e70d15e0dec82dbc4f6acc164e2b87bb73ae9319a9da8407a6296c1dc3f570"
     },
     {
       "classification": "UNKNOWN",
@@ -902,6 +1182,26 @@
     },
     {
       "classification": "UNKNOWN",
+      "field_path": "cve_database[id=CVE-2025-66414].description",
+      "required_action": "Compare the cited source, document independent authorship or permission, then rewrite independently or remove.",
+      "review_state": "UNREVIEWED",
+      "source_locators": [
+        "https://github.com/modelcontextprotocol/typescript-sdk/security/advisories/GHSA-w48q-cv73-mx4w"
+      ],
+      "value_sha256": "88d9fc4bb0012d9e06f2e53e51957fb0f41cb91be6d525b3abc705331168b12f"
+    },
+    {
+      "classification": "UNKNOWN",
+      "field_path": "cve_database[id=CVE-2025-66414].notes",
+      "required_action": "Compare the cited source, document independent authorship or permission, then rewrite independently or remove.",
+      "review_state": "UNREVIEWED",
+      "source_locators": [
+        "https://github.com/modelcontextprotocol/typescript-sdk/security/advisories/GHSA-w48q-cv73-mx4w"
+      ],
+      "value_sha256": "f641dff61e84dbcb35c53834f495f8af8b37b21bb1184975514ff499be0816c9"
+    },
+    {
+      "classification": "UNKNOWN",
       "field_path": "cve_database[id=CVE-2025-66416].description",
       "required_action": "No source locator is available. Record the source and rights evidence, then rewrite independently, obtain permission, or remove.",
       "review_state": "UNREVIEWED",
@@ -931,6 +1231,46 @@
       "review_state": "UNREVIEWED",
       "source_locators": [],
       "value_sha256": "d67d13162b32ff39422f7845342558fb524534541a8614a117aa6a56b1d3546a"
+    },
+    {
+      "classification": "UNKNOWN",
+      "field_path": "cve_database[id=CVE-2025-68433].description",
+      "required_action": "Compare the cited source, document independent authorship or permission, then rewrite independently or remove.",
+      "review_state": "UNREVIEWED",
+      "source_locators": [
+        "https://github.com/zed-industries/zed/security/advisories/GHSA-cv6g-cmxc-vw8j"
+      ],
+      "value_sha256": "976023f850a593057fe8b3b3b1f8a9fb893a3967cc9552c8306206c6acf9562f"
+    },
+    {
+      "classification": "UNKNOWN",
+      "field_path": "cve_database[id=CVE-2025-68433].notes",
+      "required_action": "Compare the cited source, document independent authorship or permission, then rewrite independently or remove.",
+      "review_state": "UNREVIEWED",
+      "source_locators": [
+        "https://github.com/zed-industries/zed/security/advisories/GHSA-cv6g-cmxc-vw8j"
+      ],
+      "value_sha256": "4c365329fa8cf92e31d9cf0e2aa1e9307d7fa9d42853d6a73d0527c740af2e40"
+    },
+    {
+      "classification": "UNKNOWN",
+      "field_path": "cve_database[id=CVE-2025-69196].description",
+      "required_action": "Compare the cited source, document independent authorship or permission, then rewrite independently or remove.",
+      "review_state": "UNREVIEWED",
+      "source_locators": [
+        "https://github.com/PrefectHQ/fastmcp/security/advisories/GHSA-5h2m-4q8j-pqpj"
+      ],
+      "value_sha256": "d7b24b7f238da0d494c85961bb8c6e0e4bced3731c54f4f53dc7afd2e5c6c69b"
+    },
+    {
+      "classification": "UNKNOWN",
+      "field_path": "cve_database[id=CVE-2025-69196].notes",
+      "required_action": "Compare the cited source, document independent authorship or permission, then rewrite independently or remove.",
+      "review_state": "UNREVIEWED",
+      "source_locators": [
+        "https://github.com/PrefectHQ/fastmcp/security/advisories/GHSA-5h2m-4q8j-pqpj"
+      ],
+      "value_sha256": "d9e27aef2655f8c7c80b2f1b064bc265b2d6e05864d13a9419cf41141173661a"
     },
     {
       "classification": "UNKNOWN",
@@ -1362,6 +1702,26 @@
     },
     {
       "classification": "UNKNOWN",
+      "field_path": "cve_database[id=CVE-2026-19591].description",
+      "required_action": "Compare the cited source, document independent authorship or permission, then rewrite independently or remove.",
+      "review_state": "UNREVIEWED",
+      "source_locators": [
+        "https://github.com/advisories/GHSA-2frj-4qr5-m2rf"
+      ],
+      "value_sha256": "f06678aeb9d5af04ea396da0e51f7f5dc9efa2fc730b2ba9cdac832b7225b87b"
+    },
+    {
+      "classification": "UNKNOWN",
+      "field_path": "cve_database[id=CVE-2026-19591].notes",
+      "required_action": "Compare the cited source, document independent authorship or permission, then rewrite independently or remove.",
+      "review_state": "UNREVIEWED",
+      "source_locators": [
+        "https://github.com/advisories/GHSA-2frj-4qr5-m2rf"
+      ],
+      "value_sha256": "312424881367781daeae5b312b797719973f261add4b9351ad52e74cc9273cdb"
+    },
+    {
+      "classification": "UNKNOWN",
       "field_path": "cve_database[id=CVE-2026-20205].description",
       "required_action": "No source locator is available. Record the source and rights evidence, then rewrite independently, obtain permission, or remove.",
       "review_state": "UNREVIEWED",
@@ -1666,6 +2026,26 @@
     },
     {
       "classification": "UNKNOWN",
+      "field_path": "cve_database[id=CVE-2026-27896].description",
+      "required_action": "Compare the cited source, document independent authorship or permission, then rewrite independently or remove.",
+      "review_state": "UNREVIEWED",
+      "source_locators": [
+        "https://github.com/modelcontextprotocol/go-sdk/security/advisories/GHSA-wvj2-96wp-fq3f"
+      ],
+      "value_sha256": "477d141a41cc8ea3c50076362edd51f920a023312a2f24f334c0fec0f49c66f5"
+    },
+    {
+      "classification": "UNKNOWN",
+      "field_path": "cve_database[id=CVE-2026-27896].notes",
+      "required_action": "Compare the cited source, document independent authorship or permission, then rewrite independently or remove.",
+      "review_state": "UNREVIEWED",
+      "source_locators": [
+        "https://github.com/modelcontextprotocol/go-sdk/security/advisories/GHSA-wvj2-96wp-fq3f"
+      ],
+      "value_sha256": "975450e5ccb6014ed3d1bfdf1af35572704328200ebe40316afcf348a7bfbe09"
+    },
+    {
+      "classification": "UNKNOWN",
       "field_path": "cve_database[id=CVE-2026-27944].description",
       "required_action": "No source locator is available. Record the source and rights evidence, then rewrite independently, obtain permission, or remove.",
       "review_state": "UNREVIEWED",
@@ -1679,6 +2059,26 @@
       "review_state": "UNREVIEWED",
       "source_locators": [],
       "value_sha256": "072f8d301d0fdf98d952b6dc110604dfa6d9459d7e0c240994cce7ee110b33ba"
+    },
+    {
+      "classification": "UNKNOWN",
+      "field_path": "cve_database[id=CVE-2026-29783].description",
+      "required_action": "Compare the cited source, document independent authorship or permission, then rewrite independently or remove.",
+      "review_state": "UNREVIEWED",
+      "source_locators": [
+        "https://github.com/github/copilot-cli/security/advisories/GHSA-g8r9-g2v8-jv6f"
+      ],
+      "value_sha256": "628a07a24b38a04a6d9adb191a18b16a44bd144a2f193bf3c91fefb18d616bcb"
+    },
+    {
+      "classification": "UNKNOWN",
+      "field_path": "cve_database[id=CVE-2026-29783].notes",
+      "required_action": "Compare the cited source, document independent authorship or permission, then rewrite independently or remove.",
+      "review_state": "UNREVIEWED",
+      "source_locators": [
+        "https://github.com/github/copilot-cli/security/advisories/GHSA-g8r9-g2v8-jv6f"
+      ],
+      "value_sha256": "6d54018996f19fb241ccb6ddcd822c6cd177c3e2a9da2b2d6ce1f1eb47911118"
     },
     {
       "classification": "UNKNOWN",
@@ -1855,6 +2255,26 @@
       "review_state": "UNREVIEWED",
       "source_locators": [],
       "value_sha256": "33e559b5f12c49d0b4eca7cc777e212d4004a128f3cd19d3ab1788456f2e08ae"
+    },
+    {
+      "classification": "UNKNOWN",
+      "field_path": "cve_database[id=CVE-2026-34237].description",
+      "required_action": "Compare the cited source, document independent authorship or permission, then rewrite independently or remove.",
+      "review_state": "UNREVIEWED",
+      "source_locators": [
+        "https://github.com/modelcontextprotocol/java-sdk/security/advisories/GHSA-hv2w-8mjj-jw22"
+      ],
+      "value_sha256": "8e0d4f62ddaa0d23889a614a123fbcba249998f2c429aedce77e005bd4ee4e47"
+    },
+    {
+      "classification": "UNKNOWN",
+      "field_path": "cve_database[id=CVE-2026-34237].notes",
+      "required_action": "Compare the cited source, document independent authorship or permission, then rewrite independently or remove.",
+      "review_state": "UNREVIEWED",
+      "source_locators": [
+        "https://github.com/modelcontextprotocol/java-sdk/security/advisories/GHSA-hv2w-8mjj-jw22"
+      ],
+      "value_sha256": "0a3c917c4ce9164895e82fedb84e52c7bf2d9302ddcc784d07c4a7f512903161"
     },
     {
       "classification": "UNKNOWN",
@@ -2127,6 +2547,66 @@
       "review_state": "UNREVIEWED",
       "source_locators": [],
       "value_sha256": "0bec9d02bf4bd1ed96ad366336233c42c3f6a72b0ef4efba0fcf5a03a8d1f0d4"
+    },
+    {
+      "classification": "UNKNOWN",
+      "field_path": "cve_database[id=CVE-2026-44427].description",
+      "required_action": "Compare the cited source, document independent authorship or permission, then rewrite independently or remove.",
+      "review_state": "UNREVIEWED",
+      "source_locators": [
+        "https://github.com/modelcontextprotocol/registry/security/advisories/GHSA-v8vw-gw5j-w7m6"
+      ],
+      "value_sha256": "c6d381c6af4cea3b654f1de9551a1a77a51aa3843833db2813a63955034e0dc7"
+    },
+    {
+      "classification": "UNKNOWN",
+      "field_path": "cve_database[id=CVE-2026-44427].notes",
+      "required_action": "Compare the cited source, document independent authorship or permission, then rewrite independently or remove.",
+      "review_state": "UNREVIEWED",
+      "source_locators": [
+        "https://github.com/modelcontextprotocol/registry/security/advisories/GHSA-v8vw-gw5j-w7m6"
+      ],
+      "value_sha256": "1b5491c2bd46fa04994e0be7c3752ae47b6cfb6d74b68544cc6ef55ff2c913ec"
+    },
+    {
+      "classification": "UNKNOWN",
+      "field_path": "cve_database[id=CVE-2026-47427].description",
+      "required_action": "Compare the cited source, document independent authorship or permission, then rewrite independently or remove.",
+      "review_state": "UNREVIEWED",
+      "source_locators": [
+        "https://github.com/github/github-mcp-server/security/advisories/GHSA-w4q6-qw23-4rg7"
+      ],
+      "value_sha256": "b2362aef5bfe27c7502fd95c214b31f182d3c500d66bcd53294486784e418765"
+    },
+    {
+      "classification": "UNKNOWN",
+      "field_path": "cve_database[id=CVE-2026-47427].notes",
+      "required_action": "Compare the cited source, document independent authorship or permission, then rewrite independently or remove.",
+      "review_state": "UNREVIEWED",
+      "source_locators": [
+        "https://github.com/github/github-mcp-server/security/advisories/GHSA-w4q6-qw23-4rg7"
+      ],
+      "value_sha256": "9ce1d618d5e90d34cd1eb1fb73e9ccaf6e695fd9502d3796c082b0b941166a61"
+    },
+    {
+      "classification": "UNKNOWN",
+      "field_path": "cve_database[id=CVE-2026-47751].description",
+      "required_action": "Compare the cited source, document independent authorship or permission, then rewrite independently or remove.",
+      "review_state": "UNREVIEWED",
+      "source_locators": [
+        "https://github.com/anthropics/claude-code-action/security/advisories/GHSA-8q5r-mmjf-575q"
+      ],
+      "value_sha256": "1522bb2b73f9daf4484f72ff4b1ef361409c5aca095affe70c9d02089bf42af2"
+    },
+    {
+      "classification": "UNKNOWN",
+      "field_path": "cve_database[id=CVE-2026-47751].notes",
+      "required_action": "Compare the cited source, document independent authorship or permission, then rewrite independently or remove.",
+      "review_state": "UNREVIEWED",
+      "source_locators": [
+        "https://github.com/anthropics/claude-code-action/security/advisories/GHSA-8q5r-mmjf-575q"
+      ],
+      "value_sha256": "6c5c82f983eb0f5533f4d932d6c3b91d723de8cd28d236791026bc945482655b"
     },
     {
       "classification": "UNKNOWN",
@@ -5555,7 +6035,7 @@
       "value_sha256": "73b78f2e17a32be437e3bf99a4fe5cca78419a9d6f53bb69c4e90aa62212aef0"
     }
   ],
-  "field_count": 625,
+  "field_count": 673,
   "schema_version": "license-prose-inventory-v1",
-  "source_sha256": "4bd2898d98183b8c8b02d0795484604448bb315bb979ae42d8b55469134e0234"
+  "source_sha256": "a0d74c434fdf744618cbc9f3c04711cf5c69c547222e1f42503fb27865e26ad2"
 }

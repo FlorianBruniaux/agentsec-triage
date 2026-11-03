@@ -6,6 +6,25 @@ while the data-licensing decision remains unresolved.
 
 ## [Unreleased]
 
+- Coverage-gap review on November 3, 2026 (database 2.33.0): compared the
+  586 CVE identifiers indexed by `mcp-security-project/mcp-cve-project` with
+  this database and found 486 absent after GHSA alias matching. Reviewed the
+  25 that touch tracked coding agents, official MCP SDKs and core MCP tools
+  against their GitHub advisories. Added 22 confirmed records (mcp-remote,
+  Claude Code Action, Codex CLI, Copilot CLI, Cursor, Zed, the MCP Python,
+  TypeScript, Go and Java SDKs, MCP Inspector, FastMCP, GitHub MCP Server and
+  the MCP Registry) with sources and dated events. Two unreviewed advisories
+  without a fixed version stay `monitoring`: the deprecated Slack MCP server
+  (CVE-2025-34072) and Codex (CVE-2026-19591). CVE-2026-21518 is deferred
+  because NVD names neither MCP nor a fixed version. The index is a lead list
+  only: the Claude Code Action fix is 1.0.74 and severity medium per the
+  advisory, not 1.0.78 and critical as indexed. Floors rise for MCP Inspector
+  (0.16.6) and the MCP Java SDK (1.1.1), and are added for GitHub MCP Server
+  (1.1.0), the MCP Registry (1.7.5) and Copilot CLI (0.0.423); no mcp-remote
+  floor is set because CVE-2026-108716 remains unfixed. Every new record is
+  `not_detected`. The license prose inventory grows to 673 fields, 645
+  unreviewed. Guarded by `tests/unit/test_coverage_gap_threat_update.py`.
+
 - Reviewed October 4 through November 2, 2026 (database 2.32.0): added 31
   advisory records (25 CVE, six GHSA-only) with 31 primary sources and dated
   events for Claude Code, Claude Desktop, the Claude Agent SDK for Python, the
