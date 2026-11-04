@@ -6,6 +6,19 @@ while the data-licensing decision remains unresolved.
 
 ## [Unreleased]
 
+- Scanning-tool commands corrected on November 4, 2026: three
+  `scanning_tools` entries told readers to run code that the named vendor does
+  not publish. Snyk publishes no npm package for Agent Scan, so
+  `npx @snyk/agent-scan` became `uvx snyk-agent-scan@latest`. The npm name
+  `mcp-scan` belongs to an unrelated author, while Invariant's scanner was
+  renamed to the PyPI package `snyk-agent-scan`; its entry now uses the same
+  command and the `snyk/agent-scan` repository. Ferrok ships a GitHub Action
+  and its npm name is unregistered, so its entry is now
+  `uses: rfounds/ferrok-scan@v1` with type `github-action`, the repository
+  URL, and the limitation that it needs a Ferrok API key and calls
+  `https://api.ferrok.dev` by default. `tests/unit/test_scanning_tool_commands.py`
+  guards the three commands. The license prose inventory now cites the new
+  URLs as source locators.
 - Coverage-gap review on November 3, 2026 (database 2.33.0): compared the
   586 CVE identifiers indexed by `mcp-security-project/mcp-cve-project` with
   this database and found 486 absent after GHSA alias matching. Reviewed the

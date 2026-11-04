@@ -5538,7 +5538,7 @@
       "required_action": "Compare the cited source, document independent authorship or permission, then rewrite independently or remove.",
       "review_state": "LOCAL_PROVENANCE_VERIFIED",
       "source_locators": [
-        "https://lobehub.com/mcp/rfounds-ferrok-scan"
+        "https://github.com/rfounds/ferrok-scan"
       ],
       "value_sha256": "8d093ba27a32cefe587b35c681c534b78de430d807228e919b962eb513a40e07"
     },
@@ -5708,7 +5708,7 @@
       "required_action": "Compare the cited source, document independent authorship or permission, then rewrite independently or remove.",
       "review_state": "LOCAL_PROVENANCE_VERIFIED",
       "source_locators": [
-        "https://github.com/invariantlabs-ai/mcp-scan"
+        "https://github.com/snyk/agent-scan"
       ],
       "value_sha256": "e02ebb57fc41ad6a4b40759a24bcd901d0569a5d46c11e1ce040a9cc400fdab5"
     },
@@ -6037,5 +6037,5 @@
   ],
   "field_count": 673,
   "schema_version": "license-prose-inventory-v1",
-  "source_sha256": "a0d74c434fdf744618cbc9f3c04711cf5c69c547222e1f42503fb27865e26ad2"
+  "source_sha256": "696352701a132cde459836a9cc9e8746a1dce6018faa02e4498f001750046c4d"
 }
