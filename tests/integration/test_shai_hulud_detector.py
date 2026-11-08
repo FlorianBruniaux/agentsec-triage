@@ -414,6 +414,7 @@ def test_applicability_and_registry_are_explicit(tmp_path: Path) -> None:
     ) is False
     assert [item.id for item in get_detectors()] == [
         "clawhavoc-skill",
+        "fakegit-archive-lure",
         "shai-hulud-keyv",
     ]
 

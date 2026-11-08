@@ -51,11 +51,11 @@ def test_builder_emits_deterministic_valid_public_feed_without_gated_iocs(
     assert payload["schema_version"] == "1"
     assert payload["agentsec"]["version"] == "0.1.0a0"
     assert payload["database"] == {
-        "version": "2.33.0",
-        "updated": "2026-11-03",
+        "version": "2.34.0",
+        "updated": "2026-11-05",
         "record_counts": {
             "attack_techniques": 40,
-            "campaigns": 17,
+            "campaigns": 18,
             "cves": 243,
             "malicious_skill_records": 93,
         },
@@ -67,11 +67,12 @@ def test_builder_emits_deterministic_valid_public_feed_without_gated_iocs(
         "malicious_payloads": 76,
         "skills_scanned": 3984,
     }
-    assert payload["intelligence"]["updated"] == "2026-11-03"
-    assert len(payload["intelligence"]["events"]) == 143
-    assert len(payload["intelligence"]["sources"]) == 156
+    assert payload["intelligence"]["updated"] == "2026-11-05"
+    assert len(payload["intelligence"]["events"]) == 146
+    assert len(payload["intelligence"]["sources"]) == 165
     assert [item["id"] for item in payload["detectors"]] == [
         "clawhavoc-skill",
+        "fakegit-archive-lure",
         "shai-hulud-keyv",
     ]
 

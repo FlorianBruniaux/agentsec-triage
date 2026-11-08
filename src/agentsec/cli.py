@@ -433,9 +433,14 @@ def _database_progress_summary(
         "Threat database ready: "
         f"version={database.version} updated={database.updated} "
         f"package_records={package_records} hashes={len(database.hashes)} "
+        f"campaign_hashes={_campaign_hash_count(database)} "
         f"domains={len(database.domains)} "
         f"commit_indicators={len(database.commit_indicators)} resource={resource}"
     )
+
+
+def _campaign_hash_count(database: ThreatDatabase) -> int:
+    return sum(len(digests) for digests in database.campaign_hashes.values())
 
 
 def _progress_reporter(arguments: argparse.Namespace) -> ProgressCallback | None:
@@ -575,6 +580,7 @@ def _db_info() -> int:
                 "package_version_sources="
                 f"{sum(len(versions) for versions in database.package_version_sources.values())}",
                 f"hashes={len(database.hashes)}",
+                f"campaign_hashes={_campaign_hash_count(database)}",
                 f"domains={len(database.domains)}",
                 f"commit_indicators={len(database.commit_indicators)}",
                 f"authoring_malicious_skills={coverage.malicious_skills_total}",

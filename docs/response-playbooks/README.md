@@ -7,6 +7,7 @@ configuration, rotate credentials, or certify that a repository is clean.
 | Detector | Version | Rules | Playbook |
 | --- | --- | ---: | --- |
 | `clawhavoc-skill` | `1.0.0` | 2 | [ClawHavoc skill response](clawhavoc-skill-v1.md) |
+| `fakegit-archive-lure` | `1.0.0` | 3 | [FakeGit archive lure response](fakegit-archive-lure-v1.md) |
 | `shai-hulud-keyv` | `1.0.0` | 7 | [Shai-Hulud and Keyv response](shai-hulud-keyv-v1.md) |
 
 ## Confidence boundary
@@ -27,4 +28,4 @@ A future deployment may route those findings to individual playbook pages
 only after the public URLs exist and are checked. The repository does not
 publish speculative or broken remediation links.
 
-Updated: `2026-08-31`.
+Updated: `2026-11-05`.

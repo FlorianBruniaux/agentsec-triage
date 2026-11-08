@@ -39,6 +39,7 @@ agentsec scan /path/to/repository --format json --progress=never
 # Run one detector explicitly
 agentsec scan /path/to/repository --detector shai-hulud-keyv
 agentsec scan /path/to/repository --detector clawhavoc-skill
+agentsec scan /path/to/repository --detector fakegit-archive-lure
 
 # Lower the aggregate read budget
 agentsec scan /path/to/repository --max-total-bytes 100000000
@@ -52,6 +53,7 @@ agentsec db info
 agentsec detectors list
 agentsec detectors explain shai-hulud-keyv
 agentsec detectors explain clawhavoc-skill
+agentsec detectors explain fakegit-archive-lure
 agentsec detectors explain shai-hulud-keyv --format json
 ```
 
@@ -166,6 +168,37 @@ Finding confidence is part of the verdict. `confirmed` means an exact known IOC
 match. `high` means strongly correlated evidence. `review` is a heuristic
 that needs human analysis. A finding is evidence to investigate, not automatic
 proof of compromise.
+
+### FakeGit archive lures
+
+The `fakegit-archive-lure` detector targets the FakeGit / SmartLoader campaign
+in which a repository posing as a Claude skill, Codex tool, MCP server, or
+OpenClaw project commits an installer ZIP and links it from the README. A
+researcher reported that `SKILL.md` and agent settings files in these
+repositories are clean, so the detector reads the README, archive paths, and
+file hashes instead.
+
+| Rule | Classification | Behavior |
+| --- | --- | --- |
+| `known-fakegit-archive-hash` | `critical / confirmed` | A repository file, including an archive the source scope excludes as a binary asset, matches a confirmed bundled SHA-256: the two sourced ZIPs and two sample-1 components. |
+| `readme-links-committed-archive` | `medium / review` | A `README*.md` links a `.7z`, `.rar`, or `.zip` through a Markdown link, an HTML `href` or `src`, a bare URL, or a `github.com` `blob` or `raw` URL, and the path suffix matches an archive in the scanned repository. |
+| `archive-in-agent-config-directory` | `medium / review` | An archive sits under a directory named `.agents`, `.claude`, `.codex`, `.cursor`, or `.gemini` at any depth. |
+
+Near misses that do not report: a link to a GitHub Releases download URL, a
+link to an archive that is not in the repository, an archive under `docs/`,
+and a link from a Markdown file that is not a README. The hash set withholds
+runtime binaries and sample-2 components because the source gives them lower
+confidence. Legitimate projects also commit and link installers, so the two
+review rules are hunt leads.
+
+Archives are never opened. The detector does not read GitHub Release assets,
+Git history (including README-only commits), repository ownership, or account
+age. The default source scope prunes directories such as `dist` and `build`;
+use `--scope repository` to include archives stored there. A file or archive
+larger than `--max-file-bytes` is not hashed and produces a warning that keeps
+the scan complete. In a gist of 73 lure repositories, 2 store the ZIP under
+`.claude` and 71 use ordinary paths, so the README link rule carries most of
+the coverage.
 
 ### ClawHavoc fake prerequisites
 
@@ -305,6 +338,9 @@ findings already collected.
 | `shai-hulud-keyv/suspicious-lifecycle-script` | `medium / review` | A supported installed package contains a suspicious `preinstall` pattern without confirmed campaign correlation | Build tooling can use legitimate lifecycle scripts; inspect package provenance and command behavior |
 | `shai-hulud-keyv/campaign-startup-hook` | `high / high` | A supported Claude Code hook or VS Code `folderOpen` task invokes a campaign-correlated command | Repository evidence does not prove the hook ran |
 | `shai-hulud-keyv/startup-hook` | `medium / review` | A supported repository startup hook exists without campaign correlation | Hook presence can be expected; verify ownership and purpose |
+| `fakegit-archive-lure/known-fakegit-archive-hash` | `critical / confirmed` | Exact SHA-256 match against a confirmed bundled FakeGit archive or component hash | Confirms matching bytes, not execution or host impact |
+| `fakegit-archive-lure/readme-links-committed-archive` | `medium / review` | A README links an archive committed to the scanned repository | Installers are commonly committed; check ownership and contents |
+| `fakegit-archive-lure/archive-in-agent-config-directory` | `medium / review` | An archive sits inside an agent configuration directory | Presence alone is a hunt lead |
 | `clawhavoc-skill/known-malicious-skill-domain` | `high / high` | `SKILL.md` contains an exact bundled campaign domain | Domain reference is evidence to review, not confirmed payload execution |
 | `clawhavoc-skill/delegated-known-malicious-domain` | `high / high` | `SKILL.md` references a same-skill setup file containing the exact domain | Only explicitly referenced setup files are inspected |
 

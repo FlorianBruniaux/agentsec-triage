@@ -35,6 +35,7 @@ _REQUIRED_KEYS = (
     "contested_wildcard_package_versions",
     "package_version_sources",
     "hashes",
+    "campaign_hashes",
     "domains",
     "commit_indicators",
     "complete",
@@ -158,6 +159,36 @@ def _hash_mapping(value: object) -> dict[str, str]:
         if re.fullmatch(r"[0-9a-f]{64}", digest) is None:
             raise ThreatDatabaseError(f"hashes contains invalid SHA-256 key {digest!r}")
         result[digest] = _string(description, f"hashes.{digest}")
+    return result
+
+
+def _campaign_hash_mapping(
+    value: object, shared: dict[str, str]
+) -> dict[str, dict[str, str]]:
+    mapping = _object(value, "campaign_hashes")
+    result: dict[str, dict[str, str]] = {}
+    seen: set[str] = set()
+    for campaign_id, raw_digests in mapping.items():
+        if not campaign_id:
+            raise ThreatDatabaseError("campaign_hashes contains an empty campaign ID")
+        digests = _object(raw_digests, f"campaign_hashes.{campaign_id}")
+        if not digests:
+            raise ThreatDatabaseError(f"campaign_hashes.{campaign_id} must not be empty")
+        projected: dict[str, str] = {}
+        for digest, description in digests.items():
+            if re.fullmatch(r"[0-9a-f]{64}", digest) is None:
+                raise ThreatDatabaseError(
+                    f"campaign_hashes.{campaign_id} contains invalid SHA-256 key {digest!r}"
+                )
+            if digest in shared or digest in seen:
+                raise ThreatDatabaseError(
+                    f"campaign_hashes.{campaign_id} repeats a hash already attributed elsewhere"
+                )
+            seen.add(digest)
+            projected[digest] = _string(
+                description, f"campaign_hashes.{campaign_id}.{digest}"
+            )
+        result[campaign_id] = projected
     return result
 
 
@@ -319,6 +350,7 @@ def load_bundled_database() -> ThreatDatabase:
         contested_wildcard_package_versions,
     )
     hashes = _hash_mapping(payload["hashes"])
+    campaign_hashes = _campaign_hash_mapping(payload["campaign_hashes"], hashes)
     domains = frozenset(_sorted_unique_strings(payload["domains"], "domains"))
     commit_indicators = _commit_indicators(payload["commit_indicators"])
     projected_packages = sum(
@@ -334,7 +366,8 @@ def load_bundled_database() -> ThreatDatabase:
     authoring_coverage = _authoring_coverage(
         payload["authoring_coverage"],
         projected_packages=projected_packages,
-        projected_hashes=len(hashes),
+        projected_hashes=len(hashes)
+        + sum(len(digests) for digests in campaign_hashes.values()),
         projected_domains=len(domains),
         projected_commit_indicators=len(commit_indicators),
     )
@@ -347,6 +380,7 @@ def load_bundled_database() -> ThreatDatabase:
         contested_wildcard_package_versions=contested_wildcard_package_versions,
         package_version_sources=package_version_sources,
         hashes=hashes,
+        campaign_hashes=campaign_hashes,
         domains=domains,
         commit_indicators=commit_indicators,
         authoring_coverage=authoring_coverage,

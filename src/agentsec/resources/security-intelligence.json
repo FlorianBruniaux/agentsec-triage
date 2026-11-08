@@ -1,6 +1,43 @@
 {
   "events": [
     {
+      "confidence": "high",
+      "detector_coverage": {
+        "detector_ids": [
+          "fakegit-archive-lure"
+        ],
+        "notes": "Exact SHA-256 matches cover the two confirmed ZIPs and two sample-1 components. README link and agent-configuration-directory rules cover the committed-ZIP shape. Runtime binaries and sample-2 components are withheld from the hash rule, and archive contents, Git history and repository ownership are not scanned.",
+        "status": "partial"
+      },
+      "disclosed_date": "2026-11-04",
+      "ecosystems": [
+        "github",
+        "mcp",
+        "agent-skills"
+      ],
+      "event_type": "campaign",
+      "id": "evt-2026-11-fakegit-agent-lure-73-repos",
+      "related": {
+        "campaign_ids": [
+          "fakegit-smartloader-2025-03"
+        ],
+        "cve_ids": [],
+        "technique_ids": [
+          "payload.sha256",
+          "repository.agent-config-archive",
+          "repository.readme-archive-installer"
+        ]
+      },
+      "source_ids": [
+        "roccia-agent-lure-stealer-gist-2026-11",
+        "roccia-linkedin-73-repos-2026-11"
+      ],
+      "status": "confirmed",
+      "summary": "Thomas Roccia published a gist of 73 GitHub repositories posing as Claude skills, Codex tools, MCP servers and OpenClaw projects. Each commits a ZIP that its README links; 51 were live at a 2026-11-04 re-check. Roccia reports that SKILL.md and settings files are clean and that two repositories store the ZIP under .claude. Per-row confidence differs and is preserved in the threat database.",
+      "title": "Researcher lists 73 GitHub repositories with committed lure ZIPs",
+      "updated_date": "2026-11-05"
+    },
+    {
       "confidence": "review",
       "detector_coverage": {
         "detector_ids": [],
@@ -1808,6 +1845,37 @@
       "summary": "The GitHub Advisory Database now lists CVE identifiers for four advisories recorded on October 4 as GHSA-only: GHSA-5h93-6whr-6q8j is CVE-2026-116685; GHSA-rwrf-2pqf-9j8j is CVE-2026-116686; GHSA-6prh-2h8m-c8cw is CVE-2026-111769; GHSA-22jm-h49p-29qw is CVE-2026-111767. The October events stay unchanged; the threat database records carry the aliases in their notes.",
       "title": "CVE identifiers assigned to four October MCP SDK advisories",
       "updated_date": "2026-11-02"
+    },
+    {
+      "confidence": "review",
+      "detector_coverage": {
+        "detector_ids": [
+          "fakegit-archive-lure"
+        ],
+        "notes": "The README link rule covers a download button that points at a ZIP committed to the scanned repository. A button that points at a Release asset, and README-only commits in Git history, are not covered.",
+        "status": "partial"
+      },
+      "disclosed_date": "2026-10-08",
+      "ecosystems": [
+        "github"
+      ],
+      "event_type": "campaign",
+      "id": "evt-2026-10-fakegit-resurgence",
+      "related": {
+        "campaign_ids": [
+          "fakegit-smartloader-2025-03"
+        ],
+        "cve_ids": [],
+        "technique_ids": [
+          "repository.readme-archive-installer"
+        ]
+      },
+      "source_ids": [
+        "bleepingcomputer-fakegit-returns-2026-10"
+      ],
+      "status": "monitoring",
+      "summary": "BleepingComputer reported, citing an Apiiro analysis, that FakeGit resumed on 2026-10-04 and uses 17,610 repositories, with more than 13,000 pushed in 34 hours. In the commits Apiiro sampled, 97% touched only the README and 88% pointed the download button at a SmartLoader ZIP. The Apiiro page was not readable, so these figures are secondhand.",
+      "title": "FakeGit resurgence reported with 17,610 repositories"
     },
     {
       "confidence": "confirmed",
@@ -4103,6 +4171,41 @@
       "title": "Perplexity published the Numbat local agent monitor"
     },
     {
+      "confidence": "high",
+      "detector_coverage": {
+        "detector_ids": [
+          "fakegit-archive-lure"
+        ],
+        "notes": "fakegit-archive-lure flags a README link to an archive committed to the scanned repository and an archive inside an agent configuration directory (tests/integration/test_fakegit_archive_lure_detector.py). It does not read GitHub Release assets, registry listings, Git history or repository ownership, and Island reports that part of the distribution uses Release assets.",
+        "status": "partial"
+      },
+      "disclosed_date": "2026-07-20",
+      "ecosystems": [
+        "github",
+        "mcp",
+        "agent-skills"
+      ],
+      "event_type": "campaign",
+      "id": "evt-2026-07-agentbaiting-fakegit-disclosure",
+      "related": {
+        "campaign_ids": [
+          "fakegit-smartloader-2025-03"
+        ],
+        "cve_ids": [],
+        "technique_ids": [
+          "repository.readme-archive-installer"
+        ]
+      },
+      "source_ids": [
+        "island-agentbaiting-2026-07",
+        "trendmicro-fake-github-smartloader-2025-03",
+        "straiker-oura-mcp-smartloader-2026-02"
+      ],
+      "status": "confirmed",
+      "summary": "Island reported about 7,600 malicious GitHub repositories tied to the FakeGit operation, over 800 of them posing as Skills or MCP servers and over 600 listings in public registries. Island also reported that Claude Code, Gemini and ChatGPT surfaced campaign repositories in its tests without being given a link. Counts come from one vendor.",
+      "title": "Island reports FakeGit repositories posing as AI Skills and MCP servers"
+    },
+    {
       "confidence": "confirmed",
       "detector_coverage": {
         "detector_ids": [],
@@ -4492,6 +4595,25 @@
       "url": "https://github.com/anthropics/claude-code/security/advisories/GHSA-gfvf-j8jh-jxxw"
     },
     {
+      "id": "bleepingcomputer-fakegit-returns-2026-10",
+      "published_date": "2026-10-08",
+      "publisher": "BleepingComputer",
+      "reviewed_date": "2026-11-05",
+      "source_type": "news",
+      "status": "active",
+      "supports": [
+        "Secondhand report of an Apiiro analysis: FakeGit resumed on October 4 and uses 17,610 repositories, with more than 13,000 pushed in 34 hours.",
+        "Quotes Apiiro that in sampled commits 97% touched only the README and 88% pointed the Download button at a ZIP that installs SmartLoader. The Apiiro page itself returned HTTP 403 and was not read."
+      ],
+      "title": "FakeGit malware campaign returns with 17,610 malicious GitHub repos",
+      "topics": [
+        "fakegit",
+        "smartloader",
+        "github"
+      ],
+      "url": "https://www.bleepingcomputer.com/news/security/fakegit-malware-campaign-returns-with-17-610-malicious-github-repos/"
+    },
+    {
       "id": "review-2026-09-cve-2026-90999",
       "published_date": "2026-09-16",
       "publisher": "CERT/CC",
@@ -4675,6 +4797,26 @@
         "supply-chain"
       ],
       "url": "https://cursor.com/blog/claude-code-extension-security-notice"
+    },
+    {
+      "id": "derp-fakegit-luajit-2026-03",
+      "published_date": "2026-03-04",
+      "publisher": "Derp.ca",
+      "reviewed_date": "2026-11-05",
+      "source_type": "research",
+      "status": "active",
+      "supports": [
+        "A Vietnamese-speaking operator has distributed LuaJIT malware through GitHub since March 2025; the page lists StealC C2 infrastructure for other FakeGit samples."
+      ],
+      "title": "FakeGit: LuaJIT malware distributed via GitHub at scale",
+      "topics": [
+        "fakegit",
+        "smartloader",
+        "github",
+        "stealc",
+        "ioc"
+      ],
+      "url": "https://www.derp.ca/research/fakegit-luajit-github-campaign/"
     },
     {
       "id": "review-2026-11-ghsa-r57g-mc79-8hj2",
@@ -5724,6 +5866,47 @@
       "url": "https://github.com/aaif-goose/goose/security/advisories/GHSA-r5pp-p5r8-466r"
     },
     {
+      "id": "hexastrike-109-fake-repos-2026-04",
+      "published_date": "2026-04-18",
+      "publisher": "Hexastrike Cybersecurity",
+      "reviewed_date": "2026-11-05",
+      "source_type": "research",
+      "status": "active",
+      "supports": [
+        "109 malicious repositories across 103 accounts redirect users to embedded ZIP files with a LuaJIT-based SmartLoader stage; SmartLoader resolves its C2 through a Polygon smart contract."
+      ],
+      "title": "Cloned, Loaded, and Stolen: How 109 Fake GitHub Repositories Delivered SmartLoader and StealC",
+      "topics": [
+        "fakegit",
+        "smartloader",
+        "github",
+        "stealc"
+      ],
+      "url": "https://hexastrike.com/resources/blog/threat-intelligence/cloned-loaded-and-stolen-how-109-fake-github-repositories-delivered-smartloader-and-stealc/"
+    },
+    {
+      "id": "island-agentbaiting-2026-07",
+      "published_date": "2026-07-20",
+      "publisher": "Island",
+      "reviewed_date": "2026-11-05",
+      "source_type": "research",
+      "status": "active",
+      "supports": [
+        "About 7,600 malicious repositories from about 6,600 profiles, over 800 posing as Skills or MCP servers, over 600 listings in public registries including LobeHub, Glama, MCP.so and MCP Market.",
+        "Island reports that Claude Code, Gemini and ChatGPT surfaced campaign repositories in its tests without being given a link, and that part of the distribution uses GitHub Release assets rather than files in the repository."
+      ],
+      "title": "AgentBaiting: How 800+ Fake AI Skills and MCP Servers Delivered Malware",
+      "topics": [
+        "fakegit",
+        "smartloader",
+        "github",
+        "mcp",
+        "agent-skills",
+        "registries"
+      ],
+      "url": "https://www.island.io/blog/agentbaiting-how-800-fake-ai-skills-and-mcp-servers-delivered-malware"
+    },
+    {
       "id": "review-2026-11-cve-2026-111091",
       "published_date": "2026-10-15",
       "publisher": "JetBrains (CVE record)",
@@ -5814,6 +5997,26 @@
         "pypi"
       ],
       "url": "https://github.com/langflow-ai/langflow/security/advisories/GHSA-4hmc-cfm3-w43c"
+    },
+    {
+      "id": "roccia-linkedin-73-repos-2026-11",
+      "published_date": "2026-11-04",
+      "publisher": "LinkedIn (Thomas Roccia)",
+      "reviewed_date": "2026-11-05",
+      "source_type": "social",
+      "status": "active",
+      "supports": [
+        "Social context only, not an independent IOC authority. The post states that SKILL.md and settings files in the lure repositories are clean, that the README links a committed ZIP installer, that some repositories hide the ZIP under .claude/hooks/config/, and that a few accounts look hijacked."
+      ],
+      "title": "Post: We found 73 GitHub repos posing as AI agent tools",
+      "topics": [
+        "fakegit",
+        "smartloader",
+        "github",
+        "agent-skills",
+        "mcp"
+      ],
+      "url": "https://www.linkedin.com/posts/thomas-roccia_we-found-73-github-repos-posing-as-ai-share-7523845292753080320-VZJI/"
     },
     {
       "id": "manifold-gitspawn-2026-09",
@@ -6453,6 +6656,26 @@
       "url": "https://github.com/designcomputer/mysql_mcp_server/security/advisories/GHSA-rqfv-2mw9-78g2"
     },
     {
+      "id": "netskope-fake-ai-tools-2026-08",
+      "published_date": "2026-08-03",
+      "publisher": "Netskope Threat Labs",
+      "reviewed_date": "2026-11-05",
+      "source_type": "research",
+      "status": "active",
+      "supports": [
+        "Fake AI tool lures deliver SmartLoader and an infostealer; both loaders resolved their C2 address from the Polygon blockchain at runtime, using polygon.drpc.org among other RPC endpoints."
+      ],
+      "title": "Developers in the Crosshairs: Fake AI Tools Deliver Infostealer",
+      "topics": [
+        "fakegit",
+        "smartloader",
+        "github",
+        "polygon",
+        "stealc"
+      ],
+      "url": "https://threatlabs.netskope.com/blog/2026/08/developers-in-the-crosshairs-fake-ai-tools-deliver-infostealer"
+    },
+    {
       "id": "review-2026-11-ghsa-76pm-mq2q-9gcr",
       "published_date": "2026-07-17",
       "publisher": "nginx-ui maintainers",
@@ -6814,6 +7037,26 @@
       "url": "https://socket.dev/blog/popular-npm-packages-keyv-and-cacheable-compromised"
     },
     {
+      "id": "straiker-oura-mcp-smartloader-2026-02",
+      "published_date": "2026-02-05",
+      "publisher": "Straiker",
+      "reviewed_date": "2026-11-05",
+      "source_type": "research",
+      "status": "active",
+      "supports": [
+        "SmartLoader operators cloned the Oura MCP server, built fake forks and contributors, submitted the trojanized server to MCP registries, and delivered StealC."
+      ],
+      "title": "SmartLoader Clones Oura Ring MCP in Supply Chain Attack",
+      "topics": [
+        "fakegit",
+        "smartloader",
+        "github",
+        "mcp",
+        "registries"
+      ],
+      "url": "https://www.straiker.ai/blog/smartloader-clones-oura-ring-mcp-to-deploy-supply-chain-attack"
+    },
+    {
       "id": "review-2026-11-ghsa-q344-5v34-gm84",
       "published_date": "2026-06-25",
       "publisher": "SylphxAI maintainers",
@@ -6887,6 +7130,46 @@
         "supply-chain"
       ],
       "url": "https://thehackernews.com/2026/08/keyv-linked-npm-worm-poisons-hundreds.html"
+    },
+    {
+      "id": "roccia-agent-lure-stealer-gist-2026-11",
+      "published_date": "2026-11-04",
+      "publisher": "Thomas Roccia (GitHub gist fr0gger)",
+      "reviewed_date": "2026-11-05",
+      "source_type": "research",
+      "status": "active",
+      "supports": [
+        "Gist created 2026-11-04T20:18:50Z and updated 2026-11-05T04:27:37Z lists 73 GitHub repositories that each commit a lure ZIP; 51 were live and 22 returned 404 at a 2026-11-04 GitHub re-check.",
+        "Records per-row confidence: the two ZIP hashes and sample-1 components are confirmed by a local hash and a Triage report; sample-2 components rest on static analysis and a local hash with no public match; the IPs, Polygon contract and dRPC domain are campaign-level and unconfirmed for these builds."
+      ],
+      "title": "Agent Lure Stealer IOC list (github_zip_lure_iocs_2026-11-04.csv)",
+      "topics": [
+        "fakegit",
+        "smartloader",
+        "github",
+        "ioc",
+        "agent-skills"
+      ],
+      "url": "https://gist.github.com/fr0gger/3d0288bf0fee3b8df7b618e7c10334d7"
+    },
+    {
+      "id": "trendmicro-fake-github-smartloader-2025-03",
+      "published_date": "2025-03-11",
+      "publisher": "Trend Micro",
+      "reviewed_date": "2026-11-05",
+      "source_type": "research",
+      "status": "active",
+      "supports": [
+        "Fake GitHub repositories distribute SmartLoader inside ZIP files holding lua51.dll, luajit.exe, userdata.txt and Launcher.bat; the follow-on payload described is Lumma Stealer."
+      ],
+      "title": "AI-Assisted Fake GitHub Repositories Deliver SmartLoader",
+      "topics": [
+        "fakegit",
+        "smartloader",
+        "github",
+        "lumma"
+      ],
+      "url": "https://www.trendmicro.com/en_us/research/25/c/ai-assisted-fake-github-repositories.html"
     },
     {
       "id": "varonis-cosnitch-2026",
@@ -6984,5 +7267,5 @@
       "url": "https://labs.zenity.io/post/attackers-target-agents-via-the-skill-supply-chain"
     }
   ],
-  "updated": "2026-11-03"
+  "updated": "2026-11-05"
 }

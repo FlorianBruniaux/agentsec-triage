@@ -1,6 +1,6 @@
 {
   "schema_version": "1",
-  "updated": "2026-08-31",
+  "updated": "2026-11-05",
   "playbooks": [
     {
       "id": "clawhavoc-skill",
@@ -80,6 +80,93 @@
           "title": "OpenClaw skills used to distribute Atomic macOS Stealer",
           "url": "https://www.trendmicro.com/en_us/research/26/b/openclaw-skills-used-to-distribute-atomic-macos-stealer.html",
           "accessed": "2026-08-31"
+        }
+      ]
+    },
+    {
+      "id": "fakegit-archive-lure",
+      "version": "1.0.0",
+      "title": "FakeGit archive lure response",
+      "detector_id": "fakegit-archive-lure",
+      "document_path": "docs/response-playbooks/fakegit-archive-lure-v1.md",
+      "rule_ids": [
+        "archive-in-agent-config-directory",
+        "known-fakegit-archive-hash",
+        "readme-links-committed-archive"
+      ],
+      "confidence_guidance": {
+        "confirmed": "Treat an exact SHA-256 match against a confirmed FakeGit archive or component hash as incident-response evidence within the inspected repository scope. Preserve the file before changing the repository, and do not extract or run it.",
+        "high": "No rule of this detector reports high confidence. Keep the label for a future rule that pairs a README link with a sourced indicator.",
+        "review": "Treat a README link to a committed archive, or an archive inside an agent configuration directory, as a hunt lead. Legitimate projects also commit installers, so check who owns the repository and what the archive contains before using campaign language.",
+        "contested": "No rule of this detector reports contested intelligence. Preserve the label and the conflicting source scopes if a future correction narrows the sourced hash set."
+      },
+      "automation": {
+        "destructive_actions": "forbidden",
+        "execution": "manual-only"
+      },
+      "phases": [
+        {
+          "id": "evidence-collection",
+          "title": "Evidence collection",
+          "mode": "manual",
+          "actions": [
+            "Preserve the redacted AgentSec report, completion state, diagnostics, detector confidence, and the exact relative paths and line numbers before editing the repository.",
+            "Copy the flagged README and archive into an approved evidence location, then record cryptographic hashes without extracting, opening, or running the archive.",
+            "Record the repository owner, the account age, the clone or install source, the commit that added the archive, and any evidence that a person or an agent followed the README instructions. Mark unknown facts as unknown."
+          ]
+        },
+        {
+          "id": "manual-containment",
+          "title": "Manual containment",
+          "mode": "manual",
+          "actions": [
+            "With repository-owner approval, stop people and agents from following the README installer steps for the affected checkout while preserving the original files.",
+            "With CI-owner approval, prevent new jobs from consuming the affected repository or its archive. Do not delete files or rewrite history automatically.",
+            "Escalate suspected archive execution, credential exposure, scheduled-task persistence, or account activity to the responsible incident team because AgentSec does not inspect those surfaces."
+          ]
+        },
+        {
+          "id": "remediation",
+          "title": "Remediation",
+          "mode": "manual",
+          "actions": [
+            "After evidence preservation and explicit approval, prepare a reviewed change that removes the committed archive and the README link, or replaces them with a separately verified release source.",
+            "Review the commit history for README-only changes that re-pointed a download link, because AgentSec does not read Git history.",
+            "Route credential rotation, host cleanup, and account recovery to their system owners. Those actions are not performed or verified by AgentSec."
+          ]
+        },
+        {
+          "id": "verification",
+          "title": "Verification",
+          "mode": "manual",
+          "actions": [
+            "Run AgentSec again on the explicit repository root, with --scope repository when the archive lives under a directory that the source scope prunes, and require a complete scan with no remaining mapped finding.",
+            "Review the final repository diff and confirm that no README or agent configuration still points at an installer archive within the inspected repository scope.",
+            "Verify host, identity, and remote-release recovery with the responsible tools and owners. A clear AgentSec rescan does not verify those systems or certify the repository as clean."
+          ]
+        }
+      ],
+      "out_of_scope": [
+        "AgentSec does not extract, execute, or detonate any archive, launcher, or script.",
+        "AgentSec does not read GitHub Release assets, remote downloads, Git history, repository ownership, or account age.",
+        "AgentSec does not inspect host processes, scheduled tasks, credentials, browser data, or remote CI state.",
+        "This playbook does not replace the incident owner's evidence-retention, legal, privacy, or notification procedures."
+      ],
+      "sources": [
+        {
+          "title": "Agent Lure Stealer IOC list (Thomas Roccia)",
+          "url": "https://gist.github.com/fr0gger/3d0288bf0fee3b8df7b618e7c10334d7",
+          "accessed": "2026-11-05"
+        },
+        {
+          "title": "AgentBaiting: How 800+ Fake AI Skills and MCP Servers Delivered Malware",
+          "url": "https://www.island.io/blog/agentbaiting-how-800-fake-ai-skills-and-mcp-servers-delivered-malware",
+          "accessed": "2026-11-05"
+        },
+        {
+          "title": "Cloned, Loaded, and Stolen: How 109 Fake GitHub Repositories Delivered SmartLoader and StealC",
+          "url": "https://hexastrike.com/resources/blog/threat-intelligence/cloned-loaded-and-stolen-how-109-fake-github-repositories-delivered-smartloader-and-stealc/",
+          "accessed": "2026-11-05"
         }
       ]
     },

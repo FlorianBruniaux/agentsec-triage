@@ -118,6 +118,7 @@ def run_scan(
             f"Repository validation failed: diagnostics={len(root_diagnostics)}",
         )
         files = ()
+        archives: tuple[DiscoveredFile, ...] = ()
         discovery_diagnostics = root_diagnostics
         discovery_coverage = DiscoveryCoverage()
     else:
@@ -171,6 +172,7 @@ def run_scan(
             ),
         )
         files = discovery_result.files
+        archives = discovery_result.archives
         discovery_diagnostics = discovery_result.diagnostics
         discovery_coverage = discovery_result.coverage
     context = ScanContext(
@@ -179,6 +181,7 @@ def run_scan(
         database=database,
         limits=limits,
         scope=scope,
+        archives=archives,
         progress=lambda file_count, byte_count: _emit_progress(
             progress,
             4,

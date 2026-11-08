@@ -1,6 +1,6 @@
 schema_version: "1"
 kind: sources
-updated: "2026-11-03"
+updated: "2026-11-05"
 sources:
   - id: review-2026-11-ghsa-6xpm-ggf7-wc3p
     title: mcp-remote OS command injection from an untrusted authorization endpoint
@@ -2330,4 +2330,115 @@ sources:
     supports:
       - Formal CVE record (CNA GitHub, Inc.) for the unbounded SSE buffer growth denial-of-service in the official MCP PHP SDK's HttpTransport, rated medium (CVSS 4.0 6.9 per the GitHub CNA record; third-party rescoring to CVSS 3.1 8.7 exists and is not independently confirmed here).
     reviewed_date: "2026-09-01"
+    status: active
+
+  - id: roccia-agent-lure-stealer-gist-2026-11
+    title: "Agent Lure Stealer IOC list (github_zip_lure_iocs_2026-11-04.csv)"
+    publisher: Thomas Roccia (GitHub gist fr0gger)
+    url: https://gist.github.com/fr0gger/3d0288bf0fee3b8df7b618e7c10334d7
+    source_type: research
+    published_date: "2026-11-04"
+    topics: [fakegit, smartloader, github, ioc, agent-skills]
+    supports:
+      - "Gist created 2026-11-04T20:18:50Z and updated 2026-11-05T04:27:37Z lists 73 GitHub repositories that each commit a lure ZIP; 51 were live and 22 returned 404 at a 2026-11-04 GitHub re-check."
+      - "Records per-row confidence: the two ZIP hashes and sample-1 components are confirmed by a local hash and a Triage report; sample-2 components rest on static analysis and a local hash with no public match; the IPs, Polygon contract and dRPC domain are campaign-level and unconfirmed for these builds."
+    reviewed_date: "2026-11-05"
+    status: active
+
+  - id: roccia-linkedin-73-repos-2026-11
+    title: "Post: We found 73 GitHub repos posing as AI agent tools"
+    publisher: LinkedIn (Thomas Roccia)
+    url: https://www.linkedin.com/posts/thomas-roccia_we-found-73-github-repos-posing-as-ai-share-7523845292753080320-VZJI/
+    source_type: social
+    published_date: "2026-11-04"
+    topics: [fakegit, smartloader, github, agent-skills, mcp]
+    supports:
+      - "Social context only, not an independent IOC authority. The post states that SKILL.md and settings files in the lure repositories are clean, that the README links a committed ZIP installer, that some repositories hide the ZIP under .claude/hooks/config/, and that a few accounts look hijacked."
+    reviewed_date: "2026-11-05"
+    status: active
+
+  - id: island-agentbaiting-2026-07
+    title: "AgentBaiting: How 800+ Fake AI Skills and MCP Servers Delivered Malware"
+    publisher: Island
+    url: https://www.island.io/blog/agentbaiting-how-800-fake-ai-skills-and-mcp-servers-delivered-malware
+    source_type: research
+    published_date: "2026-07-20"
+    topics: [fakegit, smartloader, github, mcp, agent-skills, registries]
+    supports:
+      - "About 7,600 malicious repositories from about 6,600 profiles, over 800 posing as Skills or MCP servers, over 600 listings in public registries including LobeHub, Glama, MCP.so and MCP Market."
+      - "Island reports that Claude Code, Gemini and ChatGPT surfaced campaign repositories in its tests without being given a link, and that part of the distribution uses GitHub Release assets rather than files in the repository."
+    reviewed_date: "2026-11-05"
+    status: active
+
+  - id: bleepingcomputer-fakegit-returns-2026-10
+    title: "FakeGit malware campaign returns with 17,610 malicious GitHub repos"
+    publisher: BleepingComputer
+    url: https://www.bleepingcomputer.com/news/security/fakegit-malware-campaign-returns-with-17-610-malicious-github-repos/
+    source_type: news
+    published_date: "2026-10-08"
+    topics: [fakegit, smartloader, github]
+    supports:
+      - "Secondhand report of an Apiiro analysis: FakeGit resumed on October 4 and uses 17,610 repositories, with more than 13,000 pushed in 34 hours."
+      - "Quotes Apiiro that in sampled commits 97% touched only the README and 88% pointed the Download button at a ZIP that installs SmartLoader. The Apiiro page itself returned HTTP 403 and was not read."
+    reviewed_date: "2026-11-05"
+    status: active
+
+  - id: netskope-fake-ai-tools-2026-08
+    title: "Developers in the Crosshairs: Fake AI Tools Deliver Infostealer"
+    publisher: Netskope Threat Labs
+    url: https://threatlabs.netskope.com/blog/2026/08/developers-in-the-crosshairs-fake-ai-tools-deliver-infostealer
+    source_type: research
+    published_date: "2026-08-03"
+    topics: [fakegit, smartloader, github, polygon, stealc]
+    supports:
+      - "Fake AI tool lures deliver SmartLoader and an infostealer; both loaders resolved their C2 address from the Polygon blockchain at runtime, using polygon.drpc.org among other RPC endpoints."
+    reviewed_date: "2026-11-05"
+    status: active
+
+  - id: hexastrike-109-fake-repos-2026-04
+    title: "Cloned, Loaded, and Stolen: How 109 Fake GitHub Repositories Delivered SmartLoader and StealC"
+    publisher: Hexastrike Cybersecurity
+    url: https://hexastrike.com/resources/blog/threat-intelligence/cloned-loaded-and-stolen-how-109-fake-github-repositories-delivered-smartloader-and-stealc/
+    source_type: research
+    published_date: "2026-04-18"
+    topics: [fakegit, smartloader, github, stealc]
+    supports:
+      - "109 malicious repositories across 103 accounts redirect users to embedded ZIP files with a LuaJIT-based SmartLoader stage; SmartLoader resolves its C2 through a Polygon smart contract."
+    reviewed_date: "2026-11-05"
+    status: active
+
+  - id: derp-fakegit-luajit-2026-03
+    title: "FakeGit: LuaJIT malware distributed via GitHub at scale"
+    publisher: Derp.ca
+    url: https://www.derp.ca/research/fakegit-luajit-github-campaign/
+    source_type: research
+    published_date: "2026-03-04"
+    topics: [fakegit, smartloader, github, stealc, ioc]
+    supports:
+      - "A Vietnamese-speaking operator has distributed LuaJIT malware through GitHub since March 2025; the page lists StealC C2 infrastructure for other FakeGit samples."
+    reviewed_date: "2026-11-05"
+    status: active
+
+  - id: straiker-oura-mcp-smartloader-2026-02
+    title: "SmartLoader Clones Oura Ring MCP in Supply Chain Attack"
+    publisher: Straiker
+    url: https://www.straiker.ai/blog/smartloader-clones-oura-ring-mcp-to-deploy-supply-chain-attack
+    source_type: research
+    published_date: "2026-02-05"
+    topics: [fakegit, smartloader, github, mcp, registries]
+    supports:
+      - "SmartLoader operators cloned the Oura MCP server, built fake forks and contributors, submitted the trojanized server to MCP registries, and delivered StealC."
+    reviewed_date: "2026-11-05"
+    status: active
+
+  - id: trendmicro-fake-github-smartloader-2025-03
+    title: "AI-Assisted Fake GitHub Repositories Deliver SmartLoader"
+    publisher: Trend Micro
+    url: https://www.trendmicro.com/en_us/research/25/c/ai-assisted-fake-github-repositories.html
+    source_type: research
+    published_date: "2025-03-11"
+    topics: [fakegit, smartloader, github, lumma]
+    supports:
+      - "Fake GitHub repositories distribute SmartLoader inside ZIP files holding lua51.dll, luajit.exe, userdata.txt and Launcher.bat; the follow-on payload described is Lumma Stealer."
+    reviewed_date: "2026-11-05"
     status: active

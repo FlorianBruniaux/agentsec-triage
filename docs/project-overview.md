@@ -11,7 +11,7 @@ the implementation map out of the README's first-use path.
 | --- | --- |
 | Repository scanner | Bounded discovery over one explicit root with `source`, `dependencies`, or `repository` scope. Target content is read but never executed or modified. |
 | Batch triage | Repeats the scanner for an explicit list of roots. It does not crawl parent directories looking for repositories. |
-| Campaign detectors | Two stable detector families cover selected Shai-Hulud/Keyv evidence and the sourced ClawHavoc fake-prerequisite domain. |
+| Campaign detectors | Three stable detector families cover selected Shai-Hulud/Keyv evidence, the sourced ClawHavoc fake-prerequisite domain, and FakeGit archive lures. |
 | Coverage explanation | `agentsec detectors explain` exposes active rules, supported inputs, sources, limits, remediation, documented-only intelligence, and stable `not_scanned` capabilities. |
 | Threat intelligence | Sourced authoring data generates the bundled runtime database, human-readable catalogue, dated event timeline, and public metadata feed. |
 | Reports | Human output, scan-result v2 JSON, SARIF 2.1.0, and batch-result v1 keep findings separate from diagnostics, exclusions, detector coverage, and completion. |

@@ -1,6 +1,6 @@
 schema_version: "1"
 kind: events
-updated: "2026-11-03"
+updated: "2026-11-05"
 events:
   - id: evt-2026-11-cve-2025-6514
     event_type: vulnerability
@@ -3476,3 +3476,88 @@ events:
         detector applies; a version-floor check against mcp/sdk < 0.7.1 in a
         composer.lock is the closest future detector shape but does not
         exist today.
+
+  - id: evt-2026-07-agentbaiting-fakegit-disclosure
+    event_type: campaign
+    title: Island reports FakeGit repositories posing as AI Skills and MCP servers
+    summary: >-
+      Island reported about 7,600 malicious GitHub repositories tied to the
+      FakeGit operation, over 800 of them posing as Skills or MCP servers and
+      over 600 listings in public registries. Island also reported that
+      Claude Code, Gemini and ChatGPT surfaced campaign repositories in its
+      tests without being given a link. Counts come from one vendor.
+    ecosystems: [github, mcp, agent-skills]
+    disclosed_date: "2026-07-20"
+    status: confirmed
+    confidence: high
+    source_ids: [island-agentbaiting-2026-07, trendmicro-fake-github-smartloader-2025-03, straiker-oura-mcp-smartloader-2026-02]
+    related:
+      campaign_ids: [fakegit-smartloader-2025-03]
+      cve_ids: []
+      technique_ids: [repository.readme-archive-installer]
+    detector_coverage:
+      status: partial
+      detector_ids: [fakegit-archive-lure]
+      notes: >-
+        fakegit-archive-lure flags a README link to an archive committed to the
+        scanned repository and an archive inside an agent configuration
+        directory (tests/integration/test_fakegit_archive_lure_detector.py).
+        It does not read GitHub Release assets, registry listings, Git history
+        or repository ownership, and Island reports that part of the
+        distribution uses Release assets.
+
+  - id: evt-2026-10-fakegit-resurgence
+    event_type: campaign
+    title: FakeGit resurgence reported with 17,610 repositories
+    summary: >-
+      BleepingComputer reported, citing an Apiiro analysis, that FakeGit
+      resumed on 2026-10-04 and uses 17,610 repositories, with more than
+      13,000 pushed in 34 hours. In the commits Apiiro sampled, 97% touched
+      only the README and 88% pointed the download button at a SmartLoader
+      ZIP. The Apiiro page was not readable, so these figures are secondhand.
+    ecosystems: [github]
+    disclosed_date: "2026-10-08"
+    status: monitoring
+    confidence: review
+    source_ids: [bleepingcomputer-fakegit-returns-2026-10]
+    related:
+      campaign_ids: [fakegit-smartloader-2025-03]
+      cve_ids: []
+      technique_ids: [repository.readme-archive-installer]
+    detector_coverage:
+      status: partial
+      detector_ids: [fakegit-archive-lure]
+      notes: >-
+        The README link rule covers a download button that points at a ZIP
+        committed to the scanned repository. A button that points at a Release
+        asset, and README-only commits in Git history, are not covered.
+
+  - id: evt-2026-11-fakegit-agent-lure-73-repos
+    event_type: campaign
+    title: Researcher lists 73 GitHub repositories with committed lure ZIPs
+    summary: >-
+      Thomas Roccia published a gist of 73 GitHub repositories posing as
+      Claude skills, Codex tools, MCP servers and OpenClaw projects. Each
+      commits a ZIP that its README links; 51 were live at a 2026-11-04
+      re-check. Roccia reports that SKILL.md and settings files are clean
+      and that two repositories store the ZIP under .claude. Per-row
+      confidence differs and is preserved in the threat database.
+    ecosystems: [github, mcp, agent-skills]
+    disclosed_date: "2026-11-04"
+    updated_date: "2026-11-05"
+    status: confirmed
+    confidence: high
+    source_ids: [roccia-agent-lure-stealer-gist-2026-11, roccia-linkedin-73-repos-2026-11]
+    related:
+      campaign_ids: [fakegit-smartloader-2025-03]
+      cve_ids: []
+      technique_ids: [payload.sha256, repository.agent-config-archive, repository.readme-archive-installer]
+    detector_coverage:
+      status: partial
+      detector_ids: [fakegit-archive-lure]
+      notes: >-
+        Exact SHA-256 matches cover the two confirmed ZIPs and two sample-1
+        components. README link and agent-configuration-directory rules cover
+        the committed-ZIP shape. Runtime binaries and sample-2 components are
+        withheld from the hash rule, and archive contents, Git history and
+        repository ownership are not scanned.

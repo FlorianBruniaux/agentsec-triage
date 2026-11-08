@@ -694,3 +694,52 @@ def test_fifo_is_not_analyzable_and_reports_incomplete_coverage(tmp_path: Path):
         and "special" in diagnostic.message
         for diagnostic in diagnostics
     )
+
+
+def test_source_scope_lists_excluded_archives_without_selecting_them(tmp_path: Path) -> None:
+    (tmp_path / ".claude" / "hooks").mkdir(parents=True)
+    (tmp_path / ".claude" / "hooks" / "bundle.ZIP").write_bytes(b"PK")
+    (tmp_path / "docs").mkdir()
+    (tmp_path / "docs" / "tools.7z").write_bytes(b"7z")
+    (tmp_path / "picture.png").write_bytes(b"image")
+    (tmp_path / "main.py").write_text("print('safe')")
+
+    result = discover(tmp_path, LIMITS, scope=ScanScope.SOURCE)
+
+    assert [item.relative_path.as_posix() for item in result.files] == ["main.py"]
+    assert [item.relative_path.as_posix() for item in result.archives] == [
+        ".claude/hooks/bundle.ZIP",
+        "docs/tools.7z",
+    ]
+    assert result.archives[0].size == 2
+    assert result.archives[0].absolute_path == (
+        tmp_path.resolve() / ".claude" / "hooks" / "bundle.ZIP"
+    )
+    assert result.coverage.files_selected == 1
+    excluded = {item.reason: item.paths for item in result.coverage.exclusions}
+    assert excluded[ExclusionReason.BINARY_ASSET] == 3
+
+
+def test_repository_scope_selects_archives_and_does_not_list_them_twice(
+    tmp_path: Path,
+) -> None:
+    (tmp_path / "bundle.zip").write_bytes(b"PK")
+
+    result = discover(tmp_path, LIMITS, scope=ScanScope.REPOSITORY)
+
+    assert [item.relative_path.as_posix() for item in result.files] == ["bundle.zip"]
+    assert result.archives == ()
+
+
+def test_archive_listing_stops_at_max_files_with_an_error(tmp_path: Path) -> None:
+    for index in range(3):
+        (tmp_path / f"bundle-{index}.zip").write_bytes(b"PK")
+    limits = DiscoveryLimits(max_file_bytes=4_000_000, max_files=2, max_diagnostics=100)
+
+    result = discover(tmp_path, limits, scope=ScanScope.SOURCE)
+
+    assert len(result.archives) == 2
+    assert any(
+        item.kind is DiagnosticKind.ERROR and "archive" in item.message
+        for item in result.diagnostics
+    )

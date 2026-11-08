@@ -106,6 +106,14 @@ _BINARY_EXTENSIONS = frozenset(
 )
 
 
+ARCHIVE_EXTENSIONS = frozenset({".7z", ".rar", ".zip"})
+
+
+def is_archive_path(path: Path) -> bool:
+    """Return whether a path names an archive type that repository detectors track."""
+    return path.suffix.lower() in ARCHIVE_EXTENSIONS
+
+
 def classify_directory(path: Path, scope: ScanScope) -> ScopeDecision:
     """Classify one directory path without reading repository-owned content."""
     if path.name in _VCS_DIRECTORIES:

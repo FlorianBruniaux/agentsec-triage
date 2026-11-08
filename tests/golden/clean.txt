@@ -1,10 +1,11 @@
-AgentSec 0.1.0a0 | threat database 2.33.0
+AgentSec 0.1.0a0 | threat database 2.34.0
 Scope: source
 Complete: yes
 Discovery: entries_seen=0 directories_opened=1 files_selected=0
 Exclusions: none
 Detector coverage:
   clawhavoc-skill [not_applicable]: files_seen=0 files_inspected=0 bytes_inspected=0
+  fakegit-archive-lure [not_applicable]: files_seen=0 files_inspected=0 bytes_inspected=0
   shai-hulud-keyv [not_applicable]: files_seen=0 files_inspected=0 bytes_inspected=0
 No applicable detectors; no indicators found in completed checks.
 Findings:
@@ -15,8 +16,10 @@ Findings:
   info: none
 Diagnostics: none
 Not scanned:
+  archive.contents
   container.filesystems
   git.history
+  github.release_assets
   host.caches
   host.credentials
   host.global_config
@@ -24,6 +27,7 @@ Not scanned:
   remediation.automatic
   remote.ci
   remote.repositories
+  repository.ownership
   skill.registry_history
   skill.remote_payloads
   skill.runtime_behavior

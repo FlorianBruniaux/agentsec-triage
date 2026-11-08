@@ -38,7 +38,12 @@ class DetectorMetadata:
 
 @dataclass(frozen=True, slots=True)
 class ScanContext:
-    """Immutable scan inputs shared by every detector in a run."""
+    """Immutable scan inputs shared by every detector in a run.
+
+    ``archives`` lists archive files that the scan scope left out of ``files``
+    (``.zip`` and ``.7z`` count as binary assets in the default source scope).
+    A detector that tracks archives reads both tuples.
+    """
 
     root: Path
     files: tuple[DiscoveredFile, ...]
@@ -46,6 +51,7 @@ class ScanContext:
     limits: DiscoveryLimits
     scope: ScanScope = ScanScope.SOURCE
     progress: Callable[[int, int], None] | None = None
+    archives: tuple[DiscoveredFile, ...] = ()
 
 
 class Detector(Protocol):

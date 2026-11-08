@@ -39,6 +39,31 @@ For each candidate, record:
 Reject duplicates and aliases. Preserve corrections, contested claims, and
 retractions as new events. Do not silently rewrite history.
 
+## Researcher IOC dumps (CSV or gist)
+
+A researcher list is a lead list with per-row evidence, not a verified set.
+
+- Read the source file yourself and record the gist or file URL, its created
+  and updated timestamps, and the check date.
+- Keep each row's own confidence. Never raise a row to `confirmed` because its
+  neighbours are.
+- Separate build-confirmed IOCs (local hash, sandbox report) from
+  campaign-level ones (IPs, contracts, domains reported for other builds).
+  Abused legitimate services such as geolocation APIs, CDNs, and public RPC
+  endpoints never go into `malicious_domains`.
+- Defang repository URLs (`hxxps://github[.]com/owner/repo`) and record
+  `live` or `gone` with the check date. Route repository and path IOCs to
+  `iocs.github_repos`, hashes to `iocs.malware_hashes`, IPs to `iocs.c2_ips`.
+- Give each hash a `campaign_id` and a `detector_projection` (`exact-hash` or
+  `none`). A hash without `campaign_id` lands in the shared map that
+  `shai-hulud-keyv` reads. Project only hashes whose confidence supports a
+  `critical / confirmed` verdict, and withhold generic runtime binaries.
+- Keep IOCs out of event summaries and source `supports` text.
+- Judge detector coverage on where the payload lives: the README, committed
+  archives, agent configuration directories. A source saying that `SKILL.md`
+  and settings files are clean means a SKILL.md or settings check does not
+  cover it.
+
 ## Promotion rules
 
 Route each accepted record to one owner:

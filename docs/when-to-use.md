@@ -19,8 +19,8 @@ does not certify that a repository or machine is clean.
 
 Run `agentsec detectors list` and `agentsec detectors explain DETECTOR_ID`
 before relying on a scan. The intelligence catalogue is broader than runtime
-coverage. AgentSec currently implements two detector families for selected
-Shai-Hulud/Keyv and ClawHavoc evidence.
+coverage. AgentSec currently implements three detector families for selected
+Shai-Hulud/Keyv, ClawHavoc, and FakeGit archive-lure evidence.
 
 ## Choose another control for a different question
 

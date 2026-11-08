@@ -141,6 +141,7 @@ class ThreatDatabase:
     package_version_sources: Mapping[str, Mapping[str, tuple[str, ...]]] = field(
         default_factory=dict
     )
+    campaign_hashes: Mapping[str, Mapping[str, str]] = field(default_factory=dict)
     authoring_coverage: AuthoringCoverage | None = None
     complete: bool = True
 
@@ -201,6 +202,16 @@ class ThreatDatabase:
             ),
         )
         object.__setattr__(self, "hashes", MappingProxyType(dict(self.hashes)))
+        object.__setattr__(
+            self,
+            "campaign_hashes",
+            MappingProxyType(
+                {
+                    campaign_id: MappingProxyType(dict(digests))
+                    for campaign_id, digests in self.campaign_hashes.items()
+                }
+            ),
+        )
         object.__setattr__(self, "domains", frozenset(self.domains))
         object.__setattr__(
             self,

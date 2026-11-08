@@ -4690,11 +4690,27 @@
     },
     {
       "classification": "UNKNOWN",
+      "field_path": "iocs.c2_ips[ip=213.176.72%5B.%5D200].notes",
+      "required_action": "No source locator is available. Record the source and rights evidence, then rewrite independently, obtain permission, or remove.",
+      "review_state": "UNREVIEWED",
+      "source_locators": [],
+      "value_sha256": "108676c5c300ede19726f1083c8e00810101bbfa69b43793d823c232bf68f223"
+    },
+    {
+      "classification": "UNKNOWN",
       "field_path": "iocs.c2_ips[ip=216.126.225.129].notes",
       "required_action": "No source locator is available. Record the source and rights evidence, then rewrite independently, obtain permission, or remove.",
       "review_state": "UNREVIEWED",
       "source_locators": [],
       "value_sha256": "7cb759c31482256d63efb4799e92e4e5972dc00ffeb2bbad88928cd745553960"
+    },
+    {
+      "classification": "UNKNOWN",
+      "field_path": "iocs.c2_ips[ip=217.119.129%5B.%5D110].notes",
+      "required_action": "No source locator is available. Record the source and rights evidence, then rewrite independently, obtain permission, or remove.",
+      "review_state": "UNREVIEWED",
+      "source_locators": [],
+      "value_sha256": "108676c5c300ede19726f1083c8e00810101bbfa69b43793d823c232bf68f223"
     },
     {
       "classification": "UNKNOWN",
@@ -6035,7 +6051,7 @@
       "value_sha256": "73b78f2e17a32be437e3bf99a4fe5cca78419a9d6f53bb69c4e90aa62212aef0"
     }
   ],
-  "field_count": 673,
+  "field_count": 675,
   "schema_version": "license-prose-inventory-v1",
-  "source_sha256": "696352701a132cde459836a9cc9e8746a1dce6018faa02e4498f001750046c4d"
+  "source_sha256": "a261882de88ccf288fd135c411ecffec502372d6304d1cce1a2f002b1623237a"
 }

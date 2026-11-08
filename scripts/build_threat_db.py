@@ -105,6 +105,7 @@ def _reject_duplicate_json_keys(pairs: list[tuple[str, object]]) -> dict[str, ob
 
 class NormalizedPayload(TypedDict):
     authoring_coverage: dict[str, int]
+    campaign_hashes: dict[str, dict[str, str]]
     commit_indicators: list[dict[str, str]]
     complete: bool
     contested_package_versions: dict[str, list[str]]
@@ -279,13 +280,54 @@ def _extract_packages(
     )
 
 
-def _extract_hashes(document: Mapping[str, object]) -> dict[str, str]:
+_CAMPAIGN_HASH_PROJECTIONS = frozenset({"exact-hash", "none"})
+
+
+def _extract_hashes(
+    document: Mapping[str, object],
+) -> tuple[dict[str, str], dict[str, dict[str, str]]]:
+    """Split SHA-256 values into the shared map and campaign-attributed maps.
+
+    An entry with ``campaign_id`` never reaches the shared map, so a detector
+    that reads the shared map cannot report another campaign's artifact. Such an
+    entry must state ``detector_projection``: ``exact-hash`` projects it for the
+    campaign detector, ``none`` keeps it in the authoring data only.
+    """
     iocs = _mapping(document.get("iocs"), "iocs")
     entries = _array(iocs.get("malware_hashes"), "iocs.malware_hashes")
     hashes: dict[str, str] = {}
+    campaign_hashes: dict[str, dict[str, str]] = {}
     for index, value in enumerate(entries):
         entry = _mapping(value, f"iocs.malware_hashes[{index}]")
         digest = _string(entry.get("hash"), f"iocs.malware_hashes[{index}].hash")
+        if "campaign_id" in entry:
+            campaign_id = _string(
+                entry.get("campaign_id"), f"iocs.malware_hashes[{index}].campaign_id"
+            )
+            projection = entry.get("detector_projection")
+            if projection not in _CAMPAIGN_HASH_PROJECTIONS:
+                raise ThreatDatabaseBuildError(
+                    f"extraction failed: iocs.malware_hashes[{index}] needs "
+                    "detector_projection exact-hash or none"
+                )
+            if projection == "none":
+                continue
+            if re.fullmatch(r"[0-9a-f]{64}", digest) is None:
+                raise ThreatDatabaseBuildError(
+                    f"extraction failed: campaign hash iocs.malware_hashes[{index}] "
+                    "is not a lowercase SHA-256"
+                )
+            campaign_description = _string(
+                entry.get("type"), f"iocs.malware_hashes[{index}].type"
+            )
+            campaign_previous = campaign_hashes.setdefault(campaign_id, {}).setdefault(
+                digest, campaign_description
+            )
+            if campaign_previous != campaign_description:
+                raise ThreatDatabaseBuildError(
+                    f"extraction failed: conflicting descriptions for SHA-256 {digest}"
+                )
+            continue
         if re.fullmatch(r"[0-9a-f]{64}", digest) is None:
             continue
         description = _string(entry.get("type"), f"iocs.malware_hashes[{index}].type")
@@ -296,7 +338,15 @@ def _extract_hashes(document: Mapping[str, object]) -> dict[str, str]:
             )
     if not hashes:
         raise ThreatDatabaseBuildError("extraction failed: no complete SHA-256 values found")
-    return dict(sorted(hashes.items()))
+    attributed = {digest for digests in campaign_hashes.values() for digest in digests}
+    if attributed & hashes.keys():
+        raise ThreatDatabaseBuildError(
+            "extraction failed: a SHA-256 is both shared and campaign-attributed"
+        )
+    return dict(sorted(hashes.items())), {
+        campaign_id: dict(sorted(digests.items()))
+        for campaign_id, digests in sorted(campaign_hashes.items())
+    }
 
 
 def _extract_domains(document: Mapping[str, object]) -> list[str]:
@@ -358,7 +408,7 @@ def _normalize(document: Mapping[str, object]) -> NormalizedPayload:
         package_version_sources,
         skill_projection,
     ) = _extract_packages(document)
-    hashes = _extract_hashes(document)
+    hashes, campaign_hashes = _extract_hashes(document)
     domains = _extract_domains(document)
     commit_indicators = _extract_commit_indicators(document)
     iocs = _mapping(document.get("iocs"), "iocs")
@@ -376,13 +426,15 @@ def _normalize(document: Mapping[str, object]) -> NormalizedPayload:
             _array(iocs.get("malicious_domains"), "iocs.malicious_domains")
         ),
         **skill_projection,
-        "malware_hashes_projected": len(hashes),
+        "malware_hashes_projected": len(hashes)
+        + sum(len(digests) for digests in campaign_hashes.values()),
         "malware_hashes_total": len(
             _array(iocs.get("malware_hashes"), "iocs.malware_hashes")
         ),
     }
     return {
         "authoring_coverage": coverage,
+        "campaign_hashes": campaign_hashes,
         "commit_indicators": commit_indicators,
         "complete": True,
         "contested_package_versions": contested_package_versions,
@@ -443,7 +495,9 @@ def main(argv: Sequence[str] | None = None) -> int:
         f"built threat database version={payload['version']} "
         f"packages={package_count} wildcards={wildcard_count} "
         f"contested={contested_count} contested_wildcards={contested_wildcard_count} "
-        f"hashes={len(payload['hashes'])} domains={len(payload['domains'])} "
+        f"hashes={len(payload['hashes'])} "
+        f"campaign_hashes={sum(len(v) for v in payload['campaign_hashes'].values())} "
+        f"domains={len(payload['domains'])} "
         f"commit_indicators={len(payload['commit_indicators'])} output={args.output}"
         f" authoring_malicious_skills={payload['authoring_coverage']['malicious_skills_total']}"
         f" projected_malicious_skills="

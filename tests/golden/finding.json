@@ -1,6 +1,6 @@
 {
   "complete": true,
-  "database_version": "2.33.0",
+  "database_version": "2.34.0",
   "detectors": [
     {
       "applicability": "not_applicable",
@@ -18,10 +18,25 @@
     {
       "applicability": "applicable",
       "bytes_inspected": 332,
+      "detector_id": "fakegit-archive-lure",
+      "files_inspected": 3,
+      "files_seen": 3,
+      "not_scanned": [
+        "archive.contents",
+        "git.history",
+        "github.release_assets",
+        "repository.ownership"
+      ]
+    },
+    {
+      "applicability": "applicable",
+      "bytes_inspected": 332,
       "detector_id": "shai-hulud-keyv",
       "files_inspected": 3,
       "files_seen": 3,
-      "not_scanned": ["git.history"]
+      "not_scanned": [
+        "git.history"
+      ]
     }
   ],
   "diagnostics": [],
@@ -40,7 +55,9 @@
   "elapsed_ms": 0,
   "findings": [
     {
-      "campaign_ids": ["shai-hulud-keyv-2026-08"],
+      "campaign_ids": [
+        "shai-hulud-keyv-2026-08"
+      ],
       "confidence": "confirmed",
       "detector_id": "shai-hulud-keyv",
       "evidence": "keyv@6.0.0",
@@ -49,10 +66,14 @@
       "remediation_url": "https://cc.bruniaux.com/security/",
       "rule_id": "compromised-lockfile-version",
       "severity": "critical",
-      "technique_ids": ["npm.compromised-version"]
+      "technique_ids": [
+        "npm.compromised-version"
+      ]
     },
     {
-      "campaign_ids": ["shai-hulud-keyv-2026-08"],
+      "campaign_ids": [
+        "shai-hulud-keyv-2026-08"
+      ],
       "confidence": "high",
       "detector_id": "shai-hulud-keyv",
       "evidence": "claude SessionStart: node setup.mjs",
@@ -61,10 +82,14 @@
       "remediation_url": "https://cc.bruniaux.com/security/",
       "rule_id": "campaign-startup-hook",
       "severity": "high",
-      "technique_ids": ["repository.startup-hook"]
+      "technique_ids": [
+        "repository.startup-hook"
+      ]
     },
     {
-      "campaign_ids": ["shai-hulud-keyv-2026-08"],
+      "campaign_ids": [
+        "shai-hulud-keyv-2026-08"
+      ],
       "confidence": "contested",
       "detector_id": "shai-hulud-keyv",
       "evidence": "@keyv/mongo@6.0.0 (contested intelligence; sources: JFrog, SafeDep)",
@@ -73,12 +98,16 @@
       "remediation_url": "https://cc.bruniaux.com/security/",
       "rule_id": "compromised-lockfile-version",
       "severity": "high",
-      "technique_ids": ["npm.compromised-version"]
+      "technique_ids": [
+        "npm.compromised-version"
+      ]
     }
   ],
   "not_scanned": [
+    "archive.contents",
     "container.filesystems",
     "git.history",
+    "github.release_assets",
     "host.caches",
     "host.credentials",
     "host.global_config",
@@ -86,6 +115,7 @@
     "remediation.automatic",
     "remote.ci",
     "remote.repositories",
+    "repository.ownership",
     "skill.registry_history",
     "skill.remote_payloads",
     "skill.runtime_behavior",

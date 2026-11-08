@@ -74,17 +74,18 @@ detector families currently implemented by the scanner.
 
 ## What it checks today
 
-AgentSec currently ships two detector families. The wider intelligence catalogue
+AgentSec currently ships three detector families. The wider intelligence catalogue
 contains research that has not been promoted into executable checks.
 
 | Detector | Repository evidence | Main inputs |
 | --- | --- | --- |
 | `shai-hulud-keyv` | Documented compromised package versions, payload hashes, lifecycle scripts, and repository startup hooks associated with the Shai-Hulud/Keyv campaign | Supported `npm`, `pnpm`, Yarn, and text Bun lockfiles; installed package metadata; `.claude` settings; VS Code tasks; regular-file SHA-256 |
+| `fakegit-archive-lure` | Exact SHA-256 matches against confirmed FakeGit / SmartLoader archive and component hashes, a README that links an archive committed to the same repository, and archives inside `.claude`, `.codex`, `.agents`, `.cursor`, or `.gemini` directories | Regular-file SHA-256; `.7z`, `.rar`, and `.zip` archives, including those the default source scope excludes as binary assets; `README*.md` files |
 | `clawhavoc-skill` | Exact bundled campaign domains in `SKILL.md` or explicitly delegated same-skill setup instructions | Repository-local `SKILL.md` and referenced Markdown setup files |
 
 Run `agentsec detectors explain DETECTOR_ID --format json` for the current
-coverage contract. Binary `bun.lockb`, Git history, remote repositories,
-registry history, remote payloads, runtime behavior, host credentials, and host
+coverage contract. Binary `bun.lockb`, archive contents, GitHub Release assets,
+Git history, repository ownership, remote repositories, registry history, remote payloads, runtime behavior, host credentials, and host
 processes are not inspected.
 
 ## Concrete examples

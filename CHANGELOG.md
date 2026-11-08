@@ -6,6 +6,33 @@ while the data-licensing decision remains unresolved.
 
 ## [Unreleased]
 
+- FakeGit / SmartLoader / StealC agent-tool lures added on November 5, 2026
+  (database 2.34.0). New detector `fakegit-archive-lure` with three rules:
+  `known-fakegit-archive-hash` (`critical / confirmed`),
+  `readme-links-committed-archive` and `archive-in-agent-config-directory`
+  (both `medium / review`). Source IOC list: Thomas Roccia's gist of 73
+  repositories (created 2026-11-04, updated 2026-11-05), with per-row
+  confidence preserved; 51 repositories were live and 22 returned 404 at the
+  2026-11-04 check. The database records the 73 defanged repositories, ten
+  SHA-256 values, and the campaign, with four hashes projected: the two
+  confirmed ZIPs and two sample-1 components. Runtime binaries, the
+  runtime-dropped `dist.lua`, and sample-2 components stay authoring-only. Three
+  new events and eight new sources (Island, BleepingComputer, Netskope,
+  Hexastrike, Derp.ca, Straiker, Trend Micro, the gist and the LinkedIn post);
+  the Apiiro page returned HTTP 403, so its figures are cited secondhand via
+  BleepingComputer with status `monitoring`. Hashes with a `campaign_id` now
+  project into a separate `campaign_hashes` runtime map, so `shai-hulud-keyv`
+  no longer shares a hash map with this campaign; regression tests prove
+  neither detector reports the other's hashes. Discovery now lists `.7z`,
+  `.rar`, and `.zip` files that the source scope excludes as binary assets in a
+  new `archives` field passed to detectors; selected files and exclusion counts
+  are unchanged. Not scanned: archive contents, GitHub Release assets, Git
+  history, repository ownership. Playbook `fakegit-archive-lure` v1.0.0 added.
+  The `/update-threat-db` command gained an intake section for researcher IOC
+  dumps. The license prose inventory grows to 675 fields, 647 unreviewed.
+  Guarded by `tests/integration/test_fakegit_archive_lure_detector.py`,
+  `tests/unit/test_campaign_hashes.py`, and
+  `tests/unit/test_fakegit_threat_update.py`.
 - Scanning-tool commands corrected on November 4, 2026: three
   `scanning_tools` entries told readers to run code that the named vendor does
   not publish. Snyk publishes no npm package for Agent Scan, so

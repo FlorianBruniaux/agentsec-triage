@@ -2,7 +2,7 @@
   "authoring_coverage": {
     "attack_techniques_projected": 0,
     "attack_techniques_total": 40,
-    "campaigns_total": 17,
+    "campaigns_total": 18,
     "commit_indicators_projected": 1,
     "cves_projected": 0,
     "cves_total": 243,
@@ -13,8 +13,16 @@
     "ignored_unsupported_platform": 9,
     "malicious_skills_projected": 17,
     "malicious_skills_total": 93,
-    "malware_hashes_projected": 3,
-    "malware_hashes_total": 5
+    "malware_hashes_projected": 7,
+    "malware_hashes_total": 15
+  },
+  "campaign_hashes": {
+    "fakegit-smartloader-2025-03": {
+      "2a7afb187157a4052e5b9797d1d1c7ee807b2edeffef076a08b20b12e3dcf317": "lfs.txt (obfuscated Lua, sample 1)",
+      "4f5c5ad522d8dba60e89c443e07d65c3ce373ef1a617d220d3b69a185c11dae2": "Application.bat (launcher, sample 1)",
+      "53039bdeb3e155236dce324281f59846c2da7518a54859c409286aaff86d61a2": "messenger-codex-v2.6.zip (SmartLoader ZIP, sample 1)",
+      "bd2a6bff153d95ab3d94d7db4525c49c31f5c6f32ddbf8e7c466732b0a6eb071": "supercharged-claude-skills-v2.0.zip (SmartLoader ZIP, sample 2)"
+    }
   },
   "commit_indicators": [
     {
@@ -196,7 +204,7 @@
       "2.11.6"
     ]
   },
-  "updated": "2026-11-03",
-  "version": "2.33.0",
+  "updated": "2026-11-05",
+  "version": "2.34.0",
   "wildcard_package_versions": {}
 }

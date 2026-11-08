@@ -15,7 +15,7 @@ PROJECT_ROOT = Path(__file__).parents[2]
 EXPECTED_AUTHORING_COVERAGE = {
     "attack_techniques_projected": 0,
     "attack_techniques_total": 40,
-    "campaigns_total": 17,
+    "campaigns_total": 18,
     "commit_indicators_projected": 1,
     "cves_projected": 0,
     "cves_total": 243,
@@ -26,8 +26,8 @@ EXPECTED_AUTHORING_COVERAGE = {
     "ignored_unsupported_platform": 9,
     "malicious_skills_projected": 17,
     "malicious_skills_total": 93,
-    "malware_hashes_projected": 3,
-    "malware_hashes_total": 5,
+    "malware_hashes_projected": 7,
+    "malware_hashes_total": 15,
 }
 
 
@@ -41,7 +41,7 @@ def test_bundled_database_contains_keyv_campaign_iocs():
     from agentsec.threat_db import load_bundled_database
 
     database = load_bundled_database()
-    assert database.version == "2.33.0"
+    assert database.version == "2.34.0"
     assert "6.0.0" in database.package_versions["keyv"]
     assert "@keyv/" not in database.wildcard_package_versions
     assert "6.0.0" in database.contested_wildcard_package_versions["@keyv/"]
@@ -312,7 +312,7 @@ def test_builder_normalizes_canonical_source_deterministically(tmp_path: Path):
     ]
 
     assert [result.returncode for result in results] == [0, 0]
-    assert all("version=2.33.0" in result.stdout for result in results)
+    assert all("version=2.34.0" in result.stdout for result in results)
     assert first_output.read_bytes() == second_output.read_bytes()
 
     payload = json.loads(first_output.read_text(encoding="utf-8"))
@@ -530,8 +530,8 @@ def test_runtime_loader_rejects_duplicate_commit_indicators(
     ("original", "replacement"),
     [
         (
-            '"version": "2.33.0"',
-            '"version": "2.33.0",\n  "version": "do-not-leak"',
+            '"version": "2.34.0"',
+            '"version": "2.34.0",\n  "version": "do-not-leak"',
         ),
         (
             '"author": "claude"',

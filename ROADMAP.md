@@ -38,6 +38,9 @@ Implemented in the current alpha codebase:
 - `shai-hulud-keyv` detector for supported npm, pnpm, Yarn, and text Bun
   lockfiles, installed package metadata, payload hashes, and repository startup
   configuration;
+- `fakegit-archive-lure` detector for confirmed FakeGit archive hashes, README
+  links to committed archives, and archives in agent configuration
+  directories, without opening any archive;
 - `clawhavoc-skill` detector for the exact sourced fake-prerequisite campaign
   domain in `SKILL.md` and explicitly delegated local setup instructions,
   without classifying a filename or delegation as compromise;

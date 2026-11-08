@@ -273,8 +273,37 @@ def test_explicit_registry_contains_builtin_detectors() -> None:
 
     assert [detector.id for detector in detectors] == [
         "clawhavoc-skill",
+        "fakegit-archive-lure",
         "shai-hulud-keyv",
     ]
-    assert get_detectors(["shai-hulud-keyv"]) == (detectors[1],)
+    assert get_detectors(["shai-hulud-keyv"]) == (detectors[2],)
     with pytest.raises(ValueError, match="unknown detector IDs: missing"):
         get_detectors(["missing"])
+
+
+class RecordingDetector:
+    id = "recording"
+    version = "1"
+    metadata = NeverAppliesDetector.metadata
+    seen: list[ScanContext]
+
+    def __init__(self) -> None:
+        self.seen = []
+
+    def applies(self, context: ScanContext) -> bool:
+        self.seen.append(context)
+        return False
+
+
+def test_runner_passes_scope_excluded_archives_to_detectors(
+    tmp_path: Path, empty_database: ThreatDatabase
+) -> None:
+    (tmp_path / "bundle.zip").write_bytes(b"PK")
+    (tmp_path / "main.py").write_text("print('safe')")
+    detector = RecordingDetector()
+
+    run_scan(tmp_path, [detector], empty_database, LIMITS, scope=ScanScope.SOURCE)
+
+    context = detector.seen[0]
+    assert [item.relative_path.as_posix() for item in context.files] == ["main.py"]
+    assert [item.relative_path.as_posix() for item in context.archives] == ["bundle.zip"]

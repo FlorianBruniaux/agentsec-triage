@@ -6,10 +6,12 @@ from collections.abc import Sequence
 
 from agentsec.detectors.base import Detector
 from agentsec.detectors.clawhavoc_skill import ClawHavocSkillDetector
+from agentsec.detectors.fakegit_archive_lure import FakeGitArchiveLureDetector
 from agentsec.detectors.shai_hulud import ShaiHuludDetector
 
 _DETECTORS: tuple[Detector, ...] = (
     ClawHavocSkillDetector(),
+    FakeGitArchiveLureDetector(),
     ShaiHuludDetector(),
 )
 

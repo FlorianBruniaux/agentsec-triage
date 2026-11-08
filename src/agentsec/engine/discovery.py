@@ -17,6 +17,7 @@ from agentsec.scopes import (
     ScanScope,
     classify_directory,
     classify_file,
+    is_archive_path,
 )
 
 _FILE_ATTRIBUTE_REPARSE_POINT = getattr(stat, "FILE_ATTRIBUTE_REPARSE_POINT", 0x400)
@@ -77,6 +78,7 @@ class DiscoveryResult:
     files: tuple[DiscoveredFile, ...]
     diagnostics: tuple[Diagnostic, ...]
     coverage: DiscoveryCoverage
+    archives: tuple[DiscoveredFile, ...] = ()
 
     def __iter__(self) -> Iterator[object]:
         """Keep tuple unpacking compatible while callers migrate to named fields."""
@@ -151,6 +153,8 @@ class _TraversalState:
     next_progress_file_count: int = _PROGRESS_FILE_INTERVAL
     stopped: bool = False
     exclusions: dict[ExclusionReason, list[int]] = field(default_factory=dict)
+    archives: list[DiscoveredFile] = field(default_factory=list)
+    archive_limit_reported: bool = False
     covered_paths: dict[Path, tuple[int, int]] = field(default_factory=dict)
 
     def exclude(self, reason: ExclusionReason, *, subtree: bool) -> None:
@@ -272,6 +276,7 @@ def discover(
         ordered_files,
         diagnostics.finish(),
         state.coverage(files_selected=len(ordered_files)),
+        tuple(sorted(state.archives, key=lambda item: item.relative_path.as_posix())),
     )
 
 
@@ -425,6 +430,22 @@ def _scan_directory(
             if not file_decision.selected:
                 if file_decision.reason is not None:
                     state.exclude(file_decision.reason, subtree=False)
+                if (
+                    file_decision.reason is ExclusionReason.BINARY_ASSET
+                    and is_archive_path(relative_candidate)
+                ):
+                    _record_archive(
+                        DiscoveredFile(
+                            relative_path=relative_candidate,
+                            absolute_path=candidate,
+                            size=entry_stat.st_size,
+                            symlink=False,
+                        ),
+                        state=state,
+                        limits=limits,
+                        scan_root=scan_root,
+                        diagnostics=diagnostics,
+                    )
                 continue
             if len(discovered) >= limits.max_files:
                 diagnostics.add(
@@ -455,6 +476,26 @@ def _scan_directory(
         if opened.file_descriptor is not None:
             os.close(opened.file_descriptor)
     return False
+
+
+def _record_archive(
+    archive: DiscoveredFile,
+    *,
+    state: _TraversalState,
+    limits: DiscoveryLimits,
+    scan_root: Path,
+    diagnostics: _DiagnosticBuffer,
+) -> None:
+    """Remember an excluded archive so archive-aware detectors can still see it."""
+    if len(state.archives) < limits.max_files:
+        state.archives.append(archive)
+        return
+    if not state.archive_limit_reported:
+        state.archive_limit_reported = True
+        diagnostics.add(
+            scan_root,
+            f"archive listing stopped at max_files={limits.max_files}; discovery incomplete",
+        )
 
 
 def _open_directory(

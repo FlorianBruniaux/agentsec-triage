@@ -32,6 +32,7 @@ def _scan(root: Path, limits: DiscoveryLimits = LIMITS):
 def test_registry_exposes_clawhavoc_skill_detector() -> None:
     assert [detector.id for detector in get_detectors()] == [
         "clawhavoc-skill",
+        "fakegit-archive-lure",
         "shai-hulud-keyv",
     ]
 

@@ -130,8 +130,8 @@ def test_progress_always_uses_stderr_without_corrupting_json(tmp_path: Path) -> 
     assert json.loads(completed.stdout)["complete"] is True
     assert "[1/5] Loading threat database" in completed.stderr
     assert "[1/5] Threat database ready:" in completed.stderr
-    assert "version=2.33.0" in completed.stderr
-    assert "updated=2026-11-03" in completed.stderr
+    assert "version=2.34.0" in completed.stderr
+    assert "updated=2026-11-05" in completed.stderr
     assert "resource=" in completed.stderr
     assert "threat-db.json" in completed.stderr
     assert "package_records=17" in completed.stderr
@@ -142,7 +142,7 @@ def test_progress_always_uses_stderr_without_corrupting_json(tmp_path: Path) -> 
     assert (
         f"[2/5] Repository validated: root={tmp_path.resolve()} "
         "type=directory scan_mode=read-only "
-        "detectors=clawhavoc-skill,shai-hulud-keyv"
+        "detectors=clawhavoc-skill,fakegit-archive-lure,shai-hulud-keyv"
         in completed.stderr
     )
     assert "[2/5] Safety limits:" in completed.stderr
@@ -549,7 +549,7 @@ def test_detectors_explain_json_is_deterministic_and_matches_public_schema() -> 
     validate(instance=payload, schema=schema)
 
     assert payload["schema_version"] == "1"
-    assert payload["database"]["version"] == "2.33.0"
+    assert payload["database"]["version"] == "2.34.0"
     assert payload["detector"]["id"] == "shai-hulud-keyv"
     assert payload["detector"]["applicability"] == "at_least_one_discovered_file"
     assert payload["counters"] == {
@@ -624,7 +624,7 @@ def test_db_info_reports_generated_database_version_and_ioc_counts() -> None:
 
     assert completed.returncode == 0
     assert completed.stderr == ""
-    assert "2.33.0" in completed.stdout
+    assert "2.34.0" in completed.stdout
     assert "package_versions=" in completed.stdout
     assert "contested_package_versions=0" in completed.stdout
     assert "contested_wildcard_package_versions=1" in completed.stdout
@@ -639,7 +639,7 @@ def test_db_info_reports_generated_database_version_and_ioc_counts() -> None:
     assert "ignored_missing_version=3" in completed.stdout
     assert "projected_cves=0/243" in completed.stdout
     assert "projected_attack_techniques=0/40" in completed.stdout
-    assert "projected_campaign_indicators=1/17" in completed.stdout
+    assert "projected_campaign_indicators=1/18" in completed.stdout
 
 
 def test_batch_scans_positional_roots_in_order(tmp_path: Path) -> None:
@@ -733,7 +733,7 @@ def test_doctor_validates_local_resources_and_schema_without_network() -> None:
     assert completed.returncode == 0
     assert completed.stderr == ""
     assert "Python:" in completed.stdout
-    assert "database: 2.33.0" in completed.stdout
+    assert "database: 2.34.0" in completed.stdout
     assert "resource: available" in completed.stdout
     assert "scan-result-v2: valid" in completed.stdout
     assert "batch-result-v1: valid" in completed.stdout
